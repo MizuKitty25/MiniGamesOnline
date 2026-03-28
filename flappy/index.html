@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Flappy Bird Phaser</title>
+<title>Flappy Bird</title>
+<link rel="icon" type="image/png" href="assets/bird1.png">
 <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -114,6 +115,7 @@ class FlappyScene extends Phaser.Scene {
     this.load.image("ground","assets/ground.png");
     this.load.image("cloud", "assets/cloud.png");
     this.load.image("pipe",  "assets/pipe.png");
+    this.load.audio('jumpSound', 'assets/jumpSound.wav');
     for(let i=1;i<=6;i++){
       this.load.image("bird"+i,"assets/bird"+i+".png");
     }
@@ -126,6 +128,7 @@ class FlappyScene extends Phaser.Scene {
     this.pipeInterval = 1500;
     this.gap = 130;     
     const W = 400, H = 600;
+    this.flapSfx = this.sound.add('jumpSound');
 
     // ── Sky ──
     this.add.rectangle(W/2, H/2, W, H, 0x70c5ce).setDepth(0);
@@ -149,8 +152,8 @@ class FlappyScene extends Phaser.Scene {
     this.bird = this.physics.add.sprite(80, 200, "bird1").setDepth(6);
     this.bird.setScale(0.55, 0.55);
     this.bird.body.gravity.y = 1800;
-    this.bird.body.setSize(this.bird.width * 0.6, this.bird.height * 0.6);
-    this.bird.body.setOffset(this.bird.width * 0.2, this.bird.height * 0.2);
+    this.bird.body.setSize(this.bird.width * 0.45, this.bird.height * 0.45);
+    this.bird.body.setOffset(this.bird.width * 0.275, this.bird.height * 0.275);
     this.bird.setCollideWorldBounds(true);
     
 
@@ -197,6 +200,7 @@ class FlappyScene extends Phaser.Scene {
   flap(){
     if(this.gameOver){ this.scene.restart(); return; }
     this.bird.body.velocity.y = this.lift;
+    this.flapSfx.play();
   }
 
   // ── The real fix: create pipes as individual physics sprites, set depth explicitly ──
@@ -303,7 +307,7 @@ if(this.score % 10 !== 0) this.difficultyUpdated = false;
     });
 
     // Bird off top of screen
-    if(this.bird.y>480 || this.bird.y<0){ this.endGame(); }
+    if(this.bird.y>485 || this.bird.y<0){ this.endGame(); }
 
     // Highscore
     if(this.score > this.highScore){
