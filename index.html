@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>小游戏合集</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body {
+    margin: 0;
+    background: #f2f2f2;
+    font-family: Arial, sans-serif;
+  }
+  h1 {
+    text-align: center;
+    margin: 20px 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    max-width: 1000px;
+    margin: auto;
+  }
+  .game-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .game-card:hover {
+    transform: scale(1.05);
+  }
+  .game-card img {
+    width: 100%;
+    display: block;
+  }
+  .game-card p {
+    text-align: center;
+    padding: 10px 0;
+    margin: 0;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h1>小游戏合集</h1>
+<div class="grid">
+  <div class="game-card" onclick="location.href='flappy/index.html'">
+    <img src="flappy.jpg" alt="Flappy Bird">
+    <p>Flappy Bird</p>
+  </div>
+  <div class="game-card" onclick="location.href='games/othergame.html'">
+    <img src="images/othergame.png" alt="另一个游戏">
+    <p>其他游戏</p>
+  </div>
+  <!-- 可以继续添加更多游戏格子 -->
+</div>
+</body>
+</html>

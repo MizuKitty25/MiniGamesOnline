@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flappy Bird Phaser</title>
+
+<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    background: #70c5ce;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+</style>
+</head>
+<body>
+
+<script>
+class FlappyScene extends Phaser.Scene {
+
+  constructor() {
+    super("FlappyScene");
+  }
+
+  create() {
+
+    this.gameOver = false;
+    this.score = 0;
+    this.highScore = localStorage.getItem("flappyHigh") || 0;
+
+    // SKY
+    this.add.rectangle(200, 300, 400, 600, 0x87CEEB);
+
+    // CLOUDS
+    this.clouds = [];
+    for (let i = 0; i < 2; i++) {
+      this.clouds.push(
+        this.add.circle(
+          Phaser.Math.Between(0, 400),
+          Phaser.Math.Between(50, 250),
+          20,
+          0xffffff
+        )
+      );
+    }
+
+    // BIRD
+    this.bird = this.add.circle(80, 200, 20, 0xffff00);
+    this.physics.add.existing(this.bird);
+
+    this.bird.body.gravity.y = 1800;
+    this.bird.body.setCollideWorldBounds(false);
+
+    this.lift = -500;
+
+    // INPUT
+    this.input.keyboard.on("keydown-SPACE", () => this.flap());
+    this.input.on("pointerdown", () => this.flap());
+
+    // PIPE GROUP
+    this.pipes = this.physics.add.group();
+
+    // ⭐ Time-based speeds (device independent)
+    this.pipeSpeed = 240;   // pixels/sec
+    this.cloudSpeed = 40;
+    this.pipeTimer = 0;
+
+    // SCORE TEXT
+    this.scoreText = this.add.text(10, 10, "", {
+      fontSize: "24px",
+      color: "#000"
+    });
+
+    this.bestText = this.add.text(10, 40, "", {
+      fontSize: "24px",
+      color: "#000"
+    });
+
+    // PHYSICS COLLISION
+    this.physics.add.collider(this.bird, this.pipes, () => {
+      this.endGame();
+    });
+  }
+
+  flap() {
+    if (this.gameOver) {
+      this.scene.restart();
+      return;
+    }
+
+    this.bird.body.velocity.y = this.lift;
+  }
+
+  createPipe() {
+
+    const gap = 160;
+    const top = Phaser.Math.Between(50, 300);
+    const pipeWidth = 60;
+
+    // TOP PIPE
+    const topPipe = this.add.rectangle(
+      400,
+      top / 2,
+      pipeWidth,
+      top,
+      0x2ecc71
+    );
+
+    // BOTTOM PIPE
+    const bottomHeight = 600 - (top + gap);
+    const bottomPipe = this.add.rectangle(
+      400,
+      top + gap + bottomHeight / 2,
+      pipeWidth,
+      bottomHeight,
+      0x2ecc71
+    );
+
+    this.physics.add.existing(topPipe);
+    this.physics.add.existing(bottomPipe);
+
+    topPipe.body.allowGravity = false;
+    bottomPipe.body.allowGravity = false;
+
+    // ⭐ Only TOP pipe gives score
+    topPipe.passed = false;
+    topPipe.isScorePipe = true;
+
+    topPipe.body.immovable = true;
+    bottomPipe.body.immovable = true;
+
+    bottomPipe.passed = false;
+    bottomPipe.isScorePipe = false;
+
+	topPipe.body.moves = false;
+	bottomPipe.body.moves = false;
+
+    this.pipes.add(topPipe);
+    this.pipes.add(bottomPipe);
+  }
+
+  update(time, delta) {
+
+    if (this.gameOver) return;
+
+    const dt = delta / 1000; // convert ms → seconds
+
+    // CLOUD MOVE (time based)
+    this.clouds.forEach(c => {
+      c.x -= this.cloudSpeed * dt;
+
+      if (c.x < -50) {
+        c.x = 400;
+        c.y = Phaser.Math.Between(50, 250);
+      }
+    });
+
+    // PIPE SPAWN (time based)
+    this.pipeTimer += delta;
+
+    if (this.pipeTimer > 1000) {
+      this.createPipe();
+      this.pipeTimer = 0;
+    }
+
+    // MOVE PIPES
+    this.pipes.getChildren().forEach(pipe => {
+
+      pipe.x -= this.pipeSpeed * dt;
+      pipe.body.updateFromGameObject();
+
+      // SCORE (+1 only)
+      if (pipe.isScorePipe && !pipe.passed && pipe.x < this.bird.x) {
+        pipe.passed = true;
+        this.score++;
+      }
+
+      if (pipe.x < -60) pipe.destroy();
+    });
+
+    // WORLD BOUNDS CHECK
+    if (this.bird.y > 600 || this.bird.y < 0) {
+      this.endGame();
+    }
+
+    // UPDATE HIGH SCORE
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem("flappyHigh", this.highScore);
+    }
+
+    this.scoreText.setText("Score: " + this.score);
+    this.bestText.setText("Best: " + this.highScore);
+  }
+
+  endGame() {
+    if (this.gameOver) return;
+
+    this.gameOver = true;
+
+    this.add.text(80, 280, "Game Over", {
+      fontSize: "40px",
+      color: "#ff0000"
+    });
+
+    this.add.text(70, 330, "Click or Space to Restart", {
+      fontSize: "20px",
+      color: "#000"
+    });
+
+    this.bird.body.velocity.y = 0;
+    this.bird.body.gravity.y = 0;
+  }
+}
+
+const config = {
+  type: Phaser.AUTO,
+  width: 400,
+  height: 600,
+  physics: {
+    default: "arcade",
+    arcade: {
+      debug: false
+    }
+  },
+  scene: FlappyScene
+};
+
+new Phaser.Game(config);
+</script>
+
+</body>
+</html>
