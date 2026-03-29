@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 
+<!-- ─── Primary SEO ─────────────────────────────────── -->
+<title>Snake Game – Classic Arcade Snake with Obstacles</title>
+<meta name="description" content="Play a classic Snake arcade game in your browser. Eat cherries, dodge walls, and beat your high score. Built with Phaser 3. Free to play, no download needed.">
+<meta name="keywords" content="snake game, arcade game, browser game, phaser game, classic snake, free game, html5 game">
+<meta name="author" content="Your Name">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://yourdomain.com/games/snake/">
+ 
+<!-- ─── Open Graph (Facebook / Discord / WhatsApp) ─── -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Snake Game – Classic Arcade Snake with Obstacles">
+<meta property="og:description" content="Eat cherries, dodge walls, and beat your high score in this classic Snake arcade game. Free to play in your browser.">
+<meta property="og:url" content="https://yourdomain.com/games/snake/">
+<meta property="og:image" content="https://yourdomain.com/games/snake/assets/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Your Game Site">
+<meta property="og:locale" content="en_US">
+ 
+<!-- ─── Twitter Card ──────────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Snake Game – Classic Arcade Snake with Obstacles">
+<meta name="twitter:description" content="Eat cherries, dodge walls, and beat your high score. Free browser game.">
+<meta name="twitter:image" content="https://yourdomain.com/games/snake/assets/preview.png">
+<meta name="twitter:site" content="@yourhandle">
+ 
+<!-- ─── Structured Data (JSON-LD) ────────────────────── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Snake Game",
+  "description": "A classic Snake arcade game built with Phaser 3. Eat cherries, avoid walls and your own tail, and beat your high score.",
+  "genre": ["Arcade", "Casual"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "url": "https://yourdomain.com/games/snake/"
+}
+</script>
+ 
+<!-- ─── Favicon ───────────────────────────────────────── -->
+<link rel="icon" type="image/png" href="assets/snakehead1.png">
+<link rel="apple-touch-icon" href="assets/snakehead1.png">
+<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a0a2e;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, #2d1b69 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, #11998e22 0%, transparent 40%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #game-wrapper {
+    position: relative;
+    padding: 6px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #ffe259, #ffa751, #ff6b6b, #a855f7, #38bdf8);
+    box-shadow: 0 0 30px #ffe25966, 0 0 60px #a855f733, 0 0 0 1px #ffffff22;
+    animation: borderPulse 3s ease-in-out infinite alternate;
+  }
+  @keyframes borderPulse {
+    from { box-shadow: 0 0 20px #ffe25955, 0 0 40px #a855f722; }
+    to   { box-shadow: 0 0 40px #ffe259aa, 0 0 80px #a855f755, 0 0 120px #38bdf833; }
+  }
+  #game-border {
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+
+  #game-border::before, #game-border::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: #ffe259; border-style: solid;
+    z-index: 100; pointer-events: none;
+  }
+  #game-border::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
+  #game-border::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+  .corner-tr, .corner-bl {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: #ffe259; border-style: solid;
+    z-index: 100; pointer-events: none;
+  }
+  .corner-tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
+  .corner-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+  #game-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: #ffe259;
+    text-align: center;
+    padding: 8px 0 6px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ffe25988, 2px 2px 0 #a855f7;
+  }
+
+   #back-btn {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 50;
+  padding: 6px 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #fff;
+  background-color: #ff8f44;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 5px #000;
+  transition: all 0.2s;
+}
+
+#back-btn:hover {
+  background-color: #ff8f66;
+  transform: scale(1.05);
+}
+
+  canvas { display: block; }
+</style>
+</head>
+<body>
+
+<div id="game-wrapper">
+  <button id="back-btn">⬅ Back</button>
+  <div id="game-title">🐍 SNAKE</div>
+  <div id="game-border">
+    <div class="corner-tr"></div>
+    <div class="corner-bl"></div>
+  </div>
+</div>
+
+<script>
+document.getElementById("back-btn").addEventListener("click", () => {
+  window.location.href = "../index.html"; // go to parent folder
+});
+const W        = 400;
+const H        = 600;
+const TILE     = 20;
+const COLS     = W / TILE;    // 20
+const ROWS     = 20;
+const PLAY_TOP = 140;
+const PLAY_H   = ROWS * TILE; // 400
+
+const BASE_STEP = 150;  // ms per step at start
+const MIN_STEP  = 60;   // fastest possible
+const SPEED_DEC = 8;    // ms reduction per milestone
+const SPEED_INC = 3;    // every N cherries = speed up
+
+const WALL_TILES  = 20;  // total individual wall tiles to place
+const WALL_MAX_LEN = 5;  // max tiles per wall segment
+
+const DIR = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3 };
+const OPP = {
+  [DIR.UP]: DIR.DOWN, [DIR.DOWN]: DIR.UP,
+  [DIR.LEFT]: DIR.RIGHT, [DIR.RIGHT]: DIR.LEFT
+};
+
+class SnakeScene extends Phaser.Scene {
+  constructor() { super("SnakeScene"); }
+
+  preload() {
+    this.load.image("head1",     "assets/snakehead1.png");
+    this.load.image("head2",     "assets/snakehead2.png");
+    this.load.image("head3",     "assets/snakehead3.png");
+    this.load.image("body_v",    "assets/body.png");
+    this.load.image("body_turn", "assets/body_turn.png");
+    this.load.image("tail_v",    "assets/tail.png");
+    this.load.audio('eatSound', 'assets/eat.wav');
+    for (let i = 1; i <= 9; i++)
+      this.load.image("cherry" + i, "assets/Ciliegia" + i + ".png");
+  }
+
+  create() {
+    this.gameOver  = false;
+    this.started   = false;
+    this.score     = 0;
+    this.highScore = parseInt(localStorage.getItem("snakeHigh") || "0");
+    this.stepMs    = BASE_STEP;
+    this.moveTimer = 0;
+    this.curDir    = DIR.RIGHT;
+    this.nextDir   = DIR.RIGHT;
+    this.eatSfx = this.sound.add('eatSound');
+
+    this.add.rectangle(W / 2, H / 2, W, H, 0x0d0d1a);
+    this.drawGrid();
+    this.drawUIPanel();
+
+    this.scoreTxt = this.add.text(20, 60, "00000", {
+      fontFamily: "'Press Start 2P'", fontSize: "18px",
+      color: "#ffe259", stroke: "#000", strokeThickness: 4
+    }).setDepth(20);
+
+    this.highTxt = this.add.text(W - 20, 60,
+      "HI: " + String(this.highScore).padStart(5, "0"), {
+      fontFamily: "'Press Start 2P'", fontSize: "10px",
+      color: "#ffffff88", stroke: "#000", strokeThickness: 3
+    }).setOrigin(1, 0).setDepth(20);
+
+    this.speedTxt = this.add.text(W / 2, 20, "SPD 1", {
+      fontFamily: "'Press Start 2P'", fontSize: "9px",
+      color: "#38bdf8aa", stroke: "#000", strokeThickness: 3
+    }).setOrigin(0.5, 0).setDepth(20);
+
+    this.anims.create({
+      key: "head_anim",
+      frames: [
+        { key: "head1" }, { key: "head2" },
+        { key: "head3" }, { key: "head2" }
+      ],
+      frameRate: 8, repeat: -1
+    });
+
+    this.anims.create({
+      key: "cherry_anim",
+      frames: Array.from({ length: 9 }, (_, i) => ({ key: "cherry" + (i + 1) })),
+      frameRate: 10, repeat: -1
+    });
+
+    this.wallGraphics = this.add.graphics().setDepth(5);
+    this.snakeSprites = [];
+
+    this.initSnake();
+    this.spawnWalls();
+
+    this.cherry = this.add.sprite(0, 0, "cherry1").setDepth(8);
+    this.cherry.play("cherry_anim");
+    this.cherry.setDisplaySize(TILE, TILE);
+    this.spawnCherry();
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.wasd = this.input.keyboard.addKeys({
+      up:    Phaser.Input.Keyboard.KeyCodes.W,
+      down:  Phaser.Input.Keyboard.KeyCodes.S,
+      left:  Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+    });
+
+    this.showStartScreen();
+  }
+
+  // ─── Grid & UI ────────────────────────────────────────
+  drawGrid() {
+    const g = this.add.graphics().setDepth(1);
+    g.lineStyle(1, 0xffffff, 0.04);
+    for (let c = 0; c <= COLS; c++) {
+      g.moveTo(c * TILE, PLAY_TOP);
+      g.lineTo(c * TILE, PLAY_TOP + PLAY_H);
+    }
+    for (let r = 0; r <= ROWS; r++) {
+      g.moveTo(0, PLAY_TOP + r * TILE);
+      g.lineTo(W, PLAY_TOP + r * TILE);
+    }
+    g.strokePath();
+    const b = this.add.graphics().setDepth(2);
+    b.lineStyle(2, 0xffe259, 0.3);
+    b.strokeRect(0, PLAY_TOP, W, PLAY_H);
+  }
+
+  drawUIPanel() {
+    const p = this.add.graphics().setDepth(1);
+    p.fillStyle(0x000000, 0.4);
+    p.fillRect(0, 0, W, PLAY_TOP - 4);
+    this.add.text(20, 20, "SCORE", {
+      fontFamily: "'Press Start 2P'", fontSize: "9px", color: "#ffffff55"
+    }).setDepth(20);
+    this.add.text(W - 20, 20, "BEST", {
+      fontFamily: "'Press Start 2P'", fontSize: "9px", color: "#ffffff55"
+    }).setOrigin(1, 0).setDepth(20);
+    const bot = this.add.graphics().setDepth(1);
+    bot.fillStyle(0x000000, 0.3);
+    bot.fillRect(0, PLAY_TOP + PLAY_H, W, H - (PLAY_TOP + PLAY_H));
+    this.add.text(W / 2, PLAY_TOP + PLAY_H + 20, "← WASD or ARROWS →", {
+      fontFamily: "'Press Start 2P'", fontSize: "7px", color: "#ffffff33"
+    }).setOrigin(0.5, 0).setDepth(20);
+  }
+
+  tileX(col) { return col * TILE + TILE / 2; }
+  tileY(row) { return PLAY_TOP + row * TILE + TILE / 2; }
+
+  // ─── Walls ────────────────────────────────────────────
+
+  // BFS flood-fill: count reachable open tiles from (startC, startR) given a wall set
+  floodFill(wallSet, startC, startR) {
+    const visited = new Set();
+    const queue   = [`${startC},${startR}`];
+    visited.add(`${startC},${startR}`);
+    const neighbors = [[0,-1],[0,1],[-1,0],[1,0]];
+    while (queue.length) {
+      const key     = queue.shift();
+      const [c, r]  = key.split(",").map(Number);
+      for (const [dc, dr] of neighbors) {
+        const nc = c + dc, nr = r + dr;
+        if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) continue;
+        const nk = `${nc},${nr}`;
+        if (visited.has(nk) || wallSet.has(nk)) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    return visited.size;
+  }
+
+  spawnWalls() {
+    // Safe zone: snake starts at cols 5-7 row 10, keep buffer clear
+    const isSafe = (c, r) => (c >= 3 && c <= 11 && r >= 8 && r <= 12);
+
+    // Total open tiles without any walls
+    const totalOpen = COLS * ROWS;
+
+    let attempts = 0;
+    while (attempts < 200) {
+      attempts++;
+      const candidate = new Set();
+
+      // Place segments one at a time until we hit WALL_TILES total
+      let placementAttempts = 0;
+      while (candidate.size < WALL_TILES && placementAttempts < 2000) {
+        placementAttempts++;
+
+        const length     = Phaser.Math.Between(2, WALL_MAX_LEN);
+        const horizontal = Phaser.Math.Between(0, 1) === 1;
+        const col        = Phaser.Math.Between(1, COLS - 2);
+        const row        = Phaser.Math.Between(1, ROWS - 2);
+
+        // Build this segment's tiles
+        const tiles = [];
+        for (let k = 0; k < length; k++) {
+          const c = horizontal ? col + k : col;
+          const r = horizontal ? row     : row + k;
+          if (c < 0 || c >= COLS || r < 0 || r >= ROWS) continue;
+          if (isSafe(c, r))      continue;
+          if (candidate.has(`${c},${r}`)) continue; // no duplicates
+          tiles.push(`${c},${r}`);
+        }
+
+        // Enforce max 5 contiguous — check that adding these tiles won't
+        // merge with existing walls to form a group > WALL_MAX_LEN
+        if (tiles.length === 0) continue;
+
+        // Check none of these tiles are already in candidate (duplicates)
+        const anyDupe = tiles.some(t => candidate.has(t));
+        if (anyDupe) continue;
+
+        // Tentatively add
+        const testSet = new Set(candidate);
+        tiles.forEach(t => testSet.add(t));
+
+        // Validate connectivity group size for each new tile
+        let groupTooLarge = false;
+        for (const t of tiles) {
+          const [tc, tr] = t.split(",").map(Number);
+          // BFS within walls only to find connected wall group size
+          const groupSize = this.wallGroupSize(testSet, tc, tr);
+          if (groupSize > WALL_MAX_LEN) { groupTooLarge = true; break; }
+        }
+        if (groupTooLarge) continue;
+
+        // Commit segment
+        tiles.forEach(t => candidate.add(t));
+      }
+
+      if (candidate.size < WALL_TILES) continue; // didn't fill enough, retry
+
+      // Trim to exactly WALL_TILES if we overshot
+      const wallArr = Array.from(candidate);
+      while (wallArr.length > WALL_TILES) wallArr.pop();
+      const finalSet = new Set(wallArr);
+
+      // Flood-fill validation: all open tiles must still be reachable from snake start
+      const reachable = this.floodFill(finalSet, 7, 10);
+      const openTiles = totalOpen - finalSet.size;
+      if (reachable < openTiles) continue; // walls created an isolated pocket — retry
+
+      // Passed — commit
+      this.walls = finalSet;
+      this.drawWalls();
+      return;
+    }
+
+    // Fallback: no walls if we couldn't generate a valid layout
+    this.walls = new Set();
+    this.drawWalls();
+  }
+
+  // BFS within wall tiles only — returns size of the connected wall group containing (c,r)
+  wallGroupSize(wallSet, c, r) {
+    const visited = new Set();
+    const queue   = [`${c},${r}`];
+    visited.add(`${c},${r}`);
+    const neighbors = [[0,-1],[0,1],[-1,0],[1,0]];
+    while (queue.length) {
+      const key    = queue.shift();
+      const [cc, rr] = key.split(",").map(Number);
+      for (const [dc, dr] of neighbors) {
+        const nc = cc + dc, nr = rr + dr;
+        const nk = `${nc},${nr}`;
+        if (!visited.has(nk) && wallSet.has(nk)) {
+          visited.add(nk);
+          queue.push(nk);
+        }
+      }
+    }
+    return visited.size;
+  }
+
+  drawWalls() {
+    this.wallGraphics.clear();
+    this.walls.forEach(key => {
+      const [c, r] = key.split(",").map(Number);
+      const x = c * TILE;
+      const y = PLAY_TOP + r * TILE;
+
+      // Dark fill
+      this.wallGraphics.fillStyle(0x0f172a, 1);
+      this.wallGraphics.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
+
+      // Cyan glowing border
+      this.wallGraphics.lineStyle(1.5, 0x38bdf8, 0.9);
+      this.wallGraphics.strokeRect(x + 1, y + 1, TILE - 2, TILE - 2);
+
+      // Inner cross detail
+      this.wallGraphics.lineStyle(1, 0x38bdf8, 0.2);
+      this.wallGraphics.beginPath();
+      this.wallGraphics.moveTo(x + 2,        y + TILE / 2);
+      this.wallGraphics.lineTo(x + TILE - 2, y + TILE / 2);
+      this.wallGraphics.moveTo(x + TILE / 2, y + 2);
+      this.wallGraphics.lineTo(x + TILE / 2, y + TILE - 2);
+      this.wallGraphics.strokePath();
+    });
+  }
+
+  isWall(col, row) { return this.walls.has(`${col},${row}`); }
+
+  // ─── Snake ────────────────────────────────────────────
+  initSnake() {
+    if (this.snakeSprites) this.snakeSprites.forEach(s => s.destroy());
+    this.snakeSprites = [];
+    this.body = [
+      { col: 7, row: 10 },
+      { col: 6, row: 10 },
+      { col: 5, row: 10 },
+    ];
+    this.buildSprites();
+  }
+
+  buildSprites() {
+    this.snakeSprites.forEach(s => s.destroy());
+    this.snakeSprites = [];
+    const len = this.body.length;
+
+    for (let i = 0; i < len; i++) {
+      const seg = this.body[i];
+      const x   = this.tileX(seg.col);
+      const y   = this.tileY(seg.row);
+      let spr;
+
+      if (i === 0) {
+        spr = this.add.sprite(x, y, "head1").setDepth(10);
+        spr.play("head_anim");
+        spr.setDisplaySize(TILE, TILE);
+        spr.setAngle(this.headAngle(this.curDir));
+
+      } else if (i === len - 1) {
+        const prev    = this.body[len - 2];
+        const tailDir = this.segDir(prev, seg);
+        spr = this.add.image(x, y, "tail_v").setDepth(9);
+        spr.setDisplaySize(TILE, TILE);
+        spr.setAngle(this.tailAngle(tailDir));
+
+      } else {
+        const fromDir    = this.segDir(seg, this.body[i - 1]);
+        const toDir      = this.segDir(seg, this.body[i + 1]);
+        const isStraight = toDir === OPP[fromDir];
+
+        if (isStraight) {
+          spr = this.add.image(x, y, "body_v").setDepth(9);
+          spr.setDisplaySize(TILE, TILE);
+          spr.setAngle((fromDir === DIR.LEFT || fromDir === DIR.RIGHT) ? 90 : 0);
+        } else {
+          spr = this.add.image(x, y, "body_turn").setDepth(9);
+          spr.setDisplaySize(TILE, TILE);
+          spr.setAngle(this.turnAngle(fromDir, toDir));
+        }
+      }
+
+      this.snakeSprites.push(spr);
+    }
+  }
+
+  segDir(a, b) {
+    const dc = b.col - a.col, dr = b.row - a.row;
+    if (dr < 0) return DIR.UP;
+    if (dr > 0) return DIR.DOWN;
+    if (dc < 0) return DIR.LEFT;
+    return DIR.RIGHT;
+  }
+
+  headAngle(dir) {
+    switch (dir) {
+      case DIR.DOWN:  return 0;
+      case DIR.LEFT:  return 90;
+      case DIR.UP:    return 180;
+      case DIR.RIGHT: return 270;
+    }
+  }
+
+  tailAngle(dir) {
+    switch (dir) {
+      case DIR.DOWN:  return 0;
+      case DIR.LEFT:  return 90;
+      case DIR.UP:    return 180;
+      case DIR.RIGHT: return 270;
+    }
+  }
+
+  // body_turn 0° = ┘  (North + West open)
+  turnAngle(fromDir, toDir) {
+    const U = DIR.UP, R = DIR.RIGHT, D = DIR.DOWN, L = DIR.LEFT;
+    if ((fromDir===L && toDir===U)||(fromDir===U && toDir===L)) return 0;   // ┘
+    if ((fromDir===R && toDir===U)||(fromDir===U && toDir===R)) return 90;  // └
+    if ((fromDir===R && toDir===D)||(fromDir===D && toDir===R)) return 180; // ┌
+    if ((fromDir===L && toDir===D)||(fromDir===D && toDir===L)) return 270; // ┐
+    return 0;
+  }
+
+  // ─── Cherry ───────────────────────────────────────────
+  spawnCherry() {
+    let col, row, occupied;
+    do {
+      col      = Phaser.Math.Between(0, COLS - 1);
+      row      = Phaser.Math.Between(0, ROWS - 1);
+      occupied = this.body.some(s => s.col === col && s.row === row)
+              || this.isWall(col, row);
+    } while (occupied);
+    this.cherryPos = { col, row };
+    this.cherry.setPosition(this.tileX(col), this.tileY(row));
+  }
+
+  // ─── Screens ──────────────────────────────────────────
+  showStartScreen() {
+    this.overlay = this.add.rectangle(
+      W / 2, PLAY_TOP + PLAY_H / 2, W, PLAY_H, 0x000000, 0.65
+    ).setDepth(30);
+
+    this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 - 70, "🐍 SNAKE", {
+      fontFamily: "'Press Start 2P'", fontSize: "22px",
+      color: "#ffe259", stroke: "#000", strokeThickness: 5
+    }).setOrigin(0.5).setDepth(31);
+
+    this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 - 10, "Avoid walls +\nyour own tail!", {
+      fontFamily: "'Press Start 2P'", fontSize: "9px",
+      color: "#38bdf8", stroke: "#000", strokeThickness: 3, align: "center"
+    }).setOrigin(0.5).setDepth(31);
+
+    this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 55,
+      "Press any key\nor tap to start", {
+      fontFamily: "'Press Start 2P'", fontSize: "10px",
+      color: "#fff", stroke: "#000", strokeThickness: 3, align: "center"
+    }).setOrigin(0.5).setDepth(31);
+
+    this.input.keyboard.once("keydown", () => this.startGame());
+    this.input.once("pointerdown",       () => this.startGame());
+  }
+
+  startGame() {
+    if (this.overlay) { this.overlay.destroy(); this.overlay = null; }
+    this.children.list.filter(c => c.depth === 31).forEach(c => c.destroy());
+    this.started = true;
+  }
+
+  // ─── Game Loop ────────────────────────────────────────
+  update(time, delta) {
+    if (this.cursors.up.isDown    || this.wasd.up.isDown)    this.tryDir(DIR.UP);
+    if (this.cursors.down.isDown  || this.wasd.down.isDown)  this.tryDir(DIR.DOWN);
+    if (this.cursors.left.isDown  || this.wasd.left.isDown)  this.tryDir(DIR.LEFT);
+    if (this.cursors.right.isDown || this.wasd.right.isDown) this.tryDir(DIR.RIGHT);
+
+    if (!this.started || this.gameOver) return;
+
+    this.moveTimer += delta;
+    if (this.moveTimer < this.stepMs) return;
+    this.moveTimer = 0;
+    this.step();
+  }
+
+  tryDir(dir) {
+    if (dir !== OPP[this.curDir]) this.nextDir = dir;
+  }
+
+  step() {
+    this.curDir = this.nextDir;
+
+    const head = this.body[0];
+    let nc = head.col, nr = head.row;
+    switch (this.curDir) {
+      case DIR.UP:    nr--; break;
+      case DIR.DOWN:  nr++; break;
+      case DIR.LEFT:  nc--; break;
+      case DIR.RIGHT: nc++; break;
+    }
+
+    // Border collision
+    if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) { this.endGame(); return; }
+
+    // Wall collision
+    if (this.isWall(nc, nr)) { this.endGame(); return; }
+
+    // Self collision
+    for (let i = 0; i < this.body.length - 1; i++) {
+      if (this.body[i].col === nc && this.body[i].row === nr) { this.endGame(); return; }
+    }
+
+    const atCherry = nc === this.cherryPos.col && nr === this.cherryPos.row;
+
+    this.body.unshift({ col: nc, row: nr });
+
+    if (atCherry) {
+      this.score++;
+      this.spawnCherry();
+      this.eatSfx.play();
+
+      // Speed up every SPEED_INC cherries
+      if (this.score % SPEED_INC === 0 && this.stepMs > MIN_STEP) {
+        this.stepMs = Math.max(MIN_STEP, this.stepMs - SPEED_DEC);
+        const spd = Math.round((BASE_STEP - this.stepMs) / SPEED_DEC) + 1;
+        this.speedTxt.setText("SPD " + spd);
+        this.tweens.add({
+          targets: this.speedTxt, scaleX: 1.5, scaleY: 1.5,
+          duration: 120, yoyo: true, ease: "Quad.easeOut"
+        });
+      }
+    } else {
+      this.body.pop();
+    }
+
+    // Snap to grid — no tweening
+    this.buildSprites();
+
+    this.scoreTxt.setText(String(this.score).padStart(5, "0"));
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem("snakeHigh", this.highScore);
+      this.highTxt.setText("HI: " + String(this.highScore).padStart(5, "0"));
+    }
+  }
+
+  endGame() {
+    if (this.gameOver) return;
+    this.gameOver = true;
+    this.snakeSprites.forEach(s => s.setTint(0xff4444));
+
+    this.time.delayedCall(400, () => {
+      this.add.rectangle(
+        W / 2, PLAY_TOP + PLAY_H / 2, W, PLAY_H, 0x000000, 0.7
+      ).setDepth(30);
+
+      this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 - 70, "GAME OVER", {
+        fontFamily: "'Press Start 2P'", fontSize: "20px",
+        color: "#ff4444", stroke: "#000", strokeThickness: 5
+      }).setOrigin(0.5).setDepth(31);
+
+      this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 - 20, "Score: " + this.score, {
+        fontFamily: "'Press Start 2P'", fontSize: "13px",
+        color: "#ffe259", stroke: "#000", strokeThickness: 3
+      }).setOrigin(0.5).setDepth(31);
+
+      if (this.score >= this.highScore && this.score > 0) {
+        this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 15, "🏆 NEW BEST!", {
+          fontFamily: "'Press Start 2P'", fontSize: "10px",
+          color: "#ffe259", stroke: "#000", strokeThickness: 3
+        }).setOrigin(0.5).setDepth(31);
+      }
+
+      this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 55, "Tap to Restart", {
+        fontFamily: "'Press Start 2P'", fontSize: "10px",
+        color: "#fff", stroke: "#000", strokeThickness: 3
+      }).setOrigin(0.5).setDepth(31);
+
+      this.input.keyboard.once("keydown", () => this.scene.restart());
+      this.input.once("pointerdown",       () => this.scene.restart());
+    });
+  }
+}
+
+const config = {
+  type:   Phaser.AUTO,
+  width:  W, height: H,
+  parent: "game-border",
+  backgroundColor: "#0d0d1a",
+  physics: { default: "arcade", arcade: { debug: false } },
+  scene:  SnakeScene
+};
+
+new Phaser.Game(config);
+</script>
+</body>
+</html>
