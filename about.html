@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>👾 About Me — Game Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:    #ffe259;
+    --orange:  #ffa751;
+    --red:     #ff6b6b;
+    --purple:  #a855f7;
+    --cyan:    #38bdf8;
+    --dark:    #1a0a2e;
+    --card-bg: #12082a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: var(--dark);
+    background-image:
+      radial-gradient(ellipse at 15% 50%, #2d1b6988 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 15%, #11998e22 0%, transparent 45%);
+    font-family: 'Press Start 2P', monospace;
+    color: #fff;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none; z-index: 999;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 20px 0;
+    flex-wrap: wrap;
+  }
+  nav a {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px; color: #ffffff88;
+    text-decoration: none;
+    padding: 8px 14px;
+    border: 1px solid #ffffff22; border-radius: 2px;
+    letter-spacing: 1px;
+    transition: color 0.2s, border-color 0.2s, text-shadow 0.2s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--gold); border-color: var(--gold);
+    text-shadow: 0 0 10px var(--gold);
+  }
+
+  /* ── PAGE HEADER ── */
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .page-tag {
+    font-size: 9px; color: var(--cyan);
+    letter-spacing: 3px; opacity: 0.7;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(16px, 3vw, 22px);
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px; line-height: 1.5;
+    filter: drop-shadow(0 0 16px #38bdf855);
+  }
+  .header-divider {
+    margin: 18px auto 0; width: 160px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), var(--purple), transparent);
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px clamp(16px, 5vw, 40px) 20px;
+    width: 100%;
+  }
+
+  /* ── PROFILE CARD ── */
+  .profile-card {
+    position: relative;
+    padding: 4px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--cyan), var(--purple), var(--gold));
+    box-shadow: 0 0 40px #38bdf833, 0 0 80px #a855f722;
+    margin-bottom: 32px;
+    animation: cardIn 0.6s ease both;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .profile-inner {
+    background: var(--card-bg);
+    border-radius: 4px;
+    padding: 36px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .avatar {
+    flex-shrink: 0;
+    width: 100px; height: 100px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #1e0b3e, #0f1a3a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 52px;
+    border: 2px solid var(--purple);
+    box-shadow: 0 0 20px #a855f744;
+  }
+
+  .profile-text { flex: 1; min-width: 200px; }
+
+  .profile-name {
+    font-size: 14px; color: var(--gold);
+    text-shadow: 0 0 10px #ffe25966;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+
+  .profile-role {
+    font-size: 8px; color: var(--cyan);
+    letter-spacing: 2px; margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  .profile-bio {
+    font-size: 7px; color: #ffffffbb;
+    line-height: 2.4; letter-spacing: 0.5px;
+  }
+
+  /* ── STAT BARS ── */
+  .stats-section {
+    margin-bottom: 32px;
+    animation: cardIn 0.6s ease 0.1s both;
+  }
+
+  .section-title {
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  .stat-row {
+    display: flex; align-items: center;
+    gap: 12px; margin-bottom: 14px;
+  }
+  .stat-label {
+    font-size: 7px; color: #ffffffaa;
+    letter-spacing: 1px; width: 130px; flex-shrink: 0;
+  }
+  .stat-bar-wrap {
+    flex: 1; height: 10px;
+    background: #ffffff11;
+    border-radius: 2px; overflow: hidden;
+    border: 1px solid #ffffff11;
+  }
+  .stat-bar {
+    height: 100%;
+    border-radius: 2px;
+    animation: barGrow 1s ease both;
+    transform-origin: left;
+  }
+  @keyframes barGrow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  .stat-bar.gold   { background: linear-gradient(90deg, var(--gold), var(--orange)); }
+  .stat-bar.cyan   { background: linear-gradient(90deg, var(--cyan), var(--purple)); }
+  .stat-bar.red    { background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .stat-bar.purple { background: linear-gradient(90deg, var(--purple), var(--cyan)); }
+
+  .stat-val {
+    font-size: 7px; color: var(--gold);
+    width: 32px; text-align: right; flex-shrink: 0;
+  }
+
+  /* ── HOBBY CARDS ── */
+  .hobbies-section {
+    margin-bottom: 32px;
+    animation: cardIn 0.6s ease 0.2s both;
+  }
+
+  .hobby-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .hobby-card {
+    background: var(--card-bg);
+    border: 1px solid #ffffff11;
+    border-radius: 4px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+  .hobby-card:hover {
+    border-color: var(--purple);
+    box-shadow: 0 0 16px #a855f733;
+    transform: translateY(-4px);
+  }
+  .hobby-icon { font-size: 28px; margin-bottom: 12px; }
+  .hobby-name {
+    font-size: 7px; color: #ffffffcc;
+    letter-spacing: 1px; line-height: 1.8;
+  }
+
+  /* ── SUPPORT BOX ── */
+  .support-section {
+    animation: cardIn 0.6s ease 0.3s both;
+    margin-bottom: 10px;
+  }
+
+  .support-box {
+    position: relative;
+    padding: 4px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--gold), var(--orange), var(--red), var(--purple), var(--cyan));
+    box-shadow: 0 0 30px #ffe25933;
+  }
+  .support-inner {
+    background: var(--card-bg);
+    border-radius: 4px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .support-title {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 16px;
+    text-shadow: 0 0 10px #ffe25966;
+  }
+  .support-text {
+    font-size: 7px; color: #ffffffaa;
+    line-height: 2.4; letter-spacing: 0.5px;
+    max-width: 500px; margin: 0 auto 24px;
+  }
+  .support-text span { color: var(--gold); }
+
+  .kofi-wrap { display: flex; justify-content: center; }
+
+  /* ── FOOTER ── */
+  .footer-nav {
+    display: flex; justify-content: center;
+    gap: 20px; flex-wrap: wrap;
+    padding: 40px 20px 16px;
+    margin-top: auto;
+  }
+  .footer-nav a {
+    font-size: 7px; color: #ffffff44;
+    text-decoration: none; letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  .footer-nav a:hover { color: var(--gold); }
+
+  footer {
+    text-align: center;
+    padding: 8px 24px 28px;
+    font-size: 7px; color: #ffffff22; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">🕹️ Games</a>
+  <a href="about.html" class="active">👾 About Me</a>
+  <a href="credits.html">📜 Credits</a>
+</nav>
+
+<header>
+  <div class="page-tag">— Player Profile —</div>
+  <h1>👾 ABOUT ME</h1>
+  <div class="header-divider"></div>
+</header>
+
+<main>
+
+  <!-- Profile -->
+  <div class="profile-card">
+    <div class="profile-inner">
+      <div class="avatar">👾</div>
+      <div class="profile-text">
+        <div class="profile-name">MizuKitty25</div>
+        <div class="profile-role">// HOBBYIST · GAME DEVELOPER · PLAYER</div>
+        <p class="profile-bio">
+          Hey there! I'm just someone who loves games and decided to try making them.
+          I'm completely new to game development — still learning, still experimenting,
+          and having a lot of fun along the way. Everything you see here is a passion
+          project built in my free time. No pressure, just pure love for games. 🎮
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill bars -->
+  <div class="stats-section">
+    <div class="section-title">⚡ SKILL LEVELS</div>
+    <div class="stat-row">
+      <span class="stat-label">Game Dev</span>
+      <div class="stat-bar-wrap"><div class="stat-bar gold" style="width:30%"></div></div>
+      <span class="stat-val">LV 3</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Enthusiasm</span>
+      <div class="stat-bar-wrap"><div class="stat-bar cyan" style="width:100%"></div></div>
+      <span class="stat-val">MAX</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Playing Games</span>
+      <div class="stat-bar-wrap"><div class="stat-bar red" style="width:90%"></div></div>
+      <span class="stat-val">LV 9</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Learning Speed</span>
+      <div class="stat-bar-wrap"><div class="stat-bar purple" style="width:75%"></div></div>
+      <span class="stat-val">LV 7</span>
+    </div>
+  </div>
+
+  <!-- Hobbies -->
+  <div class="hobbies-section">
+    <div class="section-title">🎯 HOBBIES</div>
+    <div class="hobby-grid">
+      <div class="hobby-card">
+        <div class="hobby-icon">🎮</div>
+        <div class="hobby-name">Playing<br>Video Games</div>
+      </div>
+      <div class="hobby-card">
+        <div class="hobby-icon">🛠️</div>
+        <div class="hobby-name">Building<br>Small Games</div>
+      </div>
+      <div class="hobby-card">
+        <div class="hobby-icon">📚</div>
+        <div class="hobby-name">Learning<br>New Skills</div>
+      </div>
+      <div class="hobby-card">
+        <div class="hobby-icon">🎵</div>
+        <div class="hobby-name">Listening<br>to Music</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Support -->
+  <div class="support-section">
+    <div class="support-box">
+      <div class="support-inner">
+        <div class="support-title">☕ SUPPORT MY JOURNEY</div>
+        <p class="support-text">
+          All my games are <span>completely free</span> to play — no ads, no paywalls, no tricks.
+          I make these just for fun and to keep improving.<br><br>
+          But if you enjoy what I make and want to cheer me on,
+          buying me a coffee would honestly make my day and help me
+          keep building more! <span>Every bit of support means a lot. 💛</span>
+        </p>
+        <div class="kofi-wrap">
+          <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+          <script type='text/javascript'>
+            kofiwidget2.init('Support Me on Ko-fi', '#c98a2b', 'O4O51WSVWX');
+            kofiwidget2.draw();
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="footer-nav">
+  <a href="index.html">🕹️ Games</a>
+  <a href="about.html">👾 About Me</a>
+  <a href="credits.html">📜 Credits</a>
+</div>
+<footer>© GAME ARCADE &nbsp;·&nbsp; FREE TO PLAY &nbsp;·&nbsp; MADE WITH ❤️</footer>
+
+</body>
+</html>

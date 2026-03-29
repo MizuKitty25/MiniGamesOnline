@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Flappy Bird</title>
 <link rel="icon" type="image/png" href="assets/bird1.png">
+
 <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -20,6 +21,28 @@
       radial-gradient(ellipse at 20% 50%, #2d1b69 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, #11998e22 0%, transparent 40%);
   }
+  
+  #back-btn {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 50;
+  padding: 6px 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #fff;
+  background-color: #ff8f44;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 5px #000;
+  transition: all 0.2s;
+}
+
+#back-btn:hover {
+  background-color: #ff8f66;
+  transform: scale(1.05);
+}
 
   /* ── Outer glowing border wrapper ── */
   #game-wrapper {
@@ -97,6 +120,7 @@
 <body>
 
 <div id="game-wrapper">
+  <button id="back-btn">⬅ Back</button>
   <div id="game-title">🐦 FLAPPY BIRD</div>
   <div id="game-border">
     <div class="corner-tr"></div>
@@ -106,6 +130,10 @@
 </div>
 
 <script>
+
+  document.getElementById("back-btn").addEventListener("click", () => {
+  window.location.href = "../index.html"; // go to parent folder
+});
 class FlappyScene extends Phaser.Scene {
 
   constructor(){ super("FlappyScene"); }
@@ -366,6 +394,8 @@ const config = {
 };
 
 new Phaser.Game(config);
+
+
 </script>
 </body>
 </html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📜 Credits — Game Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:    #ffe259;
+    --orange:  #ffa751;
+    --red:     #ff6b6b;
+    --purple:  #a855f7;
+    --cyan:    #38bdf8;
+    --dark:    #1a0a2e;
+    --card-bg: #12082a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: var(--dark);
+    background-image:
+      radial-gradient(ellipse at 20% 40%, #2d1b6966 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 70%, #11998e1a 0%, transparent 45%);
+    font-family: 'Press Start 2P', monospace;
+    color: #fff;
+    overflow-x: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none; z-index: 999;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex; justify-content: center;
+    gap: 8px; padding: 20px 20px 0; flex-wrap: wrap;
+  }
+  nav a {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px; color: #ffffff88;
+    text-decoration: none;
+    padding: 8px 14px;
+    border: 1px solid #ffffff22; border-radius: 2px;
+    letter-spacing: 1px;
+    transition: color 0.2s, border-color 0.2s, text-shadow 0.2s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--gold); border-color: var(--gold);
+    text-shadow: 0 0 10px var(--gold);
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .page-tag {
+    font-size: 9px; color: var(--orange);
+    letter-spacing: 3px; opacity: 0.7; margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(16px, 3vw, 22px);
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px; line-height: 1.5;
+    filter: drop-shadow(0 0 16px #ffe25955);
+  }
+  .header-divider {
+    margin: 18px auto 0; width: 160px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), var(--orange), transparent);
+  }
+  .header-sub {
+    margin-top: 14px; font-size: 7px;
+    color: #ffffff55; letter-spacing: 1px; line-height: 2;
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px clamp(16px, 5vw, 40px) 20px;
+    width: 100%;
+  }
+
+  /* ── GAME SECTION ── */
+  .game-section {
+    margin-bottom: 36px;
+    animation: cardIn 0.5s ease both;
+  }
+  .game-section:nth-child(2) { animation-delay: 0.1s; }
+  .game-section:nth-child(3) { animation-delay: 0.2s; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .game-label {
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .game-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  /* ── CREDIT CARD ── */
+  .credit-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: var(--card-bg);
+    border: 1px solid #ffffff0f;
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .credit-card:hover {
+    border-color: var(--orange);
+    box-shadow: 0 0 16px #ffa75122;
+  }
+
+  .credit-icon {
+    font-size: 22px; flex-shrink: 0;
+    width: 40px; text-align: center; margin-top: 2px;
+  }
+
+  .credit-body { flex: 1; }
+
+  .credit-name {
+    font-size: 8px; color: #fff;
+    letter-spacing: 1px; margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .credit-meta {
+    font-size: 6px; color: #ffffff55;
+    letter-spacing: 1px; line-height: 2;
+    margin-bottom: 8px;
+  }
+
+  .credit-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .tag {
+    font-size: 6px; padding: 3px 8px;
+    border-radius: 2px; letter-spacing: 1px;
+  }
+  .tag.free    { background: #16a34a22; color: #4ade80; border: 1px solid #4ade8033; }
+  .tag.cc0     { background: #0891b222; color: var(--cyan); border: 1px solid #38bdf833; }
+  .tag.sprite  { background: #7c3aed22; color: var(--purple); border: 1px solid #a855f733; }
+  .tag.audio   { background: #dc262622; color: var(--red); border: 1px solid #ff6b6b33; }
+  .tag.font    { background: #d9770622; color: var(--orange); border: 1px solid #ffa75133; }
+  .tag.bg      { background: #0f766e22; color: #2dd4bf; border: 1px solid #2dd4bf33; }
+
+  .credit-link {
+    font-size: 6px; color: var(--cyan);
+    text-decoration: none; letter-spacing: 1px;
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 4px;
+    transition: color 0.2s;
+  }
+  .credit-link:hover { color: var(--gold); }
+
+  /* ── THANK YOU BOX ── */
+  .thanks-box {
+    position: relative;
+    padding: 4px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--gold), var(--orange), var(--purple), var(--cyan));
+    margin-bottom: 10px;
+    animation: cardIn 0.5s ease 0.3s both;
+  }
+  .thanks-inner {
+    background: var(--card-bg);
+    border-radius: 4px; padding: 28px 24px;
+    text-align: center;
+  }
+  .thanks-icon { font-size: 28px; margin-bottom: 12px; }
+  .thanks-title {
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 14px;
+  }
+  .thanks-text {
+    font-size: 7px; color: #ffffffaa;
+    line-height: 2.4; letter-spacing: 0.5px;
+    max-width: 500px; margin: 0 auto;
+  }
+
+  /* ── FOOTER ── */
+  .footer-nav {
+    display: flex; justify-content: center;
+    gap: 20px; flex-wrap: wrap;
+    padding: 40px 20px 16px;
+    margin-top: auto;
+  }
+  .footer-nav a {
+    font-size: 7px; color: #ffffff44;
+    text-decoration: none; letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  .footer-nav a:hover { color: var(--gold); }
+
+  footer {
+    text-align: center;
+    padding: 8px 24px 28px;
+    font-size: 7px; color: #ffffff22; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">🕹️ Games</a>
+  <a href="about.html">👾 About Me</a>
+  <a href="credits.html" class="active">📜 Credits</a>
+</nav>
+
+<header>
+  <div class="page-tag">— Asset Attributions —</div>
+  <h1>📜 CREDITS</h1>
+  <div class="header-divider"></div>
+  <p class="header-sub">
+    Big thanks to all the amazing creators who share<br>
+    their work freely for others to learn and build with.
+  </p>
+</header>
+
+<main>
+
+  <!-- FLAPPY BIRD -->
+  <div class="game-section">
+    <div class="game-label">🐦 FLAPPY BIRD</div>
+
+    <!-- Placeholder credits — replace with your actual asset sources -->
+    <a class="credit-card" href="#" target="_blank">
+      <div class="credit-icon">🐦</div>
+      <div class="credit-body">
+        <div class="credit-name">Bird · Background · Pipe · Ground</div>
+        <div class="credit-meta">Artist: Gufiao Studios </div>
+        <div class="credit-tags">
+          <span class="tag free">FREE</span>
+          <span class="tag sprite">SPRITE</span>
+          <span class="tag cc0">CC0</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="credit-card" href="#" target="_blank">
+      <div class="credit-icon">☁️</div>
+      <div class="credit-body">
+        <div class="credit-name">Cloud Sprite</div>
+        <div class="credit-meta">Artist: Gabl </div>
+        <div class="credit-tags">
+          <span class="tag free">FREE</span>
+          <span class="tag sprite">SPRITE</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- TOOLS & LIBRARIES -->
+  <div class="game-section">
+    <div class="game-label">🔧 TOOLS & LIBRARIES</div>
+
+    <a class="credit-card" href="https://phaser.io" target="_blank">
+      <div class="credit-icon">⚙️</div>
+      <div class="credit-body">
+        <div class="credit-name">Phaser 3 — Game Framework</div>
+        <div class="credit-meta">By Photon Storm &nbsp;·&nbsp; phaser.io</div>
+        <div class="credit-tags">
+          <span class="tag free">FREE</span>
+          <span class="tag cc0">MIT LICENSE</span>
+        </div>
+        <a href="https://phaser.io" class="credit-link" target="_blank">🔗 phaser.io</a>
+      </div>
+    </a>
+
+    <a class="credit-card" href="https://fonts.google.com/specimen/Press+Start+2P" target="_blank">
+      <div class="credit-icon">🔤</div>
+      <div class="credit-body">
+        <div class="credit-name">Press Start 2P — Font</div>
+        <div class="credit-meta">By CodeMan38 &nbsp;·&nbsp; Google Fonts</div>
+        <div class="credit-tags">
+          <span class="tag free">FREE</span>
+          <span class="tag font">FONT</span>
+          <span class="tag cc0">OFL LICENSE</span>
+        </div>
+        <a href="https://fonts.google.com/specimen/Press+Start+2P" class="credit-link" target="_blank">🔗 Google Fonts</a>
+      </div>
+    </a>
+
+    <a class="credit-card" href="https://ko-fi.com" target="_blank">
+      <div class="credit-icon">☕</div>
+      <div class="credit-body">
+        <div class="credit-name">Ko-fi — Donation Platform</div>
+        <div class="credit-meta">ko-fi.com</div>
+        <div class="credit-tags">
+          <span class="tag free">FREE</span>
+        </div>
+        <a href="https://ko-fi.com" class="credit-link" target="_blank">🔗 ko-fi.com</a>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- THANK YOU -->
+  <div class="thanks-box">
+    <div class="thanks-inner">
+      <div class="thanks-icon">🙏</div>
+      <div class="thanks-title">THANK YOU</div>
+      <p class="thanks-text">
+        To every artist, developer, and creator who shares their work freely —
+        you make it possible for beginners like me to learn, build, and grow.
+        This whole project wouldn't exist without your generosity.
+        From the bottom of my heart, thank you. 💛
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<div class="footer-nav">
+  <a href="index.html">🕹️ Games</a>
+  <a href="about.html">👾 About Me</a>
+  <a href="credits.html">📜 Credits</a>
+</div>
+<footer>© GAME ARCADE &nbsp;·&nbsp; FREE TO PLAY &nbsp;·&nbsp; MADE WITH ❤️</footer>
+
+</body>
+</html>
