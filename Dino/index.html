@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="https://schema.org/VideoGame">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dino Run – Endless Runner Arcade Game</title>
+<meta name="description" content="An endless runner dino game. Jump over obstacles across 4 seasons – Spring, Summer, Autumn and Winter. Free browser game, no download needed.">
+<meta name="robots" content="index, follow">
+<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a0a2e;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, #2d1b69 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, #11998e22 0%, transparent 40%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  #game-wrapper {
+    position: relative;
+    padding: 8px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffe259, #ffa751, #ff6b6b, #a855f7, #38bdf8);
+    box-shadow: 0 0 30px #ffe25966, 0 0 60px #a855f733;
+    animation: borderPulse 3s ease-in-out infinite alternate;
+    width: min(820px, 100vw);
+    max-width: 100%;
+  }
+
+  @keyframes borderPulse {
+    from { box-shadow: 0 0 20px #ffe25955, 0 0 40px #a855f722; }
+    to   { box-shadow: 0 0 40px #ffe259aa, 0 0 80px #a855f755, 0 0 120px #38bdf833; }
+  }
+
+  #game-inner {
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    background: #0d0d1a;
+    width: 800px;
+    height: 400px;
+    margin: 0 auto;
+  }
+
+  #game-inner::before, #game-inner::after,
+  .corner-tr, .corner-bl {
+    content: '';
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: #ffe259;
+    border-style: solid;
+    z-index: 100;
+    pointer-events: none;
+  }
+  #game-inner::before { top: 0; left: 0; border-width: 4px 0 0 4px; }
+  #game-inner::after  { bottom: 0; right: 0; border-width: 0 4px 4px 0; }
+  .corner-tr { top: 0; right: 0; border-width: 4px 4px 0 0; }
+  .corner-bl { bottom: 0; left: 0; border-width: 0 0 4px 4px; }
+
+  #game-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: #ffe259;
+    text-align: center;
+    padding: 10px 0 8px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ffe25988, 2px 2px 0 #a855f7;
+  }
+
+  #back-btn {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 50;
+    padding: 6px 14px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    background-color: #ff8f44;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 5px #000;
+    transition: all 0.2s;
+  }
+  #back-btn:hover { background-color: #ff8f66; transform: scale(1.05); }
+
+  #jump-btn {
+    display: none;
+    margin-top: 15px;
+    padding: 16px 50px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: #1a0a2e;
+    background: linear-gradient(135deg, #ffe259, #ffa751);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px #ffe25966;
+    transition: transform 0.1s;
+    user-select: none;
+  }
+  #jump-btn:active { transform: scale(0.95); }
+
+  @media (max-width: 820px) {
+    #jump-btn { display: block; }
+    #game-wrapper {
+      width: 100vw;
+      border-radius: 0;
+      padding: 4px;
+    }
+    #game-inner {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 800 / 400;
+    }
+  }
+
+  canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  #dino-selector-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    pointer-events: all;
+  }
+  #dino-selector-overlay.active { display: flex; }
+
+  .dino-selector-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: #ffe259;
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+  }
+
+  #dino-cards {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dino-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 130px;
+    padding: 14px 8px 10px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: rgba(255,255,255,0.07);
+    transition: border-color 0.2s, background 0.2s;
+    gap: 8px;
+    position: relative;
+  }
+  .dino-card:hover:not(.locked) { background: rgba(255,255,255,0.16); }
+  .dino-card.selected { border-color: #ffe259; background: rgba(255,226,89,0.12); }
+  .dino-card.locked { cursor: not-allowed; opacity: 0.45; filter: grayscale(0.7); }
+  .dino-card canvas { image-rendering: pixelated; }
+
+  .dino-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: #fff;
+    text-align: center;
+  }
+  .dino-lock {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    color: #ff8866;
+    text-align: center;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .dino-checkmark {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    color: #ffe259;
+    font-size: 13px;
+  }
+
+  #dino-select-close {
+    margin-top: 20px;
+    padding: 10px 32px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    background: #ffe259;
+    color: #1a0a2e;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  #dino-select-close:hover { transform: scale(1.05); }
+  #dino-select-close:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+
+<div id="game-wrapper" role="main" aria-label="Dino Run Game">
+  <button id="back-btn" aria-label="Back to game menu">⬅ Back</button>
+  <div id="game-title">🦕 DINO RUN</div>
+  <div id="game-inner" role="application" aria-label="Dino runner game canvas">
+    <div class="corner-tr"></div>
+    <div class="corner-bl"></div>
+    <div id="dino-selector-overlay">
+      <div class="dino-selector-title">SELECT YOUR DINO</div>
+      <div id="dino-cards"></div>
+      <button id="dino-select-close">CONFIRM</button>
+    </div>
+  </div>
+</div>
+<button id="jump-btn" aria-label="Jump">▲ JUMP</button>
+
+<script>
+document.getElementById("back-btn").addEventListener("click", () => {
+  window.location.href = "../index.html";
+});
+
+// ─── Audio ───────────────────────────────────────────────
+const sfxJump   = new Audio("assets/sfx/jump.wav");
+const sfxTwenk  = new Audio("assets/sfx/twenk.mp3");
+sfxJump.volume  = 0.6;
+sfxTwenk.volume = 0.7;
+
+function playJump() {
+  sfxJump.currentTime = 0;
+  sfxJump.play().catch(() => {});
+}
+
+function playTwenk() {
+  sfxTwenk.currentTime = 0;
+  sfxTwenk.play().catch(() => {});
+}
+
+// ─── Character Definitions ───────────────────────────────
+const DINO_CHARS = [
+  { id: "green",      label: "GREEN",       unlockScore: 0   },
+  { id: "purple",     label: "PURPLE",      unlockScore: 300 },
+  { id: "black",      label: "BLACK",       unlockScore: 600 },
+  { id: "darkpurple", label: "DARK PURPLE", unlockScore: 900 },
+];
+
+let selectedDinoId = localStorage.getItem("selectedDino") || "green";
+let activeScene = null;
+
+// ─── Dino Selector UI ────────────────────────────────────
+function buildDinoSelector() {
+  const cardsEl = document.getElementById("dino-cards");
+  cardsEl.innerHTML = "";
+  const hiScore = parseInt(localStorage.getItem("dinoHi") || "0");
+
+  DINO_CHARS.forEach(char => {
+    const unlocked   = hiScore >= char.unlockScore;
+    const isSelected = selectedDinoId === char.id;
+
+    const card = document.createElement("div");
+    card.className = "dino-card" +
+      (isSelected ? " selected" : "") +
+      (!unlocked  ? " locked"   : "");
+
+    const cvs = document.createElement("canvas");
+    cvs.width  = 72;
+    cvs.height = 72;
+    cvs.style.cssText = "image-rendering:pixelated;width:72px;height:72px;";
+
+    const img = new Image();
+    img.src = `assets/character/${char.id}/dino_idle.png`;
+    img.onload = () => {
+      const ctx = cvs.getContext("2d");
+      ctx.clearRect(0, 0, 72, 72);
+      ctx.drawImage(img, 0, 0, 24, 24, 0, 0, 72, 72);
+    };
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "dino-name";
+    nameEl.textContent = char.label;
+
+    card.appendChild(cvs);
+    card.appendChild(nameEl);
+
+    if (!unlocked) {
+      const lockEl = document.createElement("div");
+      lockEl.className = "dino-lock";
+      lockEl.textContent = `HI ${char.unlockScore}\nto unlock`;
+      card.appendChild(lockEl);
+    } else if (isSelected) {
+      const check = document.createElement("div");
+      check.className = "dino-checkmark";
+      check.textContent = "★";
+      card.appendChild(check);
+    }
+
+    if (unlocked) {
+      card.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+        selectedDinoId = char.id;
+        localStorage.setItem("selectedDino", selectedDinoId);
+        buildDinoSelector();
+      });
+    }
+
+    cardsEl.appendChild(card);
+  });
+}
+
+const selectorOverlay = document.getElementById("dino-selector-overlay");
+selectorOverlay.addEventListener("pointerdown", (e) => e.stopPropagation());
+selectorOverlay.addEventListener("pointerup",   (e) => e.stopPropagation());
+selectorOverlay.addEventListener("click",       (e) => e.stopPropagation());
+
+document.getElementById("dino-select-close").addEventListener("pointerdown", (e) => {
+  e.stopPropagation();
+  selectorOverlay.classList.remove("active");
+  if (activeScene) activeScene.swapDino(selectedDinoId);
+});
+
+// ─── Constants ───────────────────────────────────────────
+const W        = 800;
+const H        = 400;
+const GROUND_Y = 340;
+const DINO_FRAME = 24;
+
+// ─── Seasons ─────────────────────────────────────────────
+const SEASONS = [
+  { name: "SPRING", folder: "spring", scoreThreshold: 0,   groundTint: 0x4a8f4a },
+  { name: "SUMMER", folder: "summer", scoreThreshold: 300, groundTint: 0x3a7a3a },
+  { name: "AUTUMN", folder: "autumn", scoreThreshold: 600, groundTint: 0x8b5a2a },
+  { name: "WINTER", folder: "winter", scoreThreshold: 900, groundTint: 0x5a7a9f },
+];
+
+// ─── Layer config ─────────────────────────────────────────
+const LAYER_SCALE_Y = { Sky: 2, Clouds: 1.3, Trees: 1.25, Bushes: 1.0, Ground: 1.0 };
+const LAYER_ORDER   = ["Sky", "Clouds", "Trees", "Bushes", "Ground"];
+const LAYER_SPEEDS  = { Sky: 0.05, Clouds: 0.15, Trees: 0.35, Bushes: 0.60, Ground: 1.0 };
+const LAYER_DEPTHS  = { Sky: 1, Clouds: 2, Trees: 3, Bushes: 4, Ground: 5 };
+
+const SPRITE_H  = 180;
+const LAYER_Y   = {
+  Sky:    0,
+  Clouds: 0,
+  Trees:  GROUND_Y - SPRITE_H - 55,
+  Bushes: GROUND_Y - SPRITE_H - 10,
+  Ground: GROUND_Y - SPRITE_H + 2,
+};
+const SPRITE_W   = 320;
+const TILE_COUNT = Math.ceil(W / SPRITE_W) + 2;
+
+// ─── Obstacle Definitions ────────────────────────────────
+const OBSTACLE_DEFS = [
+  // ── SPRING ──────────────────────────────────────────────
+  [
+    { type: "rock",  size: "small" },
+    { type: "rock",  size: "large" },
+    { type: "bug",   spriteKey: "greenbug",
+      floatBaseY: GROUND_Y - 55,
+      floatRange: 35,
+      floatSpeed: 2.5 },
+  ],
+
+  // ── SUMMER ──────────────────────────────────────────────
+  [
+    { type: "rock",  size: "small" },
+    { type: "rock",  size: "large" },
+    { type: "bird",  lane: "low"  },
+    { type: "bird",  lane: "high" },
+  ],
+
+  // ── AUTUMN ──────────────────────────────────────────────
+  [
+    { type: "rock",      size: "small" },
+    { type: "rock",      size: "large" },
+    { type: "bug",       spriteKey: "orangebug",
+      floatBaseY: GROUND_Y - 60,
+      floatRange: 40,
+      floatSpeed: 3.0 },
+    { type: "dragonfly" },
+  ],
+
+  // ── WINTER ──────────────────────────────────────────────
+  [
+    { type: "icerock" },
+    { type: "bug",     spriteKey: "pinkbug",
+      floatBaseY: GROUND_Y - 50,
+      floatRange: 30,
+      floatSpeed: 2.0 },
+    { type: "squirrel" },
+  ],
+];
+
+// ─── Scene ───────────────────────────────────────────────
+class DinoScene extends Phaser.Scene {
+  constructor() { super("DinoScene"); }
+
+  preload() {
+    // Dino character sprites
+    for (const char of DINO_CHARS) {
+      this.load.spritesheet(`${char.id}_run`,  `assets/character/${char.id}/dino_run.png`,  { frameWidth: DINO_FRAME, frameHeight: DINO_FRAME });
+      this.load.spritesheet(`${char.id}_jump`, `assets/character/${char.id}/dino_jump.png`, { frameWidth: DINO_FRAME, frameHeight: DINO_FRAME });
+      this.load.spritesheet(`${char.id}_idle`, `assets/character/${char.id}/dino_idle.png`, { frameWidth: DINO_FRAME, frameHeight: DINO_FRAME });
+      this.load.spritesheet(`${char.id}_dead`, `assets/character/${char.id}/dino_dead.png`, { frameWidth: DINO_FRAME, frameHeight: DINO_FRAME });
+    }
+
+    // Background layers
+    for (const season of SEASONS) {
+      for (const layer of LAYER_ORDER) {
+        this.load.image(`${season.folder}_${layer}`, `assets/background/${season.folder}/${layer}.png`);
+      }
+    }
+    this.load.image("ground_texture", "assets/background/ground.png");
+
+    // ── Obstacle sprites ──────────────────────────────────
+    this.load.image("rock", "assets/obstacle/rock.png");
+
+    this.load.spritesheet("greenbug",  "assets/obstacle/greenbug.png",  { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet("orangebug", "assets/obstacle/orangebug.png", { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet("pinkbug",   "assets/obstacle/pinkbug.png",   { frameWidth: 32, frameHeight: 32 });
+
+    this.load.spritesheet("bird", "assets/obstacle/bird.png",
+      { frameWidth: 90, frameHeight: 70 });
+
+    this.load.spritesheet("dragonfly", "assets/obstacle/dragonfly.png",
+      { frameWidth: 32, frameHeight: 32 });
+
+    this.load.image("icerock", "assets/obstacle/icerock.png");
+
+    this.load.spritesheet("squirrel", "assets/obstacle/squirrel.png",
+      { frameWidth: 32, frameHeight: 32 });
+  }
+
+  create() {
+    activeScene = this;
+
+    this.gameOver   = false;
+    this.started    = false;
+    this.score      = 0;
+    this.hiScore    = parseInt(localStorage.getItem("dinoHi") || "0");
+    this.gameSpeed  = 300;
+    this.seasonIdx  = 0;
+    this.obstacles  = [];
+    this.obstTimer  = 0;
+    this.obstDelay  = 1400;
+    this.obstTimer = 0;
+    this.minSpawnDelay = 850;
+    this.maxSpawnDelay = 1950;
+    this.nextSpawnDelay = Phaser.Math.Between(this.minSpawnDelay, this.maxSpawnDelay);
+    this.scoreTimer = 0;
+
+    // ── Milestone tracking (every 300 points) ────────────
+    this.lastMilestone = 0;
+
+    this.groundTintOld       = SEASONS[0].groundTint;
+    this.groundTintTarget    = SEASONS[0].groundTint;
+    this.groundTintAlpha     = 1;
+    this.groundTransitionDur = 2000;
+
+    this.transitioning    = false;
+    this.transitionAlpha  = 0;
+    this.transitionTarget = -1;
+    this.transitionDur    = 2000;
+
+    // Background layers
+    this.bgLayers     = [];
+    this.layerOffsets = {};
+    for (const layer of LAYER_ORDER) this.layerOffsets[layer] = 0;
+
+    for (let si = 0; si < SEASONS.length; si++) {
+      const season = SEASONS[si];
+      const layerGroup = {};
+      for (const layer of LAYER_ORDER) {
+        const key   = `${season.folder}_${layer}`;
+        const tiles = [];
+        for (let t = 0; t < TILE_COUNT; t++) {
+          const img = this.add.image((t - 1) * SPRITE_W + SPRITE_W / 2, LAYER_Y[layer], key);
+          img.setDepth(LAYER_DEPTHS[layer]);
+          img.setOrigin(0.5, 0);
+          img.setScale(1, LAYER_SCALE_Y[layer] || 1);
+          img.setAlpha(si === 0 ? 1 : 0);
+          tiles.push(img);
+        }
+        layerGroup[layer] = tiles;
+      }
+      this.bgLayers.push(layerGroup);
+    }
+
+    // Ground tile
+    this.groundTile = this.add.tileSprite(0, GROUND_Y, W, H - GROUND_Y, "ground_texture")
+      .setOrigin(0, 0)
+      .setDepth(1.5);
+    this.groundTile.setTint(SEASONS[0].groundTint);
+
+    // Build obstacle animations
+    this._buildObstacleAnims();
+
+    // Build dino animations
+    this._buildDinoAnims(selectedDinoId);
+
+    this.dino = this.add.sprite(80, GROUND_Y + 10, `${selectedDinoId}_idle`)
+      .setDepth(10)
+      .setScale(3)
+      .setOrigin(0.5, 1);
+    this.dino.play("run");
+
+    this.dinoOnGround = true;
+    this.dinoVY       = 0;
+    this.GRAVITY      = 3000;
+    this.JUMP_VEL     = -800;
+
+    // UI
+    this.scoreTxt = this.add.text(W - 16, 20, "00000", {
+      fontFamily: "'Press Start 2P'", fontSize: "16px",
+      color: "#ffe259", stroke: "#000", strokeThickness: 4
+    }).setOrigin(1, 0).setDepth(20);
+
+    this.hiTxt = this.add.text(W - 16, 44, "HI " + String(this.hiScore).padStart(5, "0"), {
+      fontFamily: "'Press Start 2P'", fontSize: "10px",
+      color: "#ffffff66", stroke: "#000", strokeThickness: 2
+    }).setOrigin(1, 0).setDepth(20);
+
+    this.seasonTxt = this.add.text(20, 20, SEASONS[0].name, {
+      fontFamily: "'Press Start 2P'", fontSize: "10px",
+      color: "#ffffff88", stroke: "#000", strokeThickness: 2
+    }).setDepth(20);
+
+    // Input
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.upKey    = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.wKey     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+
+    this.jumpKeyHeld    = false;
+    this.jumpHoldTime   = 0;
+    this.JUMP_VEL_TAP   = -650;
+    this.JUMP_VEL_HOLD  = -650;
+    this.JUMP_HOLD_MAX  = 130;
+
+    this.input.on("pointerdown", () => {
+      if (document.getElementById("dino-selector-overlay").classList.contains("active")) return;
+      this.jumpKeyHeld = true;
+      this.handleJump();
+    });
+
+    const jumpBtn = document.getElementById("jump-btn");
+    jumpBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      this.jumpKeyHeld = true;
+      this.handleJump();
+    });
+    jumpBtn.addEventListener("touchend", () => {
+      this.jumpKeyHeld = false;
+    });
+
+    this.showStartScreen();
+  }
+
+  _buildObstacleAnims() {
+    const safe = (key, cfg) => {
+      if (this.anims.exists(key)) this.anims.remove(key);
+      this.anims.create(cfg);
+    };
+
+    ["greenbug", "orangebug", "pinkbug"].forEach(k => {
+      safe(`anim_${k}`, {
+        key: `anim_${k}`,
+        frames: this.anims.generateFrameNumbers(k, { start: 0, end: 7 }),
+        frameRate: 12,
+        repeat: -1
+      });
+    });
+
+    safe("anim_bird", {
+      key: "anim_bird",
+      frames: this.anims.generateFrameNumbers("bird", { start: 0, end: 5 }),
+      frameRate: 12,
+      repeat: -1
+    });
+
+    safe("anim_dragonfly", {
+      key: "anim_dragonfly",
+      frames: this.anims.generateFrameNumbers("dragonfly", { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    safe("anim_squirrel", {
+      key: "anim_squirrel",
+      frames: this.anims.generateFrameNumbers("squirrel", { start: 0, end: 7 }),
+      frameRate: 12,
+      repeat: -1
+    });
+  }
+
+  _buildDinoAnims(dinoId) {
+    ["run", "jump", "idle", "dead"].forEach(k => {
+      if (this.anims.exists(k)) this.anims.remove(k);
+    });
+    const d = dinoId;
+    this.anims.create({ key: "run",  frames: this.anims.generateFrameNumbers(`${d}_run`,  { start: 0, end: 5 }),  frameRate: 12, repeat: -1 });
+    this.anims.create({ key: "jump", frames: this.anims.generateFrameNumbers(`${d}_jump`, { frames: [0, 1, 3] }), frameRate: 10, repeat: 0  });
+    this.anims.create({ key: "idle", frames: this.anims.generateFrameNumbers(`${d}_idle`, { start: 0, end: 2 }),  frameRate: 6,  repeat: -1 });
+    this.anims.create({ key: "dead", frames: this.anims.generateFrameNumbers(`${d}_dead`, { start: 0, end: 4 }),  frameRate: 8,  repeat: 0  });
+  }
+
+  swapDino(newDinoId) {
+    if (!this.dino) return;
+    this._buildDinoAnims(newDinoId);
+    const currentAnim = this.dino.anims.currentAnim ? this.dino.anims.currentAnim.key : "idle";
+    const texKey = currentAnim === "run" ? "run"
+                 : currentAnim === "jump" ? "jump"
+                 : currentAnim === "dead" ? "dead"
+                 : "idle";
+    this.dino.setTexture(`${newDinoId}_${texKey}`);
+    this.dino.play(currentAnim, true);
+  }
+
+  showStartScreen() {
+    this.startOverlay = this.add.rectangle(W/2, H/2, W, H, 0x000000, 0.6).setDepth(30);
+
+    this.add.text(W/2, H/2 - 70, "🦕 DINO RUN", {
+      fontFamily: "'Press Start 2P'", fontSize: "22px",
+      color: "#ffe259", stroke: "#000", strokeThickness: 5
+    }).setOrigin(0.5).setDepth(31);
+
+    this.add.text(W/2, H/2 - 15, "SPACE / TAP to jump\nDodge obstacles!", {
+      fontFamily: "'Press Start 2P'", fontSize: "10px",
+      color: "#fff", stroke: "#000", strokeThickness: 3, align: "center"
+    }).setOrigin(0.5).setDepth(31);
+
+    this.add.text(W/2, H/2 + 45, "4 seasons • speed increases with score", {
+      fontFamily: "'Press Start 2P'", fontSize: "8px",
+      color: "#38bdf8", stroke: "#000", strokeThickness: 2, align: "center"
+    }).setOrigin(0.5).setDepth(31);
+
+    const selectBtn = this.add.text(W/2, H/2 + 80, "[ SELECT DINO ]", {
+      fontFamily: "'Press Start 2P'", fontSize: "12px",
+      color: "#a0f0a0", stroke: "#000", strokeThickness: 2
+    }).setOrigin(0.5).setDepth(31).setInteractive({ useHandCursor: true });
+
+    selectBtn.on("pointerover", () => selectBtn.setColor("#ffe259"));
+    selectBtn.on("pointerout",  () => selectBtn.setColor("#a0f0a0"));
+    selectBtn.on("pointerdown", () => {
+      buildDinoSelector();
+      document.getElementById("dino-selector-overlay").classList.add("active");
+    });
+
+    this.input.keyboard.once("keydown", () => this.startGame());
+    this.input.on("pointerdown", (ptr) => {
+      if (document.getElementById("dino-selector-overlay").classList.contains("active")) return;
+      const bx = W/2, by = H/2 + 80;
+      const onBtn = Math.abs(ptr.x - bx) < 90 && Math.abs(ptr.y - by) < 16;
+      if (!onBtn) this.startGame();
+    });
+  }
+
+  startGame() {
+    if (this.started) return;
+    if (this.startOverlay) this.startOverlay.destroy();
+    this.children.list.filter(c => c.depth === 31).forEach(c => c.destroy());
+    this.started = true;
+    this.dino.play("run");
+  }
+
+  handleJump() {
+    if (!this.started) { this.startGame(); return; }
+    if (this.gameOver) return;
+    if (this.dinoOnGround) {
+      this.dinoVY       = this.JUMP_VEL_TAP;
+      this.dinoOnGround = false;
+      this.jumpHoldTime = 0;
+      this.dino.play("jump");
+      playJump();   // ← play jump SFX
+    }
+  }
+
+  scrollLayer(layerName, deltaX) {
+    this.layerOffsets[layerName] = (this.layerOffsets[layerName] || 0) - deltaX;
+    for (let si = 0; si < SEASONS.length; si++) {
+      const tiles = this.bgLayers[si][layerName];
+      for (let t = 0; t < tiles.length; t++) {
+        let baseX = (t - 1) * SPRITE_W + this.layerOffsets[layerName];
+        const totalW = TILE_COUNT * SPRITE_W;
+        baseX = ((baseX % totalW) + totalW) % totalW - SPRITE_W;
+        tiles[t].x = baseX + SPRITE_W / 2;
+        tiles[t].y = LAYER_Y[layerName];
+      }
+    }
+  }
+
+  updateGroundTexture(delta) {
+    const dt = delta / 1000;
+    this.groundTile.tilePositionX += this.gameSpeed * LAYER_SPEEDS.Ground * dt;
+
+    const activeIdx  = this.transitioning ? this.transitionTarget : this.seasonIdx;
+    const targetTint = SEASONS[activeIdx].groundTint;
+
+    if (targetTint !== this.groundTintTarget) {
+      this.groundTintOld    = this.groundTile.tintTopLeft;
+      this.groundTintTarget = targetTint;
+      this.groundTintAlpha  = 0;
+    }
+
+    if (this.groundTintAlpha < 1) {
+      this.groundTintAlpha += delta / this.groundTransitionDur;
+      if (this.groundTintAlpha > 1) this.groundTintAlpha = 1;
+      const oldColor = Phaser.Display.Color.IntegerToColor(this.groundTintOld);
+      const newColor = Phaser.Display.Color.IntegerToColor(this.groundTintTarget);
+      const r = Phaser.Math.Linear(oldColor.red,   newColor.red,   this.groundTintAlpha);
+      const g = Phaser.Math.Linear(oldColor.green, newColor.green, this.groundTintAlpha);
+      const b = Phaser.Math.Linear(oldColor.blue,  newColor.blue,  this.groundTintAlpha);
+      this.groundTile.setTint(Phaser.Display.Color.GetColor(r, g, b));
+    }
+  }
+
+  setSeasonAlpha(seasonIdx, alpha) {
+    for (const layer of LAYER_ORDER) {
+      for (const tile of this.bgLayers[seasonIdx][layer]) {
+        tile.setAlpha(alpha);
+      }
+    }
+  }
+
+  beginSeasonTransition(newSeasonIdx) {
+    if (this.transitioning) return;
+    this.transitioning    = true;
+    this.transitionAlpha  = 0;
+    this.transitionTarget = newSeasonIdx;
+    this.setSeasonAlpha(newSeasonIdx, 0);
+    this.seasonTxt.setText(SEASONS[newSeasonIdx].name);
+    this.tweens.add({
+      targets: this.seasonTxt,
+      alpha: { from: 0, to: 1 },
+      scaleX: { from: 1.5, to: 1 },
+      duration: 800,
+      ease: "Quad.easeOut"
+    });
+  }
+
+  updateSeasonTransition(delta) {
+    if (!this.transitioning) return;
+    this.transitionAlpha += delta / this.transitionDur;
+    if (this.transitionAlpha >= 1) {
+      this.transitionAlpha = 1;
+      this.transitioning   = false;
+      this.setSeasonAlpha(this.seasonIdx, 0);
+      this.setSeasonAlpha(this.transitionTarget, 1);
+      this.seasonIdx        = this.transitionTarget;
+      this.transitionTarget = -1;
+      return;
+    }
+    const a = this.transitionAlpha;
+    this.setSeasonAlpha(this.seasonIdx, 1 - a);
+    this.setSeasonAlpha(this.transitionTarget, a);
+  }
+
+  checkSeasonChange() {
+    const loopScore = this.score % 1200;
+    let newSeasonIdx = 0;
+    for (let i = SEASONS.length - 1; i >= 0; i--) {
+      if (loopScore >= SEASONS[i].scoreThreshold) { newSeasonIdx = i; break; }
+    }
+    const activeSeasonIdx = this.transitioning ? this.transitionTarget : this.seasonIdx;
+    if (newSeasonIdx !== activeSeasonIdx) this.beginSeasonTransition(newSeasonIdx);
+  }
+
+  spawnObstacle() {
+    const activeIdx = this.transitioning ? this.transitionTarget : this.seasonIdx;
+    const defs = OBSTACLE_DEFS[activeIdx];
+    const def  = defs[Phaser.Math.Between(0, defs.length - 1)];
+    this._createObstacle(def);
+  }
+
+  _createObstacle(def) {
+    let sprite, hitW, hitH, hitOffsetX = 0, hitOffsetY = 0;
+
+    switch (def.type) {
+
+      case "rock": {
+        const isLarge = def.size === "large";
+        const targetW  = isLarge ? 72 : 48;
+        const scale    = targetW / 432;
+
+        sprite = this.add.image(W - 1, GROUND_Y, "rock")
+          .setDepth(8)
+          .setOrigin(0, 1)
+          .setScale(scale);
+
+        hitW = sprite.displayWidth  * 0.70;
+        hitH = sprite.displayHeight * 0.80;
+        hitOffsetX = sprite.displayWidth  * 0.15;
+        hitOffsetY = 0;
+
+        this.obstacles.push({
+          sprite,
+          type: "rock",
+          hitW, hitH, hitOffsetX, hitOffsetY,
+          phase: 0
+        });
+        break;
+      }
+
+      case "bug": {
+        const scale    = 2.5;
+        const baseY    = def.floatBaseY ?? (GROUND_Y - 55);
+        const range    = def.floatRange ?? 35;
+        const speed    = def.floatSpeed ?? 2.5;
+        const animKey  = `anim_${def.spriteKey}`;
+
+        sprite = this.add.sprite(W - 1, baseY, def.spriteKey)
+          .setDepth(8)
+          .setOrigin(0, 0.5)
+          .setScale(scale);
+        sprite.play(animKey);
+
+        hitW = sprite.displayWidth  * 0.65;
+        hitH = sprite.displayHeight * 0.65;
+        hitOffsetX = sprite.displayWidth  * 0.17;
+        hitOffsetY = -sprite.displayHeight * 0.17;
+
+        this.obstacles.push({
+          sprite,
+          type: "bug",
+          hitW, hitH, hitOffsetX, hitOffsetY,
+          baseY, range, floatSpeed: speed,
+          phase: Math.random() * Math.PI * 2
+        });
+        break;
+      }
+
+      case "bird": {
+        const isLow = def.lane === "low";
+        const dinoMid = (GROUND_Y + 10) - 36;
+        const flyY = isLow ? dinoMid - 5 : dinoMid - 25;
+        const scale = 0.55;
+
+        sprite = this.add.sprite(W + 80, flyY, "bird")
+          .setDepth(8)
+          .setOrigin(0.5, 0.5)
+          .setScale(scale)
+          .setFlipX(true);
+
+        sprite.play("anim_bird");
+
+        this.obstacles.push({
+          sprite,
+          type: "bird",
+          hitW: sprite.displayWidth * 0.68,
+          hitH: sprite.displayHeight * 0.58,
+          hitOffsetX: 0,
+          hitOffsetY: 0,
+          flyY,
+        });
+        break;
+      }
+
+      case "dragonfly": {
+        const dinoMid   = (GROUND_Y + 10) - 36;
+        const startY    = Phaser.Math.Between(dinoMid - 20, dinoMid);
+        const ampRange  = Phaser.Math.Between(20, 38);
+        const pingSpeed = Phaser.Math.FloatBetween(7.0, 9.0);
+        const scale     = 2.1;
+
+        sprite = this.add.sprite(W + 60, startY, "dragonfly")
+          .setDepth(8)
+          .setOrigin(0.5, 0.5)
+          .setScale(scale)
+          .setFlipX(true);
+
+        sprite.play("anim_dragonfly");
+
+        this.obstacles.push({
+          sprite,
+          type: "dragonfly",
+          hitW: sprite.displayWidth * 0.55,
+          hitH: sprite.displayHeight * 0.55,
+          hitOffsetX: 0,
+          hitOffsetY: 0,
+          baseY: startY,
+          range: ampRange,
+          floatSpeed: pingSpeed,
+          phase: Math.random() * Math.PI * 2
+        });
+        break;
+      }
+
+      case "icerock": {
+        const scale = Phaser.Math.FloatBetween(2.0, 2.8);
+
+        sprite = this.add.image(W - 1, GROUND_Y - scale, "icerock")
+          .setDepth(8)
+          .setOrigin(0, 1)
+          .setScale(scale)
+          .setCrop(0, 0, 16, 15);
+
+        hitW       = sprite.displayWidth  * 0.75;
+        hitH       = sprite.displayHeight * 0.80;
+        hitOffsetX = sprite.displayWidth  * 0.12;
+        hitOffsetY = 0;
+
+        this.obstacles.push({
+          sprite,
+          type: "icerock",
+          hitW, hitH, hitOffsetX, hitOffsetY,
+          phase: 0
+        });
+        break;
+      }
+
+      case "squirrel": {
+        const scale       = 1.85;
+        const patrolLeft  = Phaser.Math.Between(240, 420);
+        const patrolRight = Phaser.Math.Between(650, 780);
+        const walkSpeed   = Phaser.Math.Between(105, 155);
+
+        sprite = this.add.sprite(W + 80, GROUND_Y, "squirrel")
+          .setDepth(8)
+          .setOrigin(0.5, 1)
+          .setScale(scale)
+          .setFlipX(true);
+
+        sprite.play("anim_squirrel");
+
+        this.obstacles.push({
+          sprite,
+          type: "squirrel",
+          hitW: sprite.displayWidth * 0.56,
+          hitH: sprite.displayHeight * 0.73,
+          hitOffsetX: 0,
+          hitOffsetY: -18,
+          patrolLeft,
+          patrolRight,
+          walkSpeed,
+          dir: -1,
+        });
+        break;
+      }
+    }
+  }
+
+  _moveObstacle(ob, dt) {
+    const spd = this.gameSpeed;
+
+    switch (ob.type) {
+      case "rock":
+      case "icerock":
+        ob.sprite.x -= spd * dt;
+        break;
+
+      case "bug":
+        ob.sprite.x -= spd * dt;
+        ob.phase += dt * ob.floatSpeed;
+        ob.sprite.y = ob.baseY + Math.sin(ob.phase) * ob.range;
+        break;
+
+      case "bird":
+      case "dragonfly":
+        ob.sprite.x -= spd * 1.5 * dt;
+        if (ob.type === "dragonfly") {
+          ob.phase += dt * ob.floatSpeed;
+          ob.sprite.y = ob.baseY + Math.sin(ob.phase) * ob.range;
+        }
+        break;
+
+      case "squirrel":
+        const relativeVel = ob.dir * ob.walkSpeed;
+        ob.sprite.x += (relativeVel - spd) * dt;
+
+        ob.patrolLeft  -= spd * dt;
+        ob.patrolRight -= spd * dt;
+
+        if (ob.dir === -1 && ob.sprite.x <= ob.patrolLeft) {
+          ob.sprite.x = ob.patrolLeft;
+          ob.dir = 1;
+          ob.sprite.setFlipX(false);
+        } 
+        else if (ob.dir === 1 && ob.sprite.x >= ob.patrolRight) {
+          ob.sprite.x = ob.patrolRight;
+          ob.dir = -1;
+          ob.sprite.setFlipX(true);
+        }
+        break;
+    }
+  }
+
+  _collides(ob) {
+    const dPadX  = this.dino.displayWidth  * 0.36;
+    const dPadT  = this.dino.displayHeight * 0.46;
+    const dPadB  = this.dino.displayHeight * 0.14;
+
+    const dLeft   = this.dino.x - this.dino.displayWidth  / 2 + dPadX;
+    const dRight  = this.dino.x + this.dino.displayWidth  / 2 - dPadX;
+    const dTop    = this.dino.y - this.dino.displayHeight + dPadT;
+    const dBottom = this.dino.y - dPadB;
+
+    const shrink = 0.52;
+    let oLeft, oRight, oTop, oBottom;
+
+    const dw = ob.sprite.displayWidth;
+    const dh = ob.sprite.displayHeight;
+
+    if (ob.type === "rock" || ob.type === "icerock") {
+      oLeft   = ob.sprite.x + dw * (1 - shrink) * 0.5;
+      oRight  = ob.sprite.x + dw - dw * (1 - shrink) * 0.5;
+      oTop    = ob.sprite.y - dh + dh * (1 - shrink) * 0.5;
+      oBottom = ob.sprite.y - dh * (1 - shrink) * 0.5;
+    }
+    else if (ob.type === "bug") {
+      const cx = ob.sprite.x + dw / 2;
+      oLeft   = cx - (dw * shrink / 2);
+      oRight  = cx + (dw * shrink / 2);
+      oTop    = ob.sprite.y - (dh * shrink / 2);
+      oBottom = ob.sprite.y + (dh * shrink / 2);
+    }
+    else {
+      oLeft   = ob.sprite.x - (dw * shrink / 2);
+      oRight  = ob.sprite.x + (dw * shrink / 2);
+      oTop    = ob.sprite.y - (dh * shrink / 2);
+      oBottom = ob.sprite.y + (dh * shrink / 2);
+    }
+
+    return dRight > oLeft && dLeft < oRight && dBottom > oTop && dTop < oBottom;
+  }
+
+  _offScreen(ob) {
+    if (ob.type === "squirrel") return ob.patrolRight < -60;
+    if (ob.type === "bird" || ob.type === "dragonfly") {
+      return ob.sprite.x + ob.sprite.displayWidth / 2 < -20;
+    }
+    if (ob.type === "bug") {
+      return ob.sprite.x + ob.sprite.displayWidth < -10;
+    }
+    return ob.sprite.x + ob.sprite.displayWidth < -10;
+  }
+
+  update(time, delta) {
+    const dt = delta / 1000;
+
+    if (!this.started) {
+      const startSpeed = 240;
+      for (const layer of LAYER_ORDER) {
+        this.scrollLayer(layer, startSpeed * LAYER_SPEEDS[layer] * dt);
+      }
+      this.groundTile.tilePositionX += startSpeed * LAYER_SPEEDS.Ground * dt;
+    }
+
+    const spaceDown = this.spaceKey.isDown || this.upKey.isDown || this.wKey.isDown;
+    const pointerDown = this.input.activePointer.isDown;
+
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) ||
+        Phaser.Input.Keyboard.JustDown(this.upKey)    ||
+        Phaser.Input.Keyboard.JustDown(this.wKey)     ||
+        (this.input.activePointer.justDown && !document.getElementById("dino-selector-overlay").classList.contains("active"))) {
+      this.jumpKeyHeld = true;
+      this.handleJump();
+    }
+
+    this.jumpKeyHeld = spaceDown || pointerDown;
+
+    if (!this.started || this.gameOver) return;
+
+    // ── Dino physics ──────────────────────────────────────
+    if (!this.dinoOnGround) {
+      if (this.jumpKeyHeld && this.dinoVY < 0 && this.jumpHoldTime < this.JUMP_HOLD_MAX) {
+        this.jumpHoldTime += delta;
+        const targetVY = this.JUMP_VEL_HOLD;
+        this.dinoVY = Math.min(this.dinoVY, this.dinoVY + (targetVY - this.dinoVY) * 0.08);
+      }
+      this.dinoVY += this.GRAVITY * dt;
+      this.dino.y += this.dinoVY * dt;
+      if (this.dino.y >= GROUND_Y + 10) {
+        this.dino.y       = GROUND_Y + 10;
+        this.dinoVY       = 0;
+        this.dinoOnGround = true;
+        this.jumpKeyHeld  = false;
+        this.dino.play("run");
+      }
+    }
+
+    // ── Score ─────────────────────────────────────────────
+    this.scoreTimer += delta;
+    if (this.scoreTimer >= 100) {
+      this.scoreTimer = 0;
+      this.score++;
+      this.scoreTxt.setText(String(this.score).padStart(5, "0"));
+      if (this.score > this.hiScore) {
+        this.hiScore = this.score;
+        localStorage.setItem("dinoHi", this.hiScore);
+        this.hiTxt.setText("HI " + String(this.hiScore).padStart(5, "0"));
+      }
+
+      // ── Milestone SFX every 300 points ─────────────────
+      const milestone = Math.floor(this.score / 300);
+      if (milestone > this.lastMilestone) {
+        this.lastMilestone = milestone;
+        playTwenk();
+      }
+    }
+
+    this.gameSpeed = 300 + this.score * 0.35;
+    this.obstDelay = Math.max(600, 1400 - this.score * 0.6);
+
+    // ── Seasons ───────────────────────────────────────────
+    this.checkSeasonChange();
+    this.updateSeasonTransition(delta);
+
+    // ── Parallax ──────────────────────────────────────────
+    for (const layer of LAYER_ORDER) {
+      this.scrollLayer(layer, this.gameSpeed * LAYER_SPEEDS[layer] * dt);
+    }
+    this.updateGroundTexture(delta);
+
+    // ── Obstacles ─────────────────────────────────────────
+    this.obstTimer += delta;
+    if (this.obstTimer >= this.nextSpawnDelay) {
+      this.obstTimer = 0;
+      this.nextSpawnDelay = Phaser.Math.Between(this.minSpawnDelay, this.maxSpawnDelay);
+      const speedFactor = Math.max(0.4, 1 - this.score / 800);
+      this.nextSpawnDelay = Math.round(this.nextSpawnDelay * speedFactor);
+      this.spawnObstacle();
+    }
+
+    for (let i = this.obstacles.length - 1; i >= 0; i--) {
+      const ob = this.obstacles[i];
+      this._moveObstacle(ob, dt);
+
+      if (this._collides(ob)) {
+        this.triggerDeath();
+        return;
+      }
+
+      if (this._offScreen(ob)) {
+        ob.sprite.destroy();
+        this.obstacles.splice(i, 1);
+      }
+    }
+  }
+
+  triggerDeath() {
+    if (this.gameOver) return;
+    this.gameOver = true;
+    this.dino.play("dead");
+    this.cameras.main.flash(200, 255, 50, 50);
+
+    this.time.delayedCall(600, () => {
+      this.add.rectangle(W/2, H/2, W, H, 0x000000, 0.72).setDepth(30);
+
+      this.add.text(W/2, H/2 - 70, "GAME OVER", {
+        fontFamily: "'Press Start 2P'", fontSize: "24px",
+        color: "#ff4444", stroke: "#000", strokeThickness: 5
+      }).setOrigin(0.5).setDepth(31);
+
+      this.add.text(W/2, H/2 - 25, "Score: " + this.score, {
+        fontFamily: "'Press Start 2P'", fontSize: "14px",
+        color: "#ffe259", stroke: "#000", strokeThickness: 3
+      }).setOrigin(0.5).setDepth(31);
+
+      if (this.score >= this.hiScore && this.score > 0) {
+        this.add.text(W/2, H/2 + 15, "🏆 NEW BEST!", {
+          fontFamily: "'Press Start 2P'", fontSize: "11px",
+          color: "#ffe259", stroke: "#000", strokeThickness: 3
+        }).setOrigin(0.5).setDepth(31);
+      }
+
+      this.add.text(W/2, H/2 + 55, "SPACE / TAP to restart", {
+        fontFamily: "'Press Start 2P'", fontSize: "10px",
+        color: "#fff", stroke: "#000", strokeThickness: 3
+      }).setOrigin(0.5).setDepth(31);
+
+      this.input.keyboard.once("keydown", () => this.scene.restart());
+      this.input.once("pointerdown", () => this.scene.restart());
+    });
+  }
+}
+
+// ─── Phaser Config ───────────────────────────────────────
+const config = {
+  type:   Phaser.AUTO,
+  width:  800,
+  height: 400,
+  parent: "game-inner",
+  backgroundColor: "#0d0d1a",
+  scale: {
+    mode:       Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width:      800,
+    height:     400,
+  },
+  physics: {
+    default: "arcade",
+    arcade:  { debug: false }
+  },
+  scene: DinoScene
+};
+
+new Phaser.Game(config);
+</script>
+</body>
+</html>

@@ -23,37 +23,33 @@
   }
   
   #back-btn {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 50;
-  padding: 6px 12px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: #fff;
-  background-color: #ff8f44;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  box-shadow: 0 0 5px #000;
-  transition: all 0.2s;
-}
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    z-index: 50;
+    padding: 6px 12px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    background-color: #ff8f44;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 5px #000;
+    transition: all 0.2s;
+  }
 
-#back-btn:hover {
-  background-color: #ff8f66;
-  transform: scale(1.05);
-}
+  #back-btn:hover {
+    background-color: #ff8f66;
+    transform: scale(1.05);
+  }
 
-  /* ── Outer glowing border wrapper ── */
   #game-wrapper {
     position: relative;
     padding: 6px;
     border-radius: 6px;
     background: linear-gradient(135deg, #ffe259, #ffa751, #ff6b6b, #a855f7, #38bdf8);
-    box-shadow:
-      0 0 30px #ffe25966,
-      0 0 60px #a855f733,
-      0 0 0 1px #ffffff22;
+    box-shadow: 0 0 30px #ffe25966, 0 0 60px #a855f733, 0 0 0 1px #ffffff22;
     animation: borderPulse 3s ease-in-out infinite alternate;
   }
 
@@ -62,34 +58,12 @@
     to   { box-shadow: 0 0 40px #ffe259aa, 0 0 80px #a855f755, 0 0 120px #38bdf833; }
   }
 
-  /* ── Inner border with corner decorations ── */
   #game-border {
     position: relative;
     border-radius: 2px;
     overflow: hidden;
   }
 
-  /* corner pixel decorations */
-  #game-border::before,
-  #game-border::after {
-    content: '';
-    position: absolute;
-    width: 20px; height: 20px;
-    border-color: #ffe259;
-    border-style: solid;
-    z-index: 100;
-    pointer-events: none;
-  }
-  #game-border::before {
-    top: 0; left: 0;
-    border-width: 3px 0 0 3px;
-  }
-  #game-border::after {
-    bottom: 0; right: 0;
-    border-width: 0 3px 3px 0;
-  }
-
-  /* extra pseudo corners via extra divs */
   .corner-tr, .corner-bl {
     position: absolute;
     width: 20px; height: 20px;
@@ -101,7 +75,6 @@
   .corner-tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
   .corner-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
 
-  /* ── Title above the game ── */
   #game-title {
     font-family: 'Press Start 2P', monospace;
     font-size: 13px;
@@ -112,9 +85,7 @@
     text-shadow: 0 0 10px #ffe25988, 2px 2px 0 #a855f7;
   }
 
-  canvas {
-    display: block;
-  }
+  canvas { display: block; }
 </style>
 </head>
 <body>
@@ -125,17 +96,16 @@
   <div id="game-border">
     <div class="corner-tr"></div>
     <div class="corner-bl"></div>
-    <!-- Phaser canvas goes here -->
   </div>
 </div>
 
 <script>
 
-  document.getElementById("back-btn").addEventListener("click", () => {
-  window.location.href = "../index.html"; // go to parent folder
+document.getElementById("back-btn").addEventListener("click", () => {
+  window.location.href = "../index.html";
 });
-class FlappyScene extends Phaser.Scene {
 
+class FlappyScene extends Phaser.Scene {
   constructor(){ super("FlappyScene"); }
 
   preload(){
@@ -144,50 +114,55 @@ class FlappyScene extends Phaser.Scene {
     this.load.image("cloud", "assets/cloud.png");
     this.load.image("pipe",  "assets/pipe.png");
     this.load.audio('jumpSound', 'assets/jumpSound.wav');
-    for(let i=1;i<=6;i++){
-      this.load.image("bird"+i,"assets/bird"+i+".png");
+    for(let i=1; i<=6; i++){
+      this.load.image("bird"+i, "assets/bird"+i+".png");
     }
   }
 
   create(){
-    this.gameOver  = false;
-    this.score     = 0;
-    this.highScore = localStorage.getItem("flappyHigh") || 0;
-    this.pipeInterval = 1500;
-    this.gap = 130;     
     const W = 400, H = 600;
-    this.flapSfx = this.sound.add('jumpSound');
+    
+    this.gameOver     = false;
+    this.gameStarted  = false;        // ← Important
+    this.score        = 0;
+    this.highScore    = localStorage.getItem("flappyHigh") || 0;
+    this.pipeInterval = 1500;
+    this.gap          = 130;
+    this.pipeSpeed    = 240;
+    this.bgSpeed      = 20;
+    this.flapSfx      = this.sound.add('jumpSound');
+    this.difficultyUpdated = false;
+    this.pipeTimer    = 0;
+    this.lastGapY     = null;
 
-    // ── Sky ──
+    // Sky
     this.add.rectangle(W/2, H/2, W, H, 0x70c5ce).setDepth(0);
 
-    // ── Background (slow parallax) ──
-    this.bg = this.add.tileSprite(W/2, H/2+100, W, H, "bg").setDepth(1);
+    // Background
+    this.bg = this.add.tileSprite(W/2, H/2 + 100, W, H, "bg").setDepth(1);
 
-    // ── Clouds ──
+    // Clouds
     this.clouds = [];
     for(let i = 0; i < 3; i++){
       let cloud = this.add.image(
         Phaser.Math.Between(50, 300),
-        Phaser.Math.Between(50, 100),
+        Phaser.Math.Between(50, 150),
         "cloud"
       ).setDepth(2);
       cloud.speed = Phaser.Math.Between(30, 70);
       this.clouds.push(cloud);
     }
 
-    // ── Bird ──
+    // Bird
     this.bird = this.physics.add.sprite(80, 200, "bird1").setDepth(6);
     this.bird.setScale(0.55, 0.55);
-    this.bird.body.gravity.y = 1800;
+    this.bird.body.gravity.y = 0;                    // No gravity until game starts
     this.bird.body.setSize(this.bird.width * 0.45, this.bird.height * 0.45);
     this.bird.body.setOffset(this.bird.width * 0.275, this.bird.height * 0.275);
-    this.bird.setCollideWorldBounds(true);
-    
 
     this.lift = -500;
 
-    // Bird flap animation
+    // Bird animation
     this.birdFrame = 1;
     this.time.addEvent({
       delay: 80, loop: true,
@@ -197,83 +172,154 @@ class FlappyScene extends Phaser.Scene {
       }
     });
 
-    // ── Input ──
-    this.input.keyboard.on("keydown-SPACE", () => this.flap());
-    this.input.on("pointerdown", () => this.flap());
+    // Bird bobbing on start screen
+    this.birdTween = this.tweens.add({
+      targets: this.bird,
+      y: 195,
+      duration: 700,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
 
-    // ── Pipes ──
-    // Use a plain group (NOT physics group) for depth control,
-    // and add physics bodies individually — this is the KEY fix.
-    this.pipeGroup = this.add.group();
+    // ── START SCREEN (same style as Snake) ──
+    this.overlay = this.add.rectangle(W/2, H/2, W, H, 0x000000, 0.65).setDepth(30);
 
-    // ── Ground (on top of pipes) ──
+    this.add.text(W/2, H/2 - 90, "🐦 FLAPPY BIRD", {
+      fontFamily: "'Press Start 2P', monospace",
+      fontSize: "26px",
+      color: "#ffe259",
+      stroke: "#000",
+      strokeThickness: 6
+    }).setOrigin(0.5).setDepth(31);
+
+    this.add.text(W/2, H/2 - 25, "Tap or press SPACE\nto flap your wings!", {
+      fontFamily: "'Press Start 2P', monospace",
+      fontSize: "11px",
+      color: "#38bdf8",
+      stroke: "#000",
+      strokeThickness: 3,
+      align: "center"
+    }).setOrigin(0.5).setDepth(31);
+
+    this.startPrompt = this.add.text(W/2, H/2 + 65, "PRESS SPACE\nOR TAP TO START", {
+      fontFamily: "'Press Start 2P', monospace",
+      fontSize: "12px",
+      color: "#ffffff",
+      stroke: "#000",
+      strokeThickness: 4,
+      align: "center"
+    }).setOrigin(0.5).setDepth(31);
+
+    // Input - Start game or flap
+    this.input.keyboard.on("keydown-SPACE", () => this.handleInput());
+    this.input.on("pointerdown", () => this.handleInput());
+
+    // Ground
     this.ground = this.add.tileSprite(W/2, H - 50, W, 100, "ground").setDepth(10);
 
-    // Physics ground collider (invisible static body at the bottom)
     const groundBody = this.physics.add.staticImage(W/2, H - 16, null);
     groundBody.setVisible(false);
     groundBody.body.setSize(W, 32);
-    groundBody.setDepth(10);
     this.physics.add.collider(this.bird, groundBody, () => this.endGame());
 
-    this.pipeSpeed  = 240;
-    this.pipeTimer  = 0;
-    this.bgSpeed    = 20;
+    // Pipes
+    this.pipeGroup = this.add.group();
 
-    // ── UI text ──
-    this.scoreText = this.add.text(10, 10, "", { fontFamily:"'Press Start 2P', monospace", fontSize:"14px", color:"#fff", stroke:"#000", strokeThickness:4 }).setDepth(20);
-    this.bestText  = this.add.text(10, 36, "", { fontFamily:"'Press Start 2P', monospace", fontSize:"11px", color:"#ffe259", stroke:"#000", strokeThickness:3 }).setDepth(20);
+    // UI (shown after start)
+    this.scoreText = this.add.text(10, 10, "Score: 0", {
+      fontFamily: "'Press Start 2P', monospace",
+      fontSize: "14px",
+      color: "#fff",
+      stroke: "#000",
+      strokeThickness: 4
+    }).setDepth(20).setVisible(false);
+
+    this.bestText = this.add.text(10, 36, "Best: " + this.highScore, {
+      fontFamily: "'Press Start 2P', monospace",
+      fontSize: "11px",
+      color: "#ffe259",
+      stroke: "#000",
+      strokeThickness: 3
+    }).setDepth(20);
   }
 
-  flap(){
-    if(this.gameOver){ this.scene.restart(); return; }
+  // Unified input handler
+  handleInput() {
+    if (!this.gameStarted) {
+      this.startGame();
+    } else if (this.gameOver) {
+      this.scene.restart();
+    } else {
+      this.flap();
+    }
+  }
+
+  startGame() {
+    if (this.gameStarted) return;
+
+    this.gameStarted = true;
+
+    // Remove start screen elements
+    if (this.overlay) this.overlay.destroy();
+    if (this.startPrompt) this.startPrompt.destroy();
+    this.children.list.filter(c => c.depth === 31).forEach(c => c.destroy());
+
+    // Stop bobbing
+    if (this.birdTween) this.birdTween.stop();
+
+    // Enable gravity
+    this.bird.body.gravity.y = 1800;
+
+    // Show score UI
+    this.scoreText.setVisible(true);
+
+ 
+  }
+
+  flap() {
+    if (!this.gameStarted || this.gameOver) return;
+    
     this.bird.body.velocity.y = this.lift;
     this.flapSfx.play();
   }
 
-  // ── The real fix: create pipes as individual physics sprites, set depth explicitly ──
-createPipe() {
-    const PIPE_W     = 52;
-    const PIPE_H     = 640;
-    const gap = this.gap;  // dynamic based on score
+  createPipe() {
+    const PIPE_W = 52;
+    const PIPE_H = 640;
+    const gap = this.gap;
 
+    let gapCenterY;
+    do {
+      gapCenterY = Phaser.Math.Between(80, 420);
+    } while (this.lastGapY !== null && Math.abs(gapCenterY - this.lastGapY) < 70);
 
-    const minDiff = 70; // minimum vertical difference
-let gapCenterY;
-do {
-  gapCenterY = Phaser.Math.Between(70, 430);
-} while(this.lastGapY !== null && Math.abs(gapCenterY - this.lastGapY) < minDiff);
+    this.lastGapY = gapCenterY;
 
-this.lastGapY = gapCenterY;  // update for next pipe
-
-    const topEdgeOfGap    = gapCenterY - gap / 2;
-    const bottomEdgeOfGap = gapCenterY + gap / 2;
     const spawnX = 450;
 
-    // ── BOTTOM pipe ──
-    const bp = this.physics.add.image(spawnX, bottomEdgeOfGap, "pipe");
+    // Bottom pipe
+    const bp = this.physics.add.image(spawnX, gapCenterY + gap/2, "pipe");
     bp.setOrigin(0.5, 0);
     bp.setDisplaySize(PIPE_W, PIPE_H);
-    bp.body.setSize(bp.width, bp.height);  // ✅ use ORIGINAL sprite size (101x603)
-    bp.body.setOffset(0, 0);               // ✅ no offset needed
+    bp.body.setSize(bp.width, bp.height);
     bp.body.allowGravity = false;
-    bp.body.immovable    = true;
-    bp.body.velocity.x   = -this.pipeSpeed;
-    bp.isScorePipe       = false;
+    bp.body.immovable = true;
+    bp.body.velocity.x = -this.pipeSpeed;
+    bp.isScorePipe = false;
     bp.setDepth(5);
 
-    // ── TOP pipe ──
-    const tp = this.physics.add.image(spawnX, topEdgeOfGap - PIPE_H, "pipe");
+    // Top pipe
+    const tp = this.physics.add.image(spawnX, gapCenterY - gap/2 - PIPE_H, "pipe");
     tp.setOrigin(0.5, 0);
     tp.setFlipY(true);
     tp.setDisplaySize(PIPE_W, PIPE_H);
-    tp.body.setSize(tp.width, tp.height);  // ✅ use ORIGINAL sprite size (101x603)
-    tp.body.setOffset(0, 0);               // ✅ no offset needed
+    tp.body.setSize(tp.width, tp.height);
     tp.body.allowGravity = false;
-    tp.body.immovable    = true;
-    tp.body.velocity.x   = -this.pipeSpeed;
-    tp.passed            = false;
-    tp.isScorePipe       = true;
+    tp.body.immovable = true;
+    tp.body.velocity.x = -this.pipeSpeed;
+    tp.passed = false;
+    tp.isScorePipe = true;
     tp.setDepth(5);
 
     this.pipeGroup.add(bp);
@@ -281,97 +327,99 @@ this.lastGapY = gapCenterY;  // update for next pipe
 
     this.physics.add.collider(this.bird, bp, () => this.endGame());
     this.physics.add.collider(this.bird, tp, () => this.endGame());
-
-    
-}
+  }
 
   update(time, delta){
-    if(this.gameOver) return;
-    
-    // --- adjust difficulty every 10 points ---
-if(this.score % 10 === 0 && this.score !== 0 && !this.difficultyUpdated){
-    this.pipeSpeed = Math.min(this.pipeSpeed + 40, 480);  // max 480 px/sec
-    this.pipeInterval = Math.max(1500 - 200*(this.score/10), 600); // min interval 600ms
-    this.difficultyUpdated = true; // prevent repeated update for same score
-    // Shrink pipe gap
-    this.gap = Math.max(130 - 5*(this.score/10), 100);  
-    // --- Update all existing pipes' velocity ---
-    this.pipeGroup.getChildren().forEach(pipe => {
-        pipe.body.velocity.x = -this.pipeSpeed;
-    });
-} 
-if(this.score % 10 !== 0) this.difficultyUpdated = false;
+    if (this.gameOver) return;
 
     const dt = delta / 1000;
 
-    // Parallax
-    this.bg.tilePositionX     += this.bgSpeed     * dt;
-    this.ground.tilePositionX += this.pipeSpeed   * dt;
+    // Background always moves
+    this.bg.tilePositionX += this.bgSpeed * dt;
+    this.ground.tilePositionX += this.pipeSpeed * dt;
 
-    // Cloud scroll
+    // Clouds
     this.clouds.forEach(c => {
       c.x -= c.speed * dt;
-      if(c.x < -60){
-        c.x     = 460;
-        c.y     = Phaser.Math.Between(50, 250);
+      if (c.x < -60){
+        c.x = 460;
+        c.y = Phaser.Math.Between(50, 250);
         c.speed = Phaser.Math.Between(20, 50);
       }
     });
 
-    // Pipe spawn
+    if (!this.gameStarted) return;   // ← Stop game logic until started
+
+    // Difficulty increase
+    if (this.score % 10 === 0 && this.score !== 0 && !this.difficultyUpdated){
+      this.pipeSpeed = Math.min(this.pipeSpeed + 40, 480);
+      this.pipeInterval = Math.max(1500 - 200*(this.score/10), 600);
+      this.gap = Math.max(130 - 5*(this.score/10), 100);
+      this.difficultyUpdated = true;
+
+      this.pipeGroup.getChildren().forEach(pipe => {
+        if (pipe.body) pipe.body.velocity.x = -this.pipeSpeed;
+      });
+    }
+    if (this.score % 10 !== 0) this.difficultyUpdated = false;
+
+    // Spawn pipes
     this.pipeTimer += delta;
-    if(this.pipeTimer > this.pipeInterval){
+    if (this.pipeTimer > this.pipeInterval){
       this.createPipe();
       this.pipeTimer = 0;
     }
 
-    // Pipe scoring + cleanup
+    // Scoring & cleanup
     this.pipeGroup.getChildren().forEach(pipe => {
-      if(pipe.isScorePipe && !pipe.passed && pipe.x < this.bird.x){
+      if (pipe.isScorePipe && !pipe.passed && pipe.x < this.bird.x){
         pipe.passed = true;
         this.score++;
+        this.scoreText.setText("Score: " + this.score);
       }
-      if(pipe.x < -100) pipe.destroy();
+      if (pipe.x < -100) pipe.destroy();
     });
 
-    // Bird off top of screen
-    if(this.bird.y>485 || this.bird.y<0){ this.endGame(); }
-
-    // Highscore
-    if(this.score > this.highScore){
-      this.highScore = this.score;
-      localStorage.setItem("flappyHigh", this.highScore);
+    // Bird out of bounds
+    if (this.bird.y < 0 || this.bird.y > 485){
+      this.endGame();
     }
 
-    this.scoreText.setText("Score: " + this.score);
-    this.bestText.setText("Best:  " + this.highScore);
+    // Update high score
+    if (this.score > this.highScore){
+      this.highScore = this.score;
+      localStorage.setItem("flappyHigh", this.highScore);
+      this.bestText.setText("Best:  " + this.highScore);
+    }
   }
 
   endGame(){
-    if(this.gameOver) return;
+    if (this.gameOver) return;
     this.gameOver = true;
 
-    // Stop all pipes
     this.pipeGroup.getChildren().forEach(p => {
-      if(p.body) p.body.velocity.x = 0;
+      if (p.body) p.body.velocity.x = 0;
     });
+
     this.bird.body.velocity.y = 0;
     this.bird.body.velocity.x = 0;
     this.bird.body.gravity.y  = 0;
 
-    // Game over overlay
     const W = 400, H = 600;
     this.add.rectangle(W/2, H/2, W, H, 0x000000, 0.45).setDepth(30);
+
     this.add.text(W/2, H/2 - 50, "GAME OVER", {
       fontFamily: "'Press Start 2P', monospace",
       fontSize: "22px", color: "#ff4444",
       stroke: "#000", strokeThickness: 5
     }).setOrigin(0.5).setDepth(31);
+
     this.add.text(W/2, H/2 + 10, "Score: " + this.score, {
       fontFamily: "'Press Start 2P', monospace",
       fontSize: "14px", color: "#fff",
       stroke: "#000", strokeThickness: 3
     }).setOrigin(0.5).setDepth(31);
+
     this.add.text(W/2, H/2 + 60, "Tap to Restart", {
       fontFamily: "'Press Start 2P', monospace",
       fontSize: "11px", color: "#ffe259",
@@ -384,7 +432,7 @@ const config = {
   type: Phaser.AUTO,
   width: 400,
   height: 600,
-  parent: "game-border",        // ✅ mount inside our styled border div
+  parent: "game-border",
   backgroundColor: "#70c5ce",
   physics: {
     default: "arcade",
@@ -394,7 +442,6 @@ const config = {
 };
 
 new Phaser.Game(config);
-
 
 </script>
 </body>
