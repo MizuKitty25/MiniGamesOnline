@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://pixoplays.com/</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Flappy Bird Game -->
+  <url>
+    <loc>https://pixoplays.com/flappy/</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/flappy.jpg</image:loc>
+      <image:title>Flappy Bird Game</image:title>
+    </image:image>
+  </url>
+
+  <!-- Snake Game -->
+  <url>
+    <loc>https://pixoplays.com/snake/</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/snake.jpg</image:loc>
+      <image:title>Snake Game</image:title>
+    </image:image>
+  </url>
+
+  <!-- Dino Run Game -->
+  <url>
+    <loc>https://pixoplays.com/dino/</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/dino.png</image:loc>
+      <image:title>Dino Run Game</image:title>
+    </image:image>
+  </url>
+
+  <!-- About Page -->
+  <url>
+    <loc>https://pixoplays.com/about.html</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Credits Page -->
+  <url>
+    <loc>https://pixoplays.com/credits.html</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>
