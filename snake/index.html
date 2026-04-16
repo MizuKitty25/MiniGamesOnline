@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
  
 <!-- ─── Primary SEO ─────────────────────────────────── -->
@@ -65,9 +64,11 @@
       radial-gradient(ellipse at 20% 50%, #2d1b69 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, #11998e22 0%, transparent 40%);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 10px 0;
   }
   #game-wrapper {
     position: relative;
@@ -86,7 +87,6 @@
     border-radius: 2px;
     overflow: hidden;
   }
-
 
   #game-border::before, #game-border::after {
     content: '';
@@ -115,29 +115,74 @@
     text-shadow: 0 0 10px #ffe25988, 2px 2px 0 #a855f7;
   }
 
-   #back-btn {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 50;
-  padding: 6px 12px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: #fff;
-  background-color: #ff8f44;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  box-shadow: 0 0 5px #000;
-  transition: all 0.2s;
-}
-
-#back-btn:hover {
-  background-color: #ff8f66;
-  transform: scale(1.05);
-}
+  #back-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    z-index: 50;
+    padding: 6px 12px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    background-color: #ff8f44;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 5px #000;
+    transition: all 0.2s;
+  }
+  #back-btn:hover {
+    background-color: #ff8f66;
+    transform: scale(1.05);
+  }
 
   canvas { display: block; }
+
+  /* ─── D-Pad (mobile controls) ─────────────────── */
+  #dpad {
+    display: none;
+    margin-top: 18px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #dpad-grid {
+    display: grid;
+    grid-template-columns: 56px 56px 56px;
+    grid-template-rows: 56px 56px 56px;
+    gap: 6px;
+  }
+  .dpad-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,226,89,0.35);
+    border-radius: 10px;
+    font-size: 22px;
+    color: #ffe259;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s, transform 0.1s;
+    touch-action: manipulation;
+  }
+  .dpad-btn:active, .dpad-btn.pressed {
+    background: rgba(255,226,89,0.25);
+    transform: scale(0.92);
+  }
+  .dpad-center {
+    background: rgba(255,255,255,0.04);
+    border-color: transparent;
+    pointer-events: none;
+  }
+  .dpad-empty {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Show D-pad only on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    #dpad { display: block; }
+  }
 </style>
 </head>
 <body>
@@ -151,25 +196,41 @@
   </div>
 </div>
 
+<!-- Mobile D-Pad -->
+<div id="dpad" aria-label="Direction controls">
+  <div id="dpad-grid">
+    <div class="dpad-empty"></div>
+    <button class="dpad-btn" id="btn-up"    aria-label="Up">▲</button>
+    <div class="dpad-empty"></div>
+    <button class="dpad-btn" id="btn-left"  aria-label="Left">◀</button>
+    <div class="dpad-btn dpad-center">●</div>
+    <button class="dpad-btn" id="btn-right" aria-label="Right">▶</button>
+    <div class="dpad-empty"></div>
+    <button class="dpad-btn" id="btn-down"  aria-label="Down">▼</button>
+    <div class="dpad-empty"></div>
+  </div>
+</div>
+
 <script>
 document.getElementById("back-btn").addEventListener("click", () => {
-  window.location.href = "../index.html"; // go to parent folder
+  window.location.href = "../index.html";
 });
+
 const W        = 400;
 const H        = 600;
 const TILE     = 20;
-const COLS     = W / TILE;    // 20
+const COLS     = W / TILE;
 const ROWS     = 20;
 const PLAY_TOP = 140;
-const PLAY_H   = ROWS * TILE; // 400
+const PLAY_H   = ROWS * TILE;
 
-const BASE_STEP = 150;  // ms per step at start
-const MIN_STEP  = 60;   // fastest possible
-const SPEED_DEC = 8;    // ms reduction per milestone
-const SPEED_INC = 3;    // every N cherries = speed up
+const BASE_STEP = 150;
+const MIN_STEP  = 60;
+const SPEED_DEC = 8;
+const SPEED_INC = 3;
 
-const WALL_TILES  = 20;  // total individual wall tiles to place
-const WALL_MAX_LEN = 5;  // max tiles per wall segment
+const WALL_TILES  = 20;
+const WALL_MAX_LEN = 5;
 
 const DIR = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3 };
 const OPP = {
@@ -257,6 +318,27 @@ class SnakeScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     });
 
+    // ─── Swipe detection ──────────────────────────────
+    this._touchStartX = 0;
+    this._touchStartY = 0;
+    this.input.on('pointerdown', (ptr) => {
+      this._touchStartX = ptr.x;
+      this._touchStartY = ptr.y;
+    });
+    this.input.on('pointerup', (ptr) => {
+      if (!this.started || this.gameOver) return;
+      const dx = ptr.x - this._touchStartX;
+      const dy = ptr.y - this._touchStartY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      if (Math.max(absDx, absDy) < 15) return; // too small — ignore (tap)
+      if (absDx > absDy) {
+        this.tryDir(dx > 0 ? DIR.RIGHT : DIR.LEFT);
+      } else {
+        this.tryDir(dy > 0 ? DIR.DOWN : DIR.UP);
+      }
+    });
+
     this.showStartScreen();
   }
 
@@ -300,8 +382,6 @@ class SnakeScene extends Phaser.Scene {
   tileY(row) { return PLAY_TOP + row * TILE + TILE / 2; }
 
   // ─── Walls ────────────────────────────────────────────
-
-  // BFS flood-fill: count reachable open tiles from (startC, startR) given a wall set
   floodFill(wallSet, startC, startR) {
     const visited = new Set();
     const queue   = [`${startC},${startR}`];
@@ -323,10 +403,7 @@ class SnakeScene extends Phaser.Scene {
   }
 
   spawnWalls() {
-    // Safe zone: snake starts at cols 5-7 row 10, keep buffer clear
     const isSafe = (c, r) => (c >= 3 && c <= 11 && r >= 8 && r <= 12);
-
-    // Total open tiles without any walls
     const totalOpen = COLS * ROWS;
 
     let attempts = 0;
@@ -334,7 +411,6 @@ class SnakeScene extends Phaser.Scene {
       attempts++;
       const candidate = new Set();
 
-      // Place segments one at a time until we hit WALL_TILES total
       let placementAttempts = 0;
       while (candidate.size < WALL_TILES && placementAttempts < 2000) {
         placementAttempts++;
@@ -344,67 +420,54 @@ class SnakeScene extends Phaser.Scene {
         const col        = Phaser.Math.Between(1, COLS - 2);
         const row        = Phaser.Math.Between(1, ROWS - 2);
 
-        // Build this segment's tiles
         const tiles = [];
         for (let k = 0; k < length; k++) {
           const c = horizontal ? col + k : col;
           const r = horizontal ? row     : row + k;
           if (c < 0 || c >= COLS || r < 0 || r >= ROWS) continue;
           if (isSafe(c, r))      continue;
-          if (candidate.has(`${c},${r}`)) continue; // no duplicates
+          if (candidate.has(`${c},${r}`)) continue;
           tiles.push(`${c},${r}`);
         }
 
-        // Enforce max 5 contiguous — check that adding these tiles won't
-        // merge with existing walls to form a group > WALL_MAX_LEN
         if (tiles.length === 0) continue;
 
-        // Check none of these tiles are already in candidate (duplicates)
         const anyDupe = tiles.some(t => candidate.has(t));
         if (anyDupe) continue;
 
-        // Tentatively add
         const testSet = new Set(candidate);
         tiles.forEach(t => testSet.add(t));
 
-        // Validate connectivity group size for each new tile
         let groupTooLarge = false;
         for (const t of tiles) {
           const [tc, tr] = t.split(",").map(Number);
-          // BFS within walls only to find connected wall group size
           const groupSize = this.wallGroupSize(testSet, tc, tr);
           if (groupSize > WALL_MAX_LEN) { groupTooLarge = true; break; }
         }
         if (groupTooLarge) continue;
 
-        // Commit segment
         tiles.forEach(t => candidate.add(t));
       }
 
-      if (candidate.size < WALL_TILES) continue; // didn't fill enough, retry
+      if (candidate.size < WALL_TILES) continue;
 
-      // Trim to exactly WALL_TILES if we overshot
       const wallArr = Array.from(candidate);
       while (wallArr.length > WALL_TILES) wallArr.pop();
       const finalSet = new Set(wallArr);
 
-      // Flood-fill validation: all open tiles must still be reachable from snake start
       const reachable = this.floodFill(finalSet, 7, 10);
       const openTiles = totalOpen - finalSet.size;
-      if (reachable < openTiles) continue; // walls created an isolated pocket — retry
+      if (reachable < openTiles) continue;
 
-      // Passed — commit
       this.walls = finalSet;
       this.drawWalls();
       return;
     }
 
-    // Fallback: no walls if we couldn't generate a valid layout
     this.walls = new Set();
     this.drawWalls();
   }
 
-  // BFS within wall tiles only — returns size of the connected wall group containing (c,r)
   wallGroupSize(wallSet, c, r) {
     const visited = new Set();
     const queue   = [`${c},${r}`];
@@ -432,15 +495,12 @@ class SnakeScene extends Phaser.Scene {
       const x = c * TILE;
       const y = PLAY_TOP + r * TILE;
 
-      // Dark fill
       this.wallGraphics.fillStyle(0x0f172a, 1);
       this.wallGraphics.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
 
-      // Cyan glowing border
       this.wallGraphics.lineStyle(1.5, 0x38bdf8, 0.9);
       this.wallGraphics.strokeRect(x + 1, y + 1, TILE - 2, TILE - 2);
 
-      // Inner cross detail
       this.wallGraphics.lineStyle(1, 0x38bdf8, 0.2);
       this.wallGraphics.beginPath();
       this.wallGraphics.moveTo(x + 2,        y + TILE / 2);
@@ -535,13 +595,12 @@ class SnakeScene extends Phaser.Scene {
     }
   }
 
-  // body_turn 0° = ┘  (North + West open)
   turnAngle(fromDir, toDir) {
     const U = DIR.UP, R = DIR.RIGHT, D = DIR.DOWN, L = DIR.LEFT;
-    if ((fromDir===L && toDir===U)||(fromDir===U && toDir===L)) return 0;   // ┘
-    if ((fromDir===R && toDir===U)||(fromDir===U && toDir===R)) return 90;  // └
-    if ((fromDir===R && toDir===D)||(fromDir===D && toDir===R)) return 180; // ┌
-    if ((fromDir===L && toDir===D)||(fromDir===D && toDir===L)) return 270; // ┐
+    if ((fromDir===L && toDir===U)||(fromDir===U && toDir===L)) return 0;
+    if ((fromDir===R && toDir===U)||(fromDir===U && toDir===R)) return 90;
+    if ((fromDir===R && toDir===D)||(fromDir===D && toDir===R)) return 180;
+    if ((fromDir===L && toDir===D)||(fromDir===D && toDir===L)) return 270;
     return 0;
   }
 
@@ -621,13 +680,9 @@ class SnakeScene extends Phaser.Scene {
       case DIR.RIGHT: nc++; break;
     }
 
-    // Border collision
     if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) { this.endGame(); return; }
-
-    // Wall collision
     if (this.isWall(nc, nr)) { this.endGame(); return; }
 
-    // Self collision
     for (let i = 0; i < this.body.length - 1; i++) {
       if (this.body[i].col === nc && this.body[i].row === nr) { this.endGame(); return; }
     }
@@ -641,7 +696,6 @@ class SnakeScene extends Phaser.Scene {
       this.spawnCherry();
       this.eatSfx.play();
 
-      // Speed up every SPEED_INC cherries
       if (this.score % SPEED_INC === 0 && this.stepMs > MIN_STEP) {
         this.stepMs = Math.max(MIN_STEP, this.stepMs - SPEED_DEC);
         const spd = Math.round((BASE_STEP - this.stepMs) / SPEED_DEC) + 1;
@@ -655,7 +709,6 @@ class SnakeScene extends Phaser.Scene {
       this.body.pop();
     }
 
-    // Snap to grid — no tweening
     this.buildSprites();
 
     this.scoreTxt.setText(String(this.score).padStart(5, "0"));
@@ -713,7 +766,56 @@ const config = {
   scene:  SnakeScene
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// ─── D-Pad button wiring ────────────────────────────────
+(function () {
+  const map = {
+    'btn-up':    DIR.UP,
+    'btn-down':  DIR.DOWN,
+    'btn-left':  DIR.LEFT,
+    'btn-right': DIR.RIGHT,
+  };
+
+  function pressDir(dirValue) {
+    const scene = game.scene.getScene('SnakeScene');
+    if (!scene) return;
+    if (!scene.started) {
+      scene.startGame();
+      return;
+    }
+    if (scene.gameOver) {
+      scene.scene.restart();
+      return;
+    }
+    scene.tryDir(dirValue);
+  }
+
+  Object.entries(map).forEach(([id, dirValue]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+
+    // Visual feedback helper
+    function flash() {
+      btn.classList.add('pressed');
+      setTimeout(() => btn.classList.remove('pressed'), 120);
+    }
+
+    // Touch (preferred on mobile — no 300ms delay)
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      flash();
+      pressDir(dirValue);
+    }, { passive: false });
+
+    // Mouse fallback (desktop testing of D-pad)
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      flash();
+      pressDir(dirValue);
+    });
+  });
+})();
 </script>
 </body>
 </html>
