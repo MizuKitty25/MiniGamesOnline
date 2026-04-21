@@ -806,7 +806,12 @@ function setupConn(){
     } else {
       if(data.type==='state'){
         const wasOver=state==='OVER';
-        ball.x=data.bx; ball.y=data.by; ball.vx=data.bvx; ball.vy=data.bvy;
+        // Dead-reckoning correction: lerp on small errors, snap on large ones
+        const errX=data.bx-ball.x, errY=data.by-ball.y;
+        const err=Math.hypot(errX,errY);
+        if(err>40){ ball.x=data.bx; ball.y=data.by; }
+        else { ball.x+=errX*0.35; ball.y+=errY*0.35; }
+        ball.vx=data.bvx; ball.vy=data.bvy;
         padL.y=data.ply; // don't overwrite padR.y — guest uses local prediction
         scoreL=data.sl; scoreR=data.sr;
         state=data.st; cdTime=data.cd;
@@ -855,6 +860,13 @@ function loop(ts){
   if(state==='PLAYING'){
     updatePlayers(dt);
     if(onlineRole!=='guest'){ updateAI(dt); updateBall(dt); }
+    else {
+      // Extrapolate ball between host packets so it moves smoothly every frame
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+      if(ball.y-BALL_R<=0){ ball.y=BALL_R;   ball.vy= Math.abs(ball.vy); }
+      if(ball.y+BALL_R>=H){ ball.y=H-BALL_R; ball.vy=-Math.abs(ball.vy); }
+    }
   } else if(state==='COUNTDOWN'||state==='OVER'){
     updatePlayers(dt);
   }
@@ -863,7 +875,7 @@ function loop(ts){
   // Host broadcasts state to guest every ~33ms
   if(onlineRole==='host'){
     const now=performance.now();
-    if(conn&&conn.open&&now-lastSendT>33){
+    if(conn&&conn.open&&now-lastSendT>16){
       lastSendT=now;
       conn.send({type:'state',
         bx:ball.x,by:ball.y,bvx:ball.vx,bvy:ball.vy,
