@@ -203,10 +203,11 @@ const PLAYER_SPD = 520;    // px/s — fast enough to match faster ball
 
 /* ── Difficulty config (all in px/s for delta-time) ── */
 const DIFF = {
-  easy:   { ballStart:390, ballMax:860, aiSpd:210, aiErr:65,  aiLerp:0.40 },
-  medium: { ballStart:460, ballMax:1060, aiSpd:300, aiErr:28,  aiLerp:0.60 },
-  hard:   { ballStart:530, ballMax:1260, aiSpd:390, aiErr:10,  aiLerp:0.80 },
+  easy:   { ballStart:390, ballMax:860,  aiSpd:175, aiErr:85,  aiLerp:0.26 },
+  medium: { ballStart:460, ballMax:1060, aiSpd:370, aiErr:20,  aiLerp:0.70 },
+  hard:   { ballStart:530, ballMax:1260, aiSpd:520, aiErr:3,   aiLerp:0.94 },
 };
+const BOOST_MULT = 1.65;
 
 let gameMode   = 'vsai';
 let difficulty = 'medium';
@@ -281,7 +282,7 @@ document.addEventListener('keydown', e=>{
     }
     e.preventDefault();
   }
-  if(['KeyW','KeyS','ArrowUp','ArrowDown'].includes(e.code)) e.preventDefault();
+  if(['KeyW','KeyS','ArrowUp','ArrowDown','ShiftLeft','ShiftRight'].includes(e.code)) e.preventDefault();
 });
 document.addEventListener('keyup', e=>{ keys[e.code]=false; });
 
@@ -366,15 +367,15 @@ function setDiff(d){
 function updateHint(){
   const h1=document.getElementById('h1'), h2=document.getElementById('h2');
   if(gameMode==='online'){
-    h1.textContent='W / S  or  ↑ / ↓ — move  ·  SPACE — start/rematch';
+    h1.textContent='W / S  or  ↑ / ↓ — move  ·  Shift / Space — boost  ·  SPACE — start/rematch';
     h2.textContent='You are always on the left · Host sets difficulty';
     h2.style.color='#38bdf855';
   } else if(gameMode==='2p'){
-    h1.textContent='P1: W / S  ·  P2: ↑ / ↓  ·  SPACE to start  ·  Easy/Medium/Hard = ball speed';
+    h1.textContent='P1: W / S + LShift boost  ·  P2: ↑ / ↓ + RShift boost  ·  SPACE to start';
     h2.textContent='Mobile: drag left half (P1) · drag right half (P2)';
     h2.style.color='#ffe25966';
   } else {
-    h1.textContent='W / S  or  ↑ / ↓ — move  ·  SPACE — start';
+    h1.textContent='W / S  or  ↑ / ↓ — move  ·  Shift / Space — boost  ·  SPACE — start';
     h2.textContent='Mobile: drag the left half to move';
     h2.style.color='#ffffff33';
   }
@@ -416,32 +417,47 @@ function serveBall(){
    PHYSICS (delta-time)
 ═══════════════════════ */
 function updatePlayers(dt){
-  const m=PLAYER_SPD*dt;
-  if(onlineRole==='host'){
-    // Host controls left paddle only; right paddle comes from guest data
-    if(keys['KeyW']||keys['ArrowUp'])   padL.y-=m;
-    if(keys['KeyS']||keys['ArrowDown']) padL.y+=m;
-    padL.y=Math.max(0,Math.min(H-PADDLE_H,padL.y));
+  const shiftAny  = keys['ShiftLeft']||keys['ShiftRight'];
+  const spaceBoost= state==='PLAYING' && keys['Space'];
+
+  if(onlineRole){
+    // Online: any shift or space = boost
+    const m = PLAYER_SPD * (shiftAny||spaceBoost ? BOOST_MULT : 1) * dt;
+    const up = keys['KeyW']||keys['ArrowUp'];
+    const dn = keys['KeyS']||keys['ArrowDown'];
+    if(onlineRole==='host'){
+      if(up) padL.y-=m;
+      if(dn) padL.y+=m;
+      padL.y=Math.max(0,Math.min(H-PADDLE_H,padL.y));
+    } else {
+      if(up) padR.y-=m;
+      if(dn) padR.y+=m;
+      padR.y=Math.max(0,Math.min(H-PADDLE_H,padR.y));
+      const now=performance.now();
+      if(conn&&conn.open&&now-guestLastSendT>33){ guestLastSendT=now; conn.send({type:'input',padY:padR.y}); }
+    }
     return;
   }
-  if(onlineRole==='guest'){
-    // Guest controls right paddle (drawn on left); send to host
-    if(keys['KeyW']||keys['ArrowUp'])   padR.y-=m;
-    if(keys['KeyS']||keys['ArrowDown']) padR.y+=m;
-    padR.y=Math.max(0,Math.min(H-PADDLE_H,padR.y));
-    const now=performance.now();
-    if(conn&&conn.open&&now-guestLastSendT>33){ guestLastSendT=now; conn.send({type:'input',padY:padR.y}); }
-    return;
-  }
-  if(keys['KeyW'])    padL.y-=m;
-  if(keys['KeyS'])    padL.y+=m;
-  if(gameMode==='vsai'){
-    if(keys['ArrowUp'])   padL.y-=m;
-    if(keys['ArrowDown']) padL.y+=m;
-  } else {
-    if(keys['ArrowUp'])   padR.y-=m;
-    if(keys['ArrowDown']) padR.y+=m;
-  }
+
+  // vsai / 2p
+  // Fix: use OR so pressing W + ArrowUp together doesn't stack movement
+  const upL = keys['KeyW'] || (gameMode==='vsai' && keys['ArrowUp']);
+  const dnL = keys['KeyS'] || (gameMode==='vsai' && keys['ArrowDown']);
+  const upR = gameMode==='2p' && keys['ArrowUp'];
+  const dnR = gameMode==='2p' && keys['ArrowDown'];
+
+  // vsai: any shift or space boosts P1. 2p: LShift boosts P1, RShift boosts P2
+  const boostL = keys['ShiftLeft'] || (gameMode==='vsai' && (keys['ShiftRight']||spaceBoost));
+  const boostR = keys['ShiftRight'];
+
+  const mL = PLAYER_SPD * (boostL ? BOOST_MULT : 1) * dt;
+  const mR = PLAYER_SPD * (boostR ? BOOST_MULT : 1) * dt;
+
+  if(upL) padL.y-=mL;
+  if(dnL) padL.y+=mL;
+  if(upR) padR.y-=mR;
+  if(dnR) padR.y+=mR;
+
   padL.y=Math.max(0,Math.min(H-PADDLE_H,padL.y));
   padR.y=Math.max(0,Math.min(H-PADDLE_H,padR.y));
 }
