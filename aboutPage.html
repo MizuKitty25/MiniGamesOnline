@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About PixoPlays — Free Browser Arcade Games | PixoPlays</title>
+<meta name="description" content="Learn about PixoPlays — a free browser arcade with no ads, no downloads, and no accounts. Play Snake, Flappy Bird, Dino Run, Pong, and Brick Breaker instantly.">
+<meta name="keywords" content="about pixoplays, free browser games, arcade games no download, pixoplays games, free online arcade, snake flappy dino pong brick breaker">
+<meta name="author" content="PixoPlays">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#1a0a2e">
+<link rel="canonical" href="https://pixoplays.com/aboutPage.html">
+<link rel="icon" type="image/png" href="applogo.png">
+<link rel="apple-touch-icon" href="applogo.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pixoplays.com/aboutPage.html">
+<meta property="og:title" content="About PixoPlays — Free Browser Arcade Games">
+<meta property="og:description" content="PixoPlays is a free, no-ads browser arcade. Play Snake, Flappy Bird, Dino Run, Pong, and Brick Breaker — no download, no account.">
+<meta property="og:image" content="https://pixoplays.com/applogo.png">
+<meta property="og:site_name" content="PixoPlays">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://pixoplays.com/aboutPage.html">
+<meta name="twitter:title" content="About PixoPlays — Free Browser Arcade Games">
+<meta name="twitter:description" content="PixoPlays — free browser arcade games, no ads, no downloads, no accounts. Just play.">
+<meta name="twitter:image" content="https://pixoplays.com/applogo.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "About PixoPlays",
+  "description": "Free browser arcade with no ads, no downloads, and no accounts. Classic games playable instantly in any browser.",
+  "url": "https://pixoplays.com/aboutPage.html",
+  "publisher": { "@type": "Organization", "name": "PixoPlays", "url": "https://pixoplays.com" }
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#ffe259;--orange:#ffa751;--red:#ff6b6b;--purple:#a855f7;--cyan:#38bdf8;--dark:#1a0a2e;--card-bg:#12082a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{min-height:100vh;background:var(--dark);background-image:radial-gradient(ellipse at 15% 50%,#2d1b6988 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,#11998e22 0%,transparent 45%);font-family:'Press Start 2P',monospace;color:#fff;overflow-x:hidden;display:flex;flex-direction:column;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:999;}
+  nav{display:flex;justify-content:center;gap:8px;padding:20px 20px 0;flex-wrap:wrap;}
+  nav a{font-family:'Press Start 2P',monospace;font-size:8px;color:#ffffff88;text-decoration:none;padding:8px 14px;border:1px solid #ffffff22;border-radius:2px;letter-spacing:1px;transition:color 0.2s,border-color 0.2s,text-shadow 0.2s;}
+  nav a:hover,nav a.active{color:var(--gold);border-color:var(--gold);text-shadow:0 0 10px var(--gold);}
+  header{text-align:center;padding:40px 20px 20px;}
+  .page-tag{font-size:9px;color:var(--cyan);letter-spacing:3px;opacity:0.7;margin-bottom:14px;}
+  h1{font-size:clamp(16px,3vw,22px);background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;line-height:1.5;filter:drop-shadow(0 0 16px #38bdf855);}
+  .header-divider{margin:18px auto 0;width:160px;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);}
+  main{max-width:780px;margin:0 auto;padding:40px clamp(16px,5vw,40px) 20px;width:100%;}
+
+  .intro-card{position:relative;padding:4px;border-radius:6px;background:linear-gradient(135deg,var(--cyan),var(--purple),var(--gold));box-shadow:0 0 40px #38bdf833,0 0 80px #a855f722;margin-bottom:32px;animation:cardIn 0.6s ease both;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .intro-inner{background:var(--card-bg);border-radius:4px;padding:32px;}
+  .site-logo{font-size:clamp(18px,4vw,26px);color:var(--gold);text-shadow:0 0 14px #ffe25966;letter-spacing:3px;margin-bottom:12px;}
+  .site-tagline{font-size:8px;color:var(--cyan);letter-spacing:2px;opacity:0.8;margin-bottom:20px;}
+  .intro-text{font-size:7px;color:#ffffffbb;line-height:2.6;letter-spacing:0.5px;}
+  .intro-text span{color:var(--gold);}
+
+  .section-title{font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+  .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold),transparent);}
+
+  .games-section{margin-bottom:32px;animation:cardIn 0.6s ease 0.1s both;}
+  .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
+  .game-card{background:var(--card-bg);border:1px solid #ffffff11;border-radius:4px;padding:22px 18px;transition:border-color 0.2s,box-shadow 0.2s,transform 0.2s;}
+  .game-card:hover{border-color:var(--cyan);box-shadow:0 0 18px #38bdf833;transform:translateY(-4px);}
+  .game-icon{font-size:30px;margin-bottom:12px;}
+  .game-name{font-size:8px;color:var(--gold);letter-spacing:1px;margin-bottom:10px;}
+  .game-desc{font-size:7px;color:#ffffffaa;line-height:2.2;letter-spacing:0.5px;}
+  .game-tag{display:inline-block;margin-top:12px;font-size:6px;color:var(--cyan);border:1px solid var(--cyan);padding:4px 8px;border-radius:2px;letter-spacing:1px;}
+
+  .what-section{margin-bottom:32px;animation:cardIn 0.6s ease 0.15s both;}
+  .what-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+  .what-card{background:var(--card-bg);border:1px solid #ffffff11;border-radius:4px;padding:18px 14px;text-align:center;}
+  .what-icon{font-size:22px;margin-bottom:10px;}
+  .what-title{font-size:7px;color:var(--cyan);letter-spacing:1px;margin-bottom:8px;}
+  .what-desc{font-size:6px;color:#ffffff88;line-height:2.2;letter-spacing:0.5px;}
+
+  .coming-section{margin-bottom:32px;animation:cardIn 0.6s ease 0.2s both;}
+  .coming-list{display:flex;flex-direction:column;gap:12px;}
+  .coming-row{display:flex;align-items:center;gap:14px;background:var(--card-bg);border:1px solid #ffffff11;border-radius:4px;padding:14px 18px;}
+  .coming-icon{font-size:20px;flex-shrink:0;}
+  .coming-text{font-size:7px;color:#ffffffbb;line-height:2.2;letter-spacing:0.5px;}
+  .coming-text strong{color:var(--gold);}
+  .badge{font-size:6px;color:var(--purple);border:1px solid var(--purple);padding:3px 7px;border-radius:2px;letter-spacing:1px;white-space:nowrap;flex-shrink:0;margin-left:auto;}
+
+  .support-section{animation:cardIn 0.6s ease 0.3s both;margin-bottom:10px;}
+  .support-box{position:relative;padding:4px;border-radius:6px;background:linear-gradient(135deg,var(--gold),var(--orange),var(--red),var(--purple),var(--cyan));box-shadow:0 0 30px #ffe25933;}
+  .support-inner{background:var(--card-bg);border-radius:4px;padding:28px 24px;text-align:center;}
+  .support-title{font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:16px;text-shadow:0 0 10px #ffe25966;}
+  .support-text{font-size:7px;color:#ffffffaa;line-height:2.4;letter-spacing:0.5px;max-width:500px;margin:0 auto 24px;}
+  .support-text span{color:var(--gold);}
+  .kofi-wrap{display:flex;justify-content:center;}
+
+  .footer-nav{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;padding:40px 20px 16px;margin-top:auto;}
+  .footer-nav a{font-size:7px;color:#ffffff44;text-decoration:none;letter-spacing:1px;transition:color 0.2s;}
+  .footer-nav a:hover{color:var(--gold);}
+  footer{text-align:center;padding:8px 24px 28px;font-size:7px;color:#ffffff22;letter-spacing:2px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">🕹️ Games</a>
+  <a href="aboutPage.html" class="active">📖 About PixoPlays</a>
+  <a href="about.html">👾 About Me</a>
+  <a href="credits.html">📜 Credits</a>
+</nav>
+
+<header>
+  <div class="page-tag">— What is this place? —</div>
+  <h1>📖 ABOUT PIXOPLAYS</h1>
+  <div class="header-divider"></div>
+</header>
+
+<main>
+
+  <!-- Intro -->
+  <div class="intro-card">
+    <div class="intro-inner">
+      <div class="site-logo">🕹️ PIXOPLAYS</div>
+      <div class="site-tagline">// FREE BROWSER GAMES · NO ADS · NO INSTALLS</div>
+      <p class="intro-text">
+        PixoPlays is a <span>free, no-nonsense browser game arcade</span> — no logins, no downloads, no ads. Just open a game and play.<br><br>
+        It started as a small passion project with a handful of classic games, and it's slowly growing into something bigger. Every game here is handcrafted and runs right in your browser, so you can jump in anytime, anywhere.
+      </p>
+    </div>
+  </div>
+
+  <!-- Games -->
+  <div class="games-section">
+    <div class="section-title">🎮 GAMES IN THE ARCADE</div>
+    <div class="game-grid">
+
+      <a class="game-card" href="snake/index.html" style="text-decoration:none;color:inherit;">
+        <div class="game-icon">🐍</div>
+        <div class="game-name">SNAKE</div>
+        <p class="game-desc">The classic snake game. Eat, grow, don't crash. How long can you survive before you run out of room?</p>
+        <span class="game-tag">▶ PLAY NOW</span>
+      </a>
+
+      <a class="game-card" href="flappy/index.html" style="text-decoration:none;color:inherit;">
+        <div class="game-icon">🐦</div>
+        <div class="game-name">FLAPPY BIRD</div>
+        <p class="game-desc">Tap to fly. Dodge the pipes. Deceptively simple, endlessly frustrating in the best way possible.</p>
+        <span class="game-tag">▶ PLAY NOW</span>
+      </a>
+
+      <a class="game-card" href="Dino/index.html" style="text-decoration:none;color:inherit;">
+        <div class="game-icon">🦖</div>
+        <div class="game-name">DINO RUN</div>
+        <p class="game-desc">Jump over obstacles across 4 seasons. An endless runner that gets faster the better you get.</p>
+        <span class="game-tag">▶ PLAY NOW</span>
+      </a>
+
+      <a class="game-card" href="pong/index.html" style="text-decoration:none;color:inherit;">
+        <div class="game-icon">🏓</div>
+        <div class="game-name">PONG</div>
+        <p class="game-desc">Two paddles, one ball. Play vs AI, local 2-player, or online multiplayer with a room code.</p>
+        <span class="game-tag">▶ PLAY NOW</span>
+      </a>
+
+      <a class="game-card" href="brickBreak/index.html" style="text-decoration:none;color:inherit;">
+        <div class="game-icon">🧱</div>
+        <div class="game-name">BRICK BREAKER</div>
+        <p class="game-desc">5 levels of brick-smashing action with power-ups, lasers, and multi-ball. Classic breakout fun.</p>
+        <span class="game-tag">▶ PLAY NOW</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- What you get -->
+  <div class="what-section">
+    <div class="section-title">✨ WHAT YOU GET HERE</div>
+    <div class="what-grid">
+      <div class="what-card">
+        <div class="what-icon">🚫</div>
+        <div class="what-title">ZERO ADS</div>
+        <div class="what-desc">No banners, no popups, no interruptions. Just the game.</div>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">⚡</div>
+        <div class="what-title">INSTANT PLAY</div>
+        <div class="what-desc">No installs, no accounts. Click and play, that's it.</div>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">📱</div>
+        <div class="what-title">WORKS ANYWHERE</div>
+        <div class="what-desc">Desktop or mobile browser — all games are playable on any device.</div>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🆓</div>
+        <div class="what-title">ALWAYS FREE</div>
+        <div class="what-desc">Every game here is completely free. No paywalls, ever.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coming soon -->
+  <div class="coming-section">
+    <div class="section-title">🔭 WHAT'S COMING NEXT</div>
+    <div class="coming-list">
+      <div class="coming-row">
+        <div class="coming-icon">🃏</div>
+        <div class="coming-text"><strong>Memory Match</strong> — Flip cards and find matching pairs. Great for a quick brain workout.</div>
+        <span class="badge">PLANNED</span>
+      </div>
+      <div class="coming-row">
+        <div class="coming-icon">🎯</div>
+        <div class="coming-text"><strong>More games</strong> — The arcade is always growing. Check back anytime for new additions!</div>
+        <span class="badge">ALWAYS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Support -->
+  <div class="support-section">
+    <div class="support-box">
+      <div class="support-inner">
+        <div class="support-title">☕ KEEP THE ARCADE RUNNING</div>
+        <p class="support-text">
+          PixoPlays is <span>100% free</span> — no ads, no subscriptions, no tricks. All games are here for anyone to enjoy.<br><br>
+          If you like what you see and want to help keep the lights on and new games coming,
+          buying a coffee goes a long way. <span>Every bit of support is truly appreciated. 💛</span>
+        </p>
+        <div class="kofi-wrap">
+          <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+          <script type='text/javascript'>
+            kofiwidget2.init('Support PixoPlays on Ko-fi', '#c98a2b', 'O4O51WSVWX');
+            kofiwidget2.draw();
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="footer-nav">
+  <a href="index.html">🕹️ Games</a>
+  <a href="about.html">📖 About</a>
+  <a href="credits.html">📜 Credits</a>
+</div>
+<footer>© PIXOPLAYS &nbsp;·&nbsp; FREE TO PLAY &nbsp;·&nbsp; MADE WITH ❤️</footer>
+
+</body>
+</html>

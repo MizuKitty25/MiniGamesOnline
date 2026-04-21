@@ -1,65 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  
+
   <!-- Homepage -->
   <url>
     <loc>https://pixoplays.com/</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-  </url>
-
-  <!-- Flappy Bird Game -->
-  <url>
-    <loc>https://pixoplays.com/flappy/</loc>
-    <lastmod>2026-04-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
     <image:image>
-      <image:loc>https://pixoplays.com/coverImage/flappy.jpg</image:loc>
-      <image:title>Flappy Bird Game</image:title>
+      <image:loc>https://pixoplays.com/applogo.png</image:loc>
+      <image:title>PixoPlays — Free Online Arcade Games</image:title>
     </image:image>
   </url>
 
   <!-- Snake Game -->
   <url>
     <loc>https://pixoplays.com/snake/</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pixoplays.com/coverImage/snake.jpg</image:loc>
-      <image:title>Snake Game</image:title>
+      <image:title>Snake Game — PixoPlays</image:title>
+    </image:image>
+  </url>
+
+  <!-- Flappy Bird Game -->
+  <url>
+    <loc>https://pixoplays.com/flappy/</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/flappy.jpg</image:loc>
+      <image:title>Flappy Bird Game — PixoPlays</image:title>
     </image:image>
   </url>
 
   <!-- Dino Run Game -->
   <url>
     <loc>https://pixoplays.com/Dino/</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://pixoplays.com/coverImage/dino.png</image:loc>
-      <image:title>Dino Run Game</image:title>
+      <image:title>Dino Run Game — PixoPlays</image:title>
     </image:image>
   </url>
 
-  <!-- About Page -->
+  <!-- Pong Game -->
   <url>
-    <loc>https://pixoplays.com/about.html</loc>
-    <lastmod>2026-04-15</lastmod>
+    <loc>https://pixoplays.com/pong/</loc>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/pong.png</image:loc>
+      <image:title>Pong Game — PixoPlays</image:title>
+    </image:image>
   </url>
 
-  <!-- Credits Page -->
+  <!-- Brick Breaker Game -->
+  <url>
+    <loc>https://pixoplays.com/brickBreak/</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/brick.png</image:loc>
+      <image:title>Brick Breaker Game — PixoPlays</image:title>
+    </image:image>
+  </url>
+
+  <!-- About PixoPlays -->
+  <url>
+    <loc>https://pixoplays.com/aboutPage.html</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- About the Developer -->
+  <url>
+    <loc>https://pixoplays.com/about.html</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Credits -->
   <url>
     <loc>https://pixoplays.com/credits.html</loc>
-    <lastmod>2026-04-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>

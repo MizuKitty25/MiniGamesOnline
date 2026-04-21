@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
- 
+
 <!-- ─── Primary SEO ─────────────────────────────────── -->
-<title>Snake Game – Classic Arcade Snake with Obstacles</title>
+<title>🐍 Snake Game — PixoPlays</title>
 <meta name="description" content="Play a classic Snake arcade game in your browser. Eat cherries, dodge walls, and beat your high score. Built with Phaser 3. Free to play, no download needed.">
 <meta name="keywords" content="snake game, arcade game, browser game, phaser game, classic snake, free game, html5 game">
 <meta name="author" content="PixoPlays">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://pixoplays.com/snake/">
- 
-<!-- ─── Open Graph (Facebook / Discord / WhatsApp) ─── -->
+
+<!-- ─── Open Graph ─── -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pixoplays.com/snake/">
 <meta property="og:title" content="Snake Game – Classic Arcade Snake with Obstacles | PixoPlays">
@@ -22,15 +22,15 @@
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="PixoPlays">
 <meta property="og:locale" content="en_US">
- 
-<!-- ─── Twitter Card ──────────────────────────────────── -->
+
+<!-- ─── Twitter Card ─── -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:url" content="https://pixoplays.com/snake/">
 <meta name="twitter:title" content="Snake Game – Classic Arcade Snake with Obstacles | PixoPlays">
 <meta name="twitter:description" content="Eat cherries, dodge walls, and beat your high score. Free browser game.">
 <meta name="twitter:image" content="https://pixoplays.com/coverImage/snake.jpg">
- 
-<!-- ─── Structured Data (JSON-LD) ────────────────────── -->
+
+<!-- ─── Structured Data ─── -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -41,160 +41,126 @@
   "gamePlatform": "Web Browser",
   "applicationCategory": "Game",
   "operatingSystem": "Any",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "url": "https://pixoplays.com/snake/"
 }
 </script>
- 
-<!-- ─── Favicon ───────────────────────────────────────── -->
+
 <link rel="icon" type="image/png" href="assets/snakehead1.png">
 <link rel="apple-touch-icon" href="assets/snakehead1.png">
-<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #1a0a2e;
-    background-image:
-      radial-gradient(ellipse at 20% 50%, #2d1b69 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, #11998e22 0%, transparent 40%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 10px 0;
+  :root {
+    --gold:#ffe259;--orange:#ffa751;--red:#ff6b6b;--purple:#a855f7;--cyan:#38bdf8;--green:#22c55e;--dark:#1a0a2e;--card-bg:#12082a;
   }
-  #game-wrapper {
-    position: relative;
-    padding: 6px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, #ffe259, #ffa751, #ff6b6b, #a855f7, #38bdf8);
-    box-shadow: 0 0 30px #ffe25966, 0 0 60px #a855f733, 0 0 0 1px #ffffff22;
-    animation: borderPulse 3s ease-in-out infinite alternate;
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    min-height:100vh;background:var(--dark);
+    background-image:radial-gradient(ellipse at 15% 50%,#2d1b6988 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,#11998e22 0%,transparent 45%);
+    font-family:'Press Start 2P',monospace;color:#fff;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;
   }
-  @keyframes borderPulse {
-    from { box-shadow: 0 0 20px #ffe25955, 0 0 40px #a855f722; }
-    to   { box-shadow: 0 0 40px #ffe259aa, 0 0 80px #a855f755, 0 0 120px #38bdf833; }
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:999;}
+
+  /* ── NAV ── */
+  nav{display:flex;justify-content:center;gap:8px;padding:20px 20px 0;flex-wrap:wrap;width:100%;}
+  nav a{font-family:'Press Start 2P',monospace;font-size:8px;color:#ffffff88;text-decoration:none;padding:8px 14px;border:1px solid #ffffff22;border-radius:2px;letter-spacing:1px;transition:color 0.2s,border-color 0.2s,text-shadow 0.2s;}
+  nav a:hover,nav a.active{color:var(--gold);border-color:var(--gold);text-shadow:0 0 10px var(--gold);}
+
+  /* ── HEADER ── */
+  header{text-align:center;padding:24px 20px 16px;}
+  .page-tag{font-size:9px;color:var(--green);letter-spacing:3px;opacity:0.7;margin-bottom:10px;}
+  h1{font-size:clamp(14px,3vw,20px);background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;filter:drop-shadow(0 0 16px #22c55e55);}
+  .header-divider{margin:14px auto 0;width:160px;height:2px;background:linear-gradient(90deg,transparent,var(--green),var(--cyan),transparent);}
+
+  /* ── CANVAS WRAPPER ── */
+  .game-wrap{
+    position:relative;
+    padding:4px;
+    border-radius:6px;
+    background:linear-gradient(135deg,var(--green),var(--cyan),var(--purple));
+    box-shadow:0 0 40px #22c55e33,0 0 80px #38bdf822;
+    margin-top:20px;
   }
-  #game-border {
-    position: relative;
-    border-radius: 2px;
-    overflow: hidden;
+  .game-inner{
+    border-radius:3px;
+    overflow:hidden;
+    display:block;
+    line-height:0;
+  }
+  canvas{display:block;}
+
+  /* ── SOUND BUTTON ── */
+  .set-btn{
+    font-family:'Press Start 2P',monospace;font-size:8px;
+    padding:10px 18px;border:1px solid #ffffff22;background:transparent;color:#ffffff66;
+    border-radius:2px;cursor:pointer;letter-spacing:1px;
+    transition:all 0.2s;margin-top:10px;
+  }
+  .set-btn:hover,.set-btn.active{border-color:var(--purple);color:var(--purple);background:#a855f711;box-shadow:0 0 8px #a855f733;}
+
+  /* ── CONTROLS HINT ── */
+  .controls-hint{padding:14px 4px 4px;font-size:6px;color:#ffffff33;letter-spacing:1px;text-align:center;}
+
+  /* ── D-PAD ── */
+  #dpad{
+    display:none;
+    margin-top:18px;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  #dpad-grid{
+    display:grid;
+    grid-template-columns:56px 56px 56px;
+    grid-template-rows:56px 56px 56px;
+    gap:6px;
+  }
+  .dpad-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,0.08);
+    border:2px solid rgba(34,197,94,0.35);
+    border-radius:10px;font-size:22px;color:var(--green);
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:background 0.1s,transform 0.1s;touch-action:manipulation;
+  }
+  .dpad-btn:active,.dpad-btn.pressed{background:rgba(34,197,94,0.25);transform:scale(0.92);}
+  .dpad-center{background:rgba(255,255,255,0.04);border-color:transparent;pointer-events:none;}
+  .dpad-empty{visibility:hidden;pointer-events:none;}
+
+  @media (hover:none) and (pointer:coarse){
+    #dpad{display:block;}
   }
 
-  #game-border::before, #game-border::after {
-    content: '';
-    position: absolute;
-    width: 20px; height: 20px;
-    border-color: #ffe259; border-style: solid;
-    z-index: 100; pointer-events: none;
-  }
-  #game-border::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
-  #game-border::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
-  .corner-tr, .corner-bl {
-    position: absolute;
-    width: 20px; height: 20px;
-    border-color: #ffe259; border-style: solid;
-    z-index: 100; pointer-events: none;
-  }
-  .corner-tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
-  .corner-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
-  #game-title {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 13px;
-    color: #ffe259;
-    text-align: center;
-    padding: 8px 0 6px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px #ffe25988, 2px 2px 0 #a855f7;
-  }
-
-  #back-btn {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    z-index: 50;
-    padding: 6px 12px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    color: #fff;
-    background-color: #ff8f44;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    box-shadow: 0 0 5px #000;
-    transition: all 0.2s;
-  }
-  #back-btn:hover {
-    background-color: #ff8f66;
-    transform: scale(1.05);
-  }
-
-  canvas { display: block; }
-
-  /* ─── D-Pad (mobile controls) ─────────────────── */
-  #dpad {
-    display: none;
-    margin-top: 18px;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  #dpad-grid {
-    display: grid;
-    grid-template-columns: 56px 56px 56px;
-    grid-template-rows: 56px 56px 56px;
-    gap: 6px;
-  }
-  .dpad-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.08);
-    border: 2px solid rgba(255,226,89,0.35);
-    border-radius: 10px;
-    font-size: 22px;
-    color: #ffe259;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.1s, transform 0.1s;
-    touch-action: manipulation;
-  }
-  .dpad-btn:active, .dpad-btn.pressed {
-    background: rgba(255,226,89,0.25);
-    transform: scale(0.92);
-  }
-  .dpad-center {
-    background: rgba(255,255,255,0.04);
-    border-color: transparent;
-    pointer-events: none;
-  }
-  .dpad-empty {
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  /* Show D-pad only on touch devices */
-  @media (hover: none) and (pointer: coarse) {
-    #dpad { display: block; }
-  }
+  /* ── FOOTER ── */
+  .footer-nav{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;padding:16px 20px 8px;width:100%;}
+  .footer-nav a{font-size:7px;color:#ffffff44;text-decoration:none;letter-spacing:1px;transition:color 0.2s;}
+  .footer-nav a:hover{color:var(--gold);}
+  footer{text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;letter-spacing:2px;}
 </style>
 </head>
 <body>
 
-<div id="game-wrapper">
-  <button id="back-btn">⬅ Back</button>
-  <div id="game-title">🐍 SNAKE</div>
-  <div id="game-border">
-    <div class="corner-tr"></div>
-    <div class="corner-bl"></div>
-  </div>
+<nav>
+  <a href="../index.html">🕹️ Games</a>
+  <a href="../aboutPage.html">📖 About PixoPlays</a>
+  <a href="../about.html">📖 About</a>
+  <a href="../credits.html">📜 Credits</a>
+</nav>
+
+<header>
+  <div class="page-tag">— Arcade Classic —</div>
+  <h1>🐍 SNAKE</h1>
+  <div class="header-divider"></div>
+</header>
+
+<div class="game-wrap">
+  <div class="game-inner" id="game-border"></div>
 </div>
+
+<!-- Sound Toggle -->
+<button class="set-btn active" id="toggleSound">🔊 SOUND ON</button>
 
 <!-- Mobile D-Pad -->
 <div id="dpad" aria-label="Direction controls">
@@ -211,11 +177,14 @@
   </div>
 </div>
 
-<script>
-document.getElementById("back-btn").addEventListener("click", () => {
-  window.location.href = "../index.html";
-});
+<div class="controls-hint">WASD or ← → ↑ ↓ ARROW KEYS to move</div>
 
+<div class="footer-nav">
+  <a href="../index.html">🕹️ All Games</a>
+</div>
+<footer>© PIXOPLAYS · FREE TO PLAY · MADE WITH ❤️</footer>
+
+<script>
 const W        = 400;
 const H        = 600;
 const TILE     = 20;
@@ -229,7 +198,7 @@ const MIN_STEP  = 60;
 const SPEED_DEC = 8;
 const SPEED_INC = 3;
 
-const WALL_TILES  = 20;
+const WALL_TILES   = 20;
 const WALL_MAX_LEN = 5;
 
 const DIR = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3 };
@@ -237,6 +206,8 @@ const OPP = {
   [DIR.UP]: DIR.DOWN, [DIR.DOWN]: DIR.UP,
   [DIR.LEFT]: DIR.RIGHT, [DIR.RIGHT]: DIR.LEFT
 };
+
+let soundOn = true;
 
 class SnakeScene extends Phaser.Scene {
   constructor() { super("SnakeScene"); }
@@ -248,7 +219,7 @@ class SnakeScene extends Phaser.Scene {
     this.load.image("body_v",    "assets/body.png");
     this.load.image("body_turn", "assets/body_turn.png");
     this.load.image("tail_v",    "assets/tail.png");
-    this.load.audio('eatSound', 'assets/eat.wav');
+    this.load.audio('eatSound',  'assets/eat.wav');
     for (let i = 1; i <= 9; i++)
       this.load.image("cherry" + i, "assets/Ciliegia" + i + ".png");
   }
@@ -262,7 +233,27 @@ class SnakeScene extends Phaser.Scene {
     this.moveTimer = 0;
     this.curDir    = DIR.RIGHT;
     this.nextDir   = DIR.RIGHT;
-    this.eatSfx = this.sound.add('eatSound');
+    this.eatSfx    = this.sound.add('eatSound');
+    this.eatSfx.setVolume(0.55);               // ← softened eat sound
+
+    // Procedural death sound (Web Audio)
+    this.deathSfx = () => {
+      if (!soundOn) return;
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = [320, 255, 195, 140];
+      notes.forEach((f, i) => {
+        setTimeout(() => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type = 'sawtooth';
+          o.frequency.setValueAtTime(f, ctx.currentTime);
+          g.gain.setValueAtTime(0.3, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+          o.start(); o.stop(ctx.currentTime + 0.6);
+        }, i * 80);
+      });
+    };
 
     this.add.rectangle(W / 2, H / 2, W, H, 0x0d0d1a);
     this.drawGrid();
@@ -284,21 +275,20 @@ class SnakeScene extends Phaser.Scene {
       color: "#38bdf8aa", stroke: "#000", strokeThickness: 3
     }).setOrigin(0.5, 0).setDepth(20);
 
-    this.anims.create({
-      key: "head_anim",
-      frames: [
-        { key: "head1" }, { key: "head2" },
-        { key: "head3" }, { key: "head2" }
-      ],
-      frameRate: 8, repeat: -1
-    });
+    this.anims.create({ key: "head_anim", frames: [{key:"head1"},{key:"head2"},{key:"head3"},{key:"head2"}], frameRate:8, repeat:-1 });
+    this.anims.create({ key: "cherry_anim", frames: Array.from({length:9}, (_,i)=>({key:"cherry"+(i+1)})), frameRate:10, repeat:-1 });
 
-    this.anims.create({
-      key: "cherry_anim",
-      frames: Array.from({ length: 9 }, (_, i) => ({ key: "cherry" + (i + 1) })),
-      frameRate: 10, repeat: -1
-    });
+    // Particle system for eat & death
+    this.particles = this.add.particles(0, 0, 'cherry1', {
+      speed: { min: 80, max: 160 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.6, end: 0 },
+      lifespan: 600,
+      blendMode: 'ADD',
+      quantity: 0.5
+    }).setDepth(15);
 
+    this.particles.stop();
     this.wallGraphics = this.add.graphics().setDepth(5);
     this.snakeSprites = [];
 
@@ -311,38 +301,24 @@ class SnakeScene extends Phaser.Scene {
     this.spawnCherry();
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.wasd = this.input.keyboard.addKeys({
-      up:    Phaser.Input.Keyboard.KeyCodes.W,
-      down:  Phaser.Input.Keyboard.KeyCodes.S,
-      left:  Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-    });
+    this.wasd = this.input.keyboard.addKeys({ up:'W', down:'S', left:'A', right:'D' });
 
-    // ─── Swipe detection ──────────────────────────────
     this._touchStartX = 0;
     this._touchStartY = 0;
-    this.input.on('pointerdown', (ptr) => {
-      this._touchStartX = ptr.x;
-      this._touchStartY = ptr.y;
-    });
+    this.input.on('pointerdown', (ptr) => { this._touchStartX = ptr.x; this._touchStartY = ptr.y; });
     this.input.on('pointerup', (ptr) => {
       if (!this.started || this.gameOver) return;
       const dx = ptr.x - this._touchStartX;
       const dy = ptr.y - this._touchStartY;
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
-      if (Math.max(absDx, absDy) < 15) return; // too small — ignore (tap)
-      if (absDx > absDy) {
-        this.tryDir(dx > 0 ? DIR.RIGHT : DIR.LEFT);
-      } else {
-        this.tryDir(dy > 0 ? DIR.DOWN : DIR.UP);
-      }
+      const absDx = Math.abs(dx), absDy = Math.abs(dy);
+      if (Math.max(absDx, absDy) < 15) return;
+      if (absDx > absDy) this.tryDir(dx > 0 ? DIR.RIGHT : DIR.LEFT);
+      else this.tryDir(dy > 0 ? DIR.DOWN : DIR.UP);
     });
 
     this.showStartScreen();
   }
 
-  // ─── Grid & UI ────────────────────────────────────────
   drawGrid() {
     const g = this.add.graphics().setDepth(1);
     g.lineStyle(1, 0xffffff, 0.04);
@@ -381,15 +357,14 @@ class SnakeScene extends Phaser.Scene {
   tileX(col) { return col * TILE + TILE / 2; }
   tileY(row) { return PLAY_TOP + row * TILE + TILE / 2; }
 
-  // ─── Walls ────────────────────────────────────────────
   floodFill(wallSet, startC, startR) {
     const visited = new Set();
     const queue   = [`${startC},${startR}`];
     visited.add(`${startC},${startR}`);
     const neighbors = [[0,-1],[0,1],[-1,0],[1,0]];
     while (queue.length) {
-      const key     = queue.shift();
-      const [c, r]  = key.split(",").map(Number);
+      const key    = queue.shift();
+      const [c, r] = key.split(",").map(Number);
       for (const [dc, dr] of neighbors) {
         const nc = c + dc, nr = r + dr;
         if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) continue;
@@ -405,39 +380,31 @@ class SnakeScene extends Phaser.Scene {
   spawnWalls() {
     const isSafe = (c, r) => (c >= 3 && c <= 11 && r >= 8 && r <= 12);
     const totalOpen = COLS * ROWS;
-
     let attempts = 0;
     while (attempts < 200) {
       attempts++;
       const candidate = new Set();
-
       let placementAttempts = 0;
       while (candidate.size < WALL_TILES && placementAttempts < 2000) {
         placementAttempts++;
-
         const length     = Phaser.Math.Between(2, WALL_MAX_LEN);
         const horizontal = Phaser.Math.Between(0, 1) === 1;
         const col        = Phaser.Math.Between(1, COLS - 2);
         const row        = Phaser.Math.Between(1, ROWS - 2);
-
         const tiles = [];
         for (let k = 0; k < length; k++) {
           const c = horizontal ? col + k : col;
           const r = horizontal ? row     : row + k;
           if (c < 0 || c >= COLS || r < 0 || r >= ROWS) continue;
-          if (isSafe(c, r))      continue;
+          if (isSafe(c, r)) continue;
           if (candidate.has(`${c},${r}`)) continue;
           tiles.push(`${c},${r}`);
         }
-
         if (tiles.length === 0) continue;
-
         const anyDupe = tiles.some(t => candidate.has(t));
         if (anyDupe) continue;
-
         const testSet = new Set(candidate);
         tiles.forEach(t => testSet.add(t));
-
         let groupTooLarge = false;
         for (const t of tiles) {
           const [tc, tr] = t.split(",").map(Number);
@@ -445,25 +412,19 @@ class SnakeScene extends Phaser.Scene {
           if (groupSize > WALL_MAX_LEN) { groupTooLarge = true; break; }
         }
         if (groupTooLarge) continue;
-
         tiles.forEach(t => candidate.add(t));
       }
-
       if (candidate.size < WALL_TILES) continue;
-
       const wallArr = Array.from(candidate);
       while (wallArr.length > WALL_TILES) wallArr.pop();
       const finalSet = new Set(wallArr);
-
       const reachable = this.floodFill(finalSet, 7, 10);
       const openTiles = totalOpen - finalSet.size;
       if (reachable < openTiles) continue;
-
       this.walls = finalSet;
       this.drawWalls();
       return;
     }
-
     this.walls = new Set();
     this.drawWalls();
   }
@@ -474,7 +435,7 @@ class SnakeScene extends Phaser.Scene {
     visited.add(`${c},${r}`);
     const neighbors = [[0,-1],[0,1],[-1,0],[1,0]];
     while (queue.length) {
-      const key    = queue.shift();
+      const key      = queue.shift();
       const [cc, rr] = key.split(",").map(Number);
       for (const [dc, dr] of neighbors) {
         const nc = cc + dc, nr = rr + dr;
@@ -494,13 +455,10 @@ class SnakeScene extends Phaser.Scene {
       const [c, r] = key.split(",").map(Number);
       const x = c * TILE;
       const y = PLAY_TOP + r * TILE;
-
       this.wallGraphics.fillStyle(0x0f172a, 1);
       this.wallGraphics.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
-
       this.wallGraphics.lineStyle(1.5, 0x38bdf8, 0.9);
       this.wallGraphics.strokeRect(x + 1, y + 1, TILE - 2, TILE - 2);
-
       this.wallGraphics.lineStyle(1, 0x38bdf8, 0.2);
       this.wallGraphics.beginPath();
       this.wallGraphics.moveTo(x + 2,        y + TILE / 2);
@@ -513,7 +471,6 @@ class SnakeScene extends Phaser.Scene {
 
   isWall(col, row) { return this.walls.has(`${col},${row}`); }
 
-  // ─── Snake ────────────────────────────────────────────
   initSnake() {
     if (this.snakeSprites) this.snakeSprites.forEach(s => s.destroy());
     this.snakeSprites = [];
@@ -529,31 +486,26 @@ class SnakeScene extends Phaser.Scene {
     this.snakeSprites.forEach(s => s.destroy());
     this.snakeSprites = [];
     const len = this.body.length;
-
     for (let i = 0; i < len; i++) {
       const seg = this.body[i];
       const x   = this.tileX(seg.col);
       const y   = this.tileY(seg.row);
       let spr;
-
       if (i === 0) {
         spr = this.add.sprite(x, y, "head1").setDepth(10);
         spr.play("head_anim");
         spr.setDisplaySize(TILE, TILE);
         spr.setAngle(this.headAngle(this.curDir));
-
       } else if (i === len - 1) {
         const prev    = this.body[len - 2];
         const tailDir = this.segDir(prev, seg);
         spr = this.add.image(x, y, "tail_v").setDepth(9);
         spr.setDisplaySize(TILE, TILE);
         spr.setAngle(this.tailAngle(tailDir));
-
       } else {
         const fromDir    = this.segDir(seg, this.body[i - 1]);
         const toDir      = this.segDir(seg, this.body[i + 1]);
         const isStraight = toDir === OPP[fromDir];
-
         if (isStraight) {
           spr = this.add.image(x, y, "body_v").setDepth(9);
           spr.setDisplaySize(TILE, TILE);
@@ -564,7 +516,6 @@ class SnakeScene extends Phaser.Scene {
           spr.setAngle(this.turnAngle(fromDir, toDir));
         }
       }
-
       this.snakeSprites.push(spr);
     }
   }
@@ -604,7 +555,6 @@ class SnakeScene extends Phaser.Scene {
     return 0;
   }
 
-  // ─── Cherry ───────────────────────────────────────────
   spawnCherry() {
     let col, row, occupied;
     do {
@@ -617,7 +567,6 @@ class SnakeScene extends Phaser.Scene {
     this.cherry.setPosition(this.tileX(col), this.tileY(row));
   }
 
-  // ─── Screens ──────────────────────────────────────────
   showStartScreen() {
     this.overlay = this.add.rectangle(
       W / 2, PLAY_TOP + PLAY_H / 2, W, PLAY_H, 0x000000, 0.65
@@ -633,8 +582,7 @@ class SnakeScene extends Phaser.Scene {
       color: "#38bdf8", stroke: "#000", strokeThickness: 3, align: "center"
     }).setOrigin(0.5).setDepth(31);
 
-    this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 55,
-      "Press any key\nor tap to start", {
+    this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 55, "Press any key\nor tap to start", {
       fontFamily: "'Press Start 2P'", fontSize: "10px",
       color: "#fff", stroke: "#000", strokeThickness: 3, align: "center"
     }).setOrigin(0.5).setDepth(31);
@@ -649,7 +597,6 @@ class SnakeScene extends Phaser.Scene {
     this.started = true;
   }
 
-  // ─── Game Loop ────────────────────────────────────────
   update(time, delta) {
     if (this.cursors.up.isDown    || this.wasd.up.isDown)    this.tryDir(DIR.UP);
     if (this.cursors.down.isDown  || this.wasd.down.isDown)  this.tryDir(DIR.DOWN);
@@ -670,7 +617,6 @@ class SnakeScene extends Phaser.Scene {
 
   step() {
     this.curDir = this.nextDir;
-
     const head = this.body[0];
     let nc = head.col, nr = head.row;
     switch (this.curDir) {
@@ -679,38 +625,29 @@ class SnakeScene extends Phaser.Scene {
       case DIR.LEFT:  nc--; break;
       case DIR.RIGHT: nc++; break;
     }
-
     if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) { this.endGame(); return; }
     if (this.isWall(nc, nr)) { this.endGame(); return; }
-
     for (let i = 0; i < this.body.length - 1; i++) {
       if (this.body[i].col === nc && this.body[i].row === nr) { this.endGame(); return; }
     }
-
     const atCherry = nc === this.cherryPos.col && nr === this.cherryPos.row;
-
     this.body.unshift({ col: nc, row: nr });
-
     if (atCherry) {
       this.score++;
+      // ── EAT VFX ──
+      if (soundOn) this.eatSfx.play();
+      this.particles.explode(28, this.tileX(this.cherryPos.col), this.tileY(this.cherryPos.row));
       this.spawnCherry();
-      this.eatSfx.play();
-
       if (this.score % SPEED_INC === 0 && this.stepMs > MIN_STEP) {
         this.stepMs = Math.max(MIN_STEP, this.stepMs - SPEED_DEC);
         const spd = Math.round((BASE_STEP - this.stepMs) / SPEED_DEC) + 1;
         this.speedTxt.setText("SPD " + spd);
-        this.tweens.add({
-          targets: this.speedTxt, scaleX: 1.5, scaleY: 1.5,
-          duration: 120, yoyo: true, ease: "Quad.easeOut"
-        });
+        this.tweens.add({ targets: this.speedTxt, scaleX:1.5, scaleY:1.5, duration:120, yoyo:true, ease:"Quad.easeOut" });
       }
     } else {
       this.body.pop();
     }
-
     this.buildSprites();
-
     this.scoreTxt.setText(String(this.score).padStart(5, "0"));
     if (this.score > this.highScore) {
       this.highScore = this.score;
@@ -723,40 +660,26 @@ class SnakeScene extends Phaser.Scene {
     if (this.gameOver) return;
     this.gameOver = true;
     this.snakeSprites.forEach(s => s.setTint(0xff4444));
+    if (soundOn) this.deathSfx();
+    // ── DEATH VFX ──
+    this.particles.explode(45, this.tileX(this.body[0].col), this.tileY(this.body[0].row));
+    this.cameras.main.flash(300, 255, 80, 80, 0.6);
 
     this.time.delayedCall(400, () => {
-      this.add.rectangle(
-        W / 2, PLAY_TOP + PLAY_H / 2, W, PLAY_H, 0x000000, 0.7
-      ).setDepth(30);
-
-      this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 - 70, "GAME OVER", {
-        fontFamily: "'Press Start 2P'", fontSize: "20px",
-        color: "#ff4444", stroke: "#000", strokeThickness: 5
-      }).setOrigin(0.5).setDepth(31);
-
-      this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 - 20, "Score: " + this.score, {
-        fontFamily: "'Press Start 2P'", fontSize: "13px",
-        color: "#ffe259", stroke: "#000", strokeThickness: 3
-      }).setOrigin(0.5).setDepth(31);
-
+      this.add.rectangle(W/2, PLAY_TOP + PLAY_H/2, W, PLAY_H, 0x000000, 0.7).setDepth(30);
+      this.add.text(W/2, PLAY_TOP + PLAY_H/2 - 70, "GAME OVER", { fontFamily:"'Press Start 2P'", fontSize:"20px", color:"#ff4444", stroke:"#000", strokeThickness:5 }).setOrigin(0.5).setDepth(31);
+      this.add.text(W/2, PLAY_TOP + PLAY_H/2 - 20, "Score: " + this.score, { fontFamily:"'Press Start 2P'", fontSize:"13px", color:"#ffe259", stroke:"#000", strokeThickness:3 }).setOrigin(0.5).setDepth(31);
       if (this.score >= this.highScore && this.score > 0) {
-        this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 15, "🏆 NEW BEST!", {
-          fontFamily: "'Press Start 2P'", fontSize: "10px",
-          color: "#ffe259", stroke: "#000", strokeThickness: 3
-        }).setOrigin(0.5).setDepth(31);
+        this.add.text(W/2, PLAY_TOP + PLAY_H/2 + 15, "🏆 NEW BEST!", { fontFamily:"'Press Start 2P'", fontSize:"10px", color:"#ffe259", stroke:"#000", strokeThickness:3 }).setOrigin(0.5).setDepth(31);
       }
-
-      this.add.text(W / 2, PLAY_TOP + PLAY_H / 2 + 55, "Tap to Restart", {
-        fontFamily: "'Press Start 2P'", fontSize: "10px",
-        color: "#fff", stroke: "#000", strokeThickness: 3
-      }).setOrigin(0.5).setDepth(31);
-
+      this.add.text(W/2, PLAY_TOP + PLAY_H/2 + 55, "Tap to Restart", { fontFamily:"'Press Start 2P'", fontSize:"10px", color:"#fff", stroke:"#000", strokeThickness:3 }).setOrigin(0.5).setDepth(31);
       this.input.keyboard.once("keydown", () => this.scene.restart());
-      this.input.once("pointerdown",       () => this.scene.restart());
+      this.input.once("pointerdown", () => this.scene.restart());
     });
   }
 }
 
+// Config (unchanged)
 const config = {
   type:   Phaser.AUTO,
   width:  W, height: H,
@@ -768,52 +691,30 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// ─── D-Pad button wiring ────────────────────────────────
-(function () {
-  const map = {
-    'btn-up':    DIR.UP,
-    'btn-down':  DIR.DOWN,
-    'btn-left':  DIR.LEFT,
-    'btn-right': DIR.RIGHT,
-  };
+// ─── Sound Toggle Button ─────────────────────────────────────
+document.getElementById('toggleSound').addEventListener('click', () => {
+  soundOn = !soundOn;
+  const btn = document.getElementById('toggleSound');
+  btn.textContent = soundOn ? '🔊 SOUND ON' : '🔇 SOUND OFF';
+  btn.classList.toggle('active', soundOn);
+});
 
+// ─── D-Pad wiring (unchanged) ─────────────────────────────────
+(function () {
+  const map = { 'btn-up':0, 'btn-down':2, 'btn-left':3, 'btn-right':1 };
   function pressDir(dirValue) {
     const scene = game.scene.getScene('SnakeScene');
     if (!scene) return;
-    if (!scene.started) {
-      scene.startGame();
-      return;
-    }
-    if (scene.gameOver) {
-      scene.scene.restart();
-      return;
-    }
+    if (!scene.started) { scene.startGame(); return; }
+    if (scene.gameOver) { scene.scene.restart(); return; }
     scene.tryDir(dirValue);
   }
-
   Object.entries(map).forEach(([id, dirValue]) => {
     const btn = document.getElementById(id);
     if (!btn) return;
-
-    // Visual feedback helper
-    function flash() {
-      btn.classList.add('pressed');
-      setTimeout(() => btn.classList.remove('pressed'), 120);
-    }
-
-    // Touch (preferred on mobile — no 300ms delay)
-    btn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      flash();
-      pressDir(dirValue);
-    }, { passive: false });
-
-    // Mouse fallback (desktop testing of D-pad)
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      flash();
-      pressDir(dirValue);
-    });
+    function flash() { btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 120); }
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); flash(); pressDir(dirValue); }, { passive: false });
+    btn.addEventListener('mousedown', (e) => { e.preventDefault(); flash(); pressDir(dirValue); });
   });
 })();
 </script>

@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🏓 Pong — Free Online Multiplayer Arcade Game | PixoPlays</title>
+<meta name="description" content="Play Pong online for free — challenge the AI, a local friend, or play online multiplayer with a room code. No download needed. First to 7 wins!">
+<meta name="keywords" content="pong game, pong online, online pong multiplayer, pong vs ai, classic arcade pong, browser pong, free pong game, pixoplays, 2 player pong, pong room code">
+<meta name="author" content="PixoPlays">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#1a0a2e">
+<link rel="canonical" href="https://pixoplays.com/pong/">
+<link rel="icon" type="image/png" href="../applogo.png">
+<link rel="apple-touch-icon" href="../applogo.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pixoplays.com/pong/">
+<meta property="og:title" content="Pong – Online Multiplayer & VS AI | PixoPlays">
+<meta property="og:description" content="Play Pong free online — vs AI, local 2-player, or online multiplayer with a room code. No download, no account needed.">
+<meta property="og:image" content="https://pixoplays.com/coverImage/pong.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PixoPlays">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://pixoplays.com/pong/">
+<meta name="twitter:title" content="Pong – Online Multiplayer & VS AI | PixoPlays">
+<meta name="twitter:description" content="Play Pong free — vs AI, local 2-player, or online with a room code. No download needed.">
+<meta name="twitter:image" content="https://pixoplays.com/coverImage/pong.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Pong",
+  "description": "Classic Pong arcade game. Play vs AI, local 2-player, or online multiplayer with a room code. First to 7 wins. Free browser game.",
+  "genre": ["Arcade", "Sports", "Multiplayer"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 2 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "url": "https://pixoplays.com/pong/",
+  "publisher": { "@type": "Organization", "name": "PixoPlays", "url": "https://pixoplays.com" }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
+<style>
+:root{--gold:#ffe259;--red:#ff6b6b;--purple:#a855f7;--cyan:#38bdf8;--green:#22c55e;--dark:#1a0a2e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  min-height:100vh;background:var(--dark);
+  background-image:radial-gradient(ellipse at 15% 50%,#2d1b6988 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,#11998e22 0%,transparent 45%);
+  font-family:'Press Start 2P',monospace;color:#fff;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;
+}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:999;}
+nav{display:flex;justify-content:center;gap:8px;padding:20px 20px 0;flex-wrap:wrap;width:100%;}
+nav a{font-family:'Press Start 2P',monospace;font-size:8px;color:#ffffff88;text-decoration:none;padding:8px 14px;border:1px solid #ffffff22;border-radius:2px;letter-spacing:1px;transition:color .2s,border-color .2s,text-shadow .2s;}
+nav a:hover,nav a.active{color:var(--gold);border-color:var(--gold);text-shadow:0 0 10px var(--gold);}
+header{text-align:center;padding:24px 20px 16px;}
+.page-tag{font-size:9px;color:var(--cyan);letter-spacing:3px;opacity:.7;margin-bottom:10px;}
+h1{font-size:clamp(14px,3vw,20px);background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;filter:drop-shadow(0 0 16px #38bdf855);}
+.header-divider{margin:14px auto 0;width:160px;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);}
+.game-wrap{position:relative;padding:4px;border-radius:6px;background:linear-gradient(135deg,var(--cyan),var(--purple),var(--gold));box-shadow:0 0 40px #38bdf833,0 0 80px #a855f722;margin-top:20px;}
+.game-inner{border-radius:3px;overflow:hidden;display:block;line-height:0;position:relative;}
+canvas{display:block;touch-action:none;}
+.mode-row{display:flex;gap:8px;justify-content:center;padding:14px 4px 0;}
+.mode-btn{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;border:1px solid #ffffff33;border-radius:2px;background:transparent;color:#ffffff66;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.mode-btn:hover{color:#fff;border-color:#ffffff88;}
+.mode-btn.active-vsai{color:var(--cyan);border-color:var(--cyan);text-shadow:0 0 8px var(--cyan);}
+.mode-btn.active-2p{color:var(--gold);border-color:var(--gold);text-shadow:0 0 8px var(--gold);}
+.diff-row{display:flex;gap:8px;justify-content:center;padding:8px 4px 0;}
+.diff-btn{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;border:1px solid #ffffff22;border-radius:2px;background:transparent;color:#ffffff44;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.diff-btn:hover{color:#fff;border-color:#ffffff66;}
+.diff-btn.active-easy{color:var(--green);border-color:var(--green);text-shadow:0 0 8px var(--green);}
+.diff-btn.active-medium{color:var(--gold);border-color:var(--gold);text-shadow:0 0 8px var(--gold);}
+.diff-btn.active-hard{color:var(--red);border-color:var(--red);text-shadow:0 0 8px var(--red);}
+
+.sfx-row{display:flex;justify-content:center;padding:8px 4px 0;}
+.sfx-btn{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;border:1px solid #ffffff22;border-radius:2px;background:transparent;color:#ffffff66;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.sfx-btn:hover{color:#fff;border-color:#ffffff66;}
+.sfx-btn.active{color:var(--gold);border-color:var(--gold);text-shadow:0 0 8px var(--gold);}
+.mode-btn.active-online{color:var(--cyan);border-color:var(--cyan);text-shadow:0 0 8px var(--cyan);}
+/* ── ONLINE LOBBY ── */
+#online-overlay{display:none;position:fixed;inset:0;background:rgba(10,4,24,.93);z-index:2000;align-items:center;justify-content:center;}
+#online-overlay.show{display:flex;}
+#online-panel{background:#12082a;border:1px solid #a855f733;border-radius:10px;padding:30px 26px;width:min(360px,92vw);display:flex;flex-direction:column;align-items:center;}
+.ol-screen{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;}
+.ol-title{font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:2px;}
+.ol-sub{font-size:7px;color:#ffffff55;letter-spacing:1px;text-align:center;line-height:2.2;}
+.ol-btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 0;border:1px solid #ffffff33;border-radius:3px;background:transparent;color:#fff;cursor:pointer;letter-spacing:1px;transition:all .2s;width:100%;text-align:center;}
+.ol-btn:hover{border-color:var(--gold);color:var(--gold);}
+.ol-btn.primary{border-color:var(--cyan);color:var(--cyan);}
+.ol-btn.primary:hover{background:rgba(56,189,248,.1);}
+.ol-btn.back{font-size:7px;color:#ffffff44;border-color:#ffffff22;padding:9px 0;}
+.ol-btn.back:hover{color:#fff;border-color:#ffffff55;}
+#room-code-display{font-size:30px;letter-spacing:10px;color:var(--gold);background:rgba(255,226,89,.07);border:1px solid #ffe25966;border-radius:5px;padding:14px 22px;text-align:center;width:100%;}
+.ol-status{font-size:7px;color:#ffffff66;text-align:center;letter-spacing:1px;}
+#room-code-input{font-family:'Press Start 2P',monospace;font-size:20px;letter-spacing:8px;text-align:center;background:#0d0d1a;border:1px solid #ffffff33;border-radius:4px;color:var(--gold);padding:13px;width:100%;outline:none;text-transform:uppercase;}
+#room-code-input:focus{border-color:var(--cyan);}
+.ol-error{font-size:7px;color:var(--red);text-align:center;letter-spacing:1px;min-height:14px;}
+.ol-divider{width:100%;height:1px;background:#ffffff11;}
+.controls-hint{padding:12px 4px 4px;font-size:6px;color:#ffffff33;letter-spacing:1px;text-align:center;line-height:2;}
+.footer-nav{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;padding:16px 20px 8px;width:100%;}
+.footer-nav a{font-size:7px;color:#ffffff44;text-decoration:none;letter-spacing:1px;transition:color .2s;}
+.footer-nav a:hover{color:var(--gold);}
+footer{text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;letter-spacing:2px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html">🕹️ Games</a>
+  <a href="../aboutPage.html">📖 About PixoPlays</a>
+  <a href="../about.html">📖 About</a>
+  <a href="../credits.html">📜 Credits</a>
+</nav>
+
+<header>
+  <div class="page-tag">— Arcade Classic —</div>
+  <h1>🏓 PONG</h1>
+  <div class="header-divider"></div>
+</header>
+
+<div class="game-wrap">
+  <div class="game-inner">
+    <canvas id="pongCanvas" width="500" height="600"></canvas>
+  </div>
+</div>
+
+<div class="mode-row">
+  <button class="mode-btn active-vsai" id="btnVsAI"   onclick="setMode('vsai')">🤖 VS CPU</button>
+  <button class="mode-btn"             id="btn2P"     onclick="setMode('2p')">👥 2 PLAYERS</button>
+  <button class="mode-btn"             id="btnOnline" onclick="setMode('online')">🌐 ONLINE</button>
+</div>
+<div class="diff-row" id="diffRow">
+  <button class="diff-btn"             id="btnEasy"   onclick="setDiff('easy')">EASY</button>
+  <button class="diff-btn active-medium" id="btnMedium" onclick="setDiff('medium')">MEDIUM</button>
+  <button class="diff-btn"             id="btnHard"   onclick="setDiff('hard')">HARD</button>
+</div>
+<div class="sfx-row">
+  <button class="sfx-btn active" id="toggleSound" onclick="toggleSound()">🔊 SOUND ON</button>
+</div>
+
+<div class="controls-hint" id="hintBox">
+  <span id="h1">W / S  or  ↑ / ↓ — move paddle &nbsp;·&nbsp; SPACE — start</span><br>
+  <span id="h2" style="color:#a855f755">Mobile: drag the left side</span>
+</div>
+
+<div class="footer-nav"><a href="../index.html">🕹️ All Games</a></div>
+<footer>© PIXOPLAYS · FREE TO PLAY · MADE WITH ❤️</footer>
+
+<!-- Online Lobby Overlay -->
+<div id="online-overlay">
+  <div id="online-panel">
+    <!-- Screen: Choose -->
+    <div id="ol-choose" class="ol-screen">
+      <div class="ol-title">🌐 ONLINE PLAY</div>
+      <div class="ol-sub">Play with a friend online.<br>No account needed — just share a code.</div>
+      <div class="ol-divider"></div>
+      <button class="ol-btn primary" onclick="startHost()">🏠 HOST GAME</button>
+      <button class="ol-btn"         onclick="showOlJoin()">🔗 JOIN GAME</button>
+      <button class="ol-btn back"    onclick="closeOnlineLobby()">← BACK</button>
+    </div>
+    <!-- Screen: Hosting -->
+    <div id="ol-hosting" class="ol-screen" style="display:none">
+      <div class="ol-title">HOST GAME</div>
+      <div class="ol-sub">Share this code with your friend</div>
+      <div id="room-code-display">······</div>
+      <div class="ol-status" id="host-status">Connecting...</div>
+      <button class="ol-btn back" onclick="cancelHost()">✕ CANCEL</button>
+    </div>
+    <!-- Screen: Joining -->
+    <div id="ol-joining" class="ol-screen" style="display:none">
+      <div class="ol-title">JOIN GAME</div>
+      <div class="ol-sub">Enter the 6-character room code</div>
+      <input id="room-code-input" maxlength="6" placeholder="XXXXXX" autocomplete="off" spellcheck="false">
+      <button class="ol-btn primary" id="btn-connect" onclick="connectToHost()">CONNECT →</button>
+      <div class="ol-error" id="join-error"></div>
+      <button class="ol-btn back" onclick="showOlChoose()">← BACK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════
+   SETUP
+═══════════════════════ */
+const canvas = document.getElementById('pongCanvas');
+const ctx    = canvas.getContext('2d');
+const W = 500, H = 600;
+
+const PADDLE_W = 12, PADDLE_H = 80, BALL_R = 7;
+const WIN_SCORE = 7;
+const COUNTDOWN_SEC = 3;   // 3-second countdown before each serve
+const PLAYER_SPD = 520;    // px/s — fast enough to match faster ball
+
+/* ── Difficulty config (all in px/s for delta-time) ── */
+const DIFF = {
+  easy:   { ballStart:390, ballMax:860, aiSpd:210, aiErr:65,  aiLerp:0.40 },
+  medium: { ballStart:460, ballMax:1060, aiSpd:300, aiErr:28,  aiLerp:0.60 },
+  hard:   { ballStart:530, ballMax:1260, aiSpd:390, aiErr:10,  aiLerp:0.80 },
+};
+
+let gameMode   = 'vsai';
+let difficulty = 'medium';
+let soundOn    = true;
+function toggleSound(){
+  soundOn=!soundOn;
+  const btn=document.getElementById('toggleSound');
+  btn.textContent=soundOn?'🔊 SOUND ON':'🔇 SOUND OFF';
+  btn.classList.toggle('active',soundOn);
+}
+
+/* ═══════════════════════
+   AUDIO
+═══════════════════════ */
+const AC = window.AudioContext || window.webkitAudioContext;
+let ac;
+function initAC(){ if(!ac) ac = new AC(); }
+function beep(f,d,v=.22,t='square'){
+  if(!soundOn||!ac) return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.connect(g);g.connect(ac.destination);
+  o.type=t;o.frequency.value=f;
+  g.gain.setValueAtTime(v,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);
+  o.start(ac.currentTime);o.stop(ac.currentTime+d);
+}
+function sfxPad(){  beep(460,.07,.2,'square'); }
+function sfxWall(){ beep(260,.05,.13,'square'); }
+function sfxPt(){   beep(180,.1,.28,'square'); setTimeout(()=>beep(280,.1,.22,'square'),90); }
+function sfxTick(last){ beep(last?900:660,.1,.18,'square'); }
+function sfxWin(){  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.16,.24,'square'),i*120)); }
+function sfxLose(){ [320,255,195].forEach((f,i)=>setTimeout(()=>beep(f,.16,.24,'square'),i*120)); }
+
+/* ═══════════════════════
+   STATE
+═══════════════════════ */
+// States: START | COUNTDOWN | PLAYING | OVER
+let state      = 'START';
+let scoreL = 0, scoreR = 0;
+let server     = 'left';   // who serves next ('left' = player/P1, 'right' = AI/P2)
+let cdTime     = COUNTDOWN_SEC;
+let cdAccum    = 0;
+let lastCdTick = COUNTDOWN_SEC;
+let rallyCount = 0;
+
+let padL = { x:28,           y:H/2-PADDLE_H/2 };
+let padR = { x:W-28-PADDLE_W, y:H/2-PADDLE_H/2 };
+let ball = { x:W/2, y:H/2, vx:0, vy:0 };
+let trail = [];
+
+let aiTarget = H/2;
+
+let particles = [];
+let flashA = 0, flashC = '#fff';
+
+/* ── Online state ── */
+let peer = null, conn = null;
+let onlineRole = null; // 'host' | 'guest' | null
+let lastSendT  = 0, guestLastSendT = 0;
+
+/* ═══════════════════════
+   KEYBOARD
+═══════════════════════ */
+const keys = {};
+document.addEventListener('keydown', e=>{
+  keys[e.code] = true;
+  if(e.code==='Space'){
+    initAC();
+    if(state==='START'||state==='OVER'){
+      if(onlineRole==='guest'){ if(conn&&conn.open) conn.send({type:'start'}); }
+      else startGame();
+    }
+    e.preventDefault();
+  }
+  if(['KeyW','KeyS','ArrowUp','ArrowDown'].includes(e.code)) e.preventDefault();
+});
+document.addEventListener('keyup', e=>{ keys[e.code]=false; });
+
+/* ═══════════════════════
+   TOUCH
+═══════════════════════ */
+// Two independent touch zones — left half P1, right half P2
+let tInfo = {}; // id -> {side, startY, padStartY}
+
+canvas.addEventListener('touchstart', e=>{
+  initAC();
+  if(state==='START'||state==='OVER'){
+    if(onlineRole==='guest'){ if(conn&&conn.open) conn.send({type:'start'}); }
+    else startGame();
+    e.preventDefault(); return;
+  }
+  const rect=canvas.getBoundingClientRect();
+  const sx=W/rect.width, sy=H/rect.height;
+  for(const t of e.changedTouches){
+    const tx=(t.clientX-rect.left)*sx;
+    const ty=(t.clientY-rect.top)*sy;
+    if(onlineRole==='guest'){
+      // Guest's paddle (padR) is drawn on the visual left — all touch controls padR
+      tInfo[t.identifier]={side:'right', startY:ty, padY:padR.y};
+    } else if(tx < W/2){
+      tInfo[t.identifier]={side:'left', startY:ty, padY:padL.y};
+    } else if(gameMode==='2p'){
+      tInfo[t.identifier]={side:'right', startY:ty, padY:padR.y};
+    }
+  }
+  e.preventDefault();
+},{passive:false});
+
+canvas.addEventListener('touchmove', e=>{
+  const rect=canvas.getBoundingClientRect();
+  const sy=H/rect.height;
+  for(const t of e.changedTouches){
+    const inf=tInfo[t.identifier]; if(!inf) continue;
+    const ty=(t.clientY-rect.top)*sy;
+    const ny=Math.max(0,Math.min(H-PADDLE_H, inf.padY+(ty-inf.startY)));
+    if(inf.side==='left') padL.y=ny;
+    else padR.y=ny;
+  }
+  e.preventDefault();
+},{passive:false});
+
+canvas.addEventListener('touchend', e=>{
+  for(const t of e.changedTouches) delete tInfo[t.identifier];
+},{passive:false});
+
+canvas.addEventListener('click',()=>{
+  initAC();
+  if(state==='START'||state==='OVER'){
+    if(onlineRole==='guest'){ if(conn&&conn.open) conn.send({type:'start'}); }
+    else startGame();
+  }
+});
+
+/* ═══════════════════════
+   MODE / DIFF UI
+═══════════════════════ */
+function setMode(m){
+  if(m==='online'){ initAC(); openOnlineLobby(); return; }
+  // If leaving online mode, clean up peer connection
+  if(gameMode==='online' && onlineRole){ onlineDisconnect(null); return; }
+  initAC(); gameMode=m;
+  document.getElementById('btnVsAI').className='mode-btn'+(m==='vsai'?' active-vsai':'');
+  document.getElementById('btn2P').className  ='mode-btn'+(m==='2p'  ?' active-2p'  :'');
+  document.getElementById('btnOnline').className='mode-btn';
+  document.getElementById('diffRow').style.display='flex';
+  updateHint();
+  if(state!=='START') hardReset();
+}
+function setDiff(d){
+  initAC(); difficulty=d;
+  ['easy','medium','hard'].forEach(x=>{
+    const b=document.getElementById('btn'+x[0].toUpperCase()+x.slice(1));
+    b.className='diff-btn'+(x===d?' active-'+d:'');
+  });
+  if(state!=='START') hardReset();
+}
+function updateHint(){
+  const h1=document.getElementById('h1'), h2=document.getElementById('h2');
+  if(gameMode==='online'){
+    h1.textContent='W / S  or  ↑ / ↓ — move  ·  SPACE — start/rematch';
+    h2.textContent='You are always on the left · Host sets difficulty';
+    h2.style.color='#38bdf855';
+  } else if(gameMode==='2p'){
+    h1.textContent='P1: W / S  ·  P2: ↑ / ↓  ·  SPACE to start  ·  Easy/Medium/Hard = ball speed';
+    h2.textContent='Mobile: drag left half (P1) · drag right half (P2)';
+    h2.style.color='#ffe25966';
+  } else {
+    h1.textContent='W / S  or  ↑ / ↓ — move  ·  SPACE — start';
+    h2.textContent='Mobile: drag the left half to move';
+    h2.style.color='#ffffff33';
+  }
+}
+
+/* ═══════════════════════
+   GAME FLOW
+═══════════════════════ */
+function startGame(){
+  scoreL=0; scoreR=0;
+  beginRound('right'); // first serve goes toward right (AI/P2) — player attacks first
+}
+function hardReset(){
+  scoreL=0; scoreR=0; state='START';
+}
+function beginRound(srv){
+  server=srv;
+  padL.y=H/2-PADDLE_H/2; padR.y=H/2-PADDLE_H/2;
+  ball.x=W/2; ball.y=H/2; ball.vx=0; ball.vy=0;
+  trail=[]; rallyCount=0; aiTarget=H/2;
+  cdTime=COUNTDOWN_SEC; cdAccum=0; lastCdTick=COUNTDOWN_SEC;
+  state='COUNTDOWN';
+}
+function serveBall(){
+  const cfg=DIFF[difficulty];
+  // 'server' = the LOSER — ball fires TOWARD them so they have to react
+  // server='left'  → left player lost → ball fires left  (dirX = -1)
+  // server='right' → right player/AI lost → ball fires right (dirX = +1)
+  const dirX = server==='left' ? -1 : 1;
+  const maxAng = 28 * Math.PI/180;
+  const ang = (Math.random()*2-1)*maxAng;
+  const spd = cfg.ballStart;
+  ball.vx = spd * dirX * Math.cos(ang);
+  ball.vy = spd * Math.sin(ang);
+  state='PLAYING';
+}
+
+/* ═══════════════════════
+   PHYSICS (delta-time)
+═══════════════════════ */
+function updatePlayers(dt){
+  const m=PLAYER_SPD*dt;
+  if(onlineRole==='host'){
+    // Host controls left paddle only; right paddle comes from guest data
+    if(keys['KeyW']||keys['ArrowUp'])   padL.y-=m;
+    if(keys['KeyS']||keys['ArrowDown']) padL.y+=m;
+    padL.y=Math.max(0,Math.min(H-PADDLE_H,padL.y));
+    return;
+  }
+  if(onlineRole==='guest'){
+    // Guest controls right paddle (drawn on left); send to host
+    if(keys['KeyW']||keys['ArrowUp'])   padR.y-=m;
+    if(keys['KeyS']||keys['ArrowDown']) padR.y+=m;
+    padR.y=Math.max(0,Math.min(H-PADDLE_H,padR.y));
+    const now=performance.now();
+    if(conn&&conn.open&&now-guestLastSendT>33){ guestLastSendT=now; conn.send({type:'input',padY:padR.y}); }
+    return;
+  }
+  if(keys['KeyW'])    padL.y-=m;
+  if(keys['KeyS'])    padL.y+=m;
+  if(gameMode==='vsai'){
+    if(keys['ArrowUp'])   padL.y-=m;
+    if(keys['ArrowDown']) padL.y+=m;
+  } else {
+    if(keys['ArrowUp'])   padR.y-=m;
+    if(keys['ArrowDown']) padR.y+=m;
+  }
+  padL.y=Math.max(0,Math.min(H-PADDLE_H,padL.y));
+  padR.y=Math.max(0,Math.min(H-PADDLE_H,padR.y));
+}
+
+function updateAI(dt){
+  if(gameMode==='2p'||onlineRole) return;
+  const cfg=DIFF[difficulty];
+
+  if(ball.vx>0){
+    // Predict landing Y via bouncing simulation
+    let bx=ball.x, by=ball.y, vy=ball.vy, vx=ball.vx;
+    let steps=0;
+    // Simulate in time increments until ball reaches paddle X
+    const targetX = padR.x;
+    while(bx < targetX && steps < 800){
+      const inc = 3; // pixel steps
+      const t2 = inc / Math.abs(vx);
+      bx += inc;
+      by += vy * t2;
+      if(by-BALL_R<=0){  vy=Math.abs(vy); by=BALL_R; }
+      if(by+BALL_R>=H){  vy=-Math.abs(vy); by=H-BALL_R; }
+      steps++;
+    }
+    const err=(Math.random()*2-1)*cfg.aiErr;
+    aiTarget=by-PADDLE_H/2+err;
+  } else {
+    aiTarget=H/2-PADDLE_H/2; // drift center
+  }
+  aiTarget=Math.max(0,Math.min(H-PADDLE_H,aiTarget));
+  const diff=aiTarget-padR.y;
+  const move=Math.min(Math.abs(diff)*cfg.aiLerp, cfg.aiSpd*dt);
+  padR.y+=Math.sign(diff)*move;
+  padR.y=Math.max(0,Math.min(H-PADDLE_H,padR.y));
+}
+
+function updateBall(dt){
+  const cfg=DIFF[difficulty];
+
+  trail.push({x:ball.x,y:ball.y});
+  if(trail.length>14) trail.shift();
+
+  ball.x+=ball.vx*dt;
+  ball.y+=ball.vy*dt;
+
+  // Top/bottom walls
+  if(ball.y-BALL_R<=0){
+    ball.y=BALL_R; ball.vy=Math.abs(ball.vy);
+    sfxWall(); spawnP(ball.x,0,'#38bdf8',4);
+  }
+  if(ball.y+BALL_R>=H){
+    ball.y=H-BALL_R; ball.vy=-Math.abs(ball.vy);
+    sfxWall(); spawnP(ball.x,H,'#38bdf8',4);
+  }
+
+  // Left paddle
+  const lR=padL.x+PADDLE_W;
+  if(ball.vx<0 && ball.x-BALL_R<=lR && ball.x-BALL_R>=padL.x-6
+     && ball.y+BALL_R>=padL.y && ball.y-BALL_R<=padL.y+PADDLE_H){
+    ball.x=lR+BALL_R+1;
+    hitPaddle(ball, padL, cfg, 1);
+    sfxPad(); spawnP(ball.x,ball.y,'#ffe259',9);
+    flashA=0.1; flashC='#ffe259'; rallyCount++;
+  }
+
+  // Right paddle
+  if(ball.vx>0 && ball.x+BALL_R>=padR.x && ball.x+BALL_R<=padR.x+PADDLE_W+6
+     && ball.y+BALL_R>=padR.y && ball.y-BALL_R<=padR.y+PADDLE_H){
+    ball.x=padR.x-BALL_R-1;
+    hitPaddle(ball, padR, cfg, -1);
+    sfxPad(); spawnP(ball.x,ball.y,'#a855f7',9);
+    flashA=0.1; flashC='#a855f7'; rallyCount++;
+  }
+
+  // Score left wall — right player scored, LEFT player lost → serve toward left
+  if(ball.x+BALL_R<0){
+    scoreR++; sfxPt();
+    spawnP(20,ball.y,'#ff6b6b',24); flashA=0.3; flashC='#ff4433';
+    if(scoreR>=WIN_SCORE){ (gameMode==='vsai'||gameMode==='online')?sfxLose():sfxWin(); state='OVER'; }
+    else beginRound('left');
+  }
+
+  // Score right wall — left player scored, RIGHT player/AI lost → serve toward right
+  if(ball.x-BALL_R>W){
+    scoreL++; sfxPt();
+    spawnP(W-20,ball.y,'#22c55e',24); flashA=0.3; flashC='#22cc44';
+    if(scoreL>=WIN_SCORE){ sfxWin(); state='OVER'; }
+    else beginRound('right');
+  }
+}
+
+function hitPaddle(b, pad, cfg, newDirX){
+  const rel=(b.y-(pad.y+PADDLE_H/2))/(PADDLE_H/2); // -1 to 1
+  const ang=rel * 52 * Math.PI/180;  // max ±52°
+  // Each rally hit adds 18 px/s on top of current speed, capped at ballMax
+  const curSpd=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+  const spd=Math.min(curSpd + 18, cfg.ballMax);
+  b.vx=spd*newDirX*Math.cos(ang);
+  b.vy=spd*Math.sin(ang);
+}
+
+/* ═══════════════════════
+   PARTICLES
+═══════════════════════ */
+function spawnP(x,y,col,n=10){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, s=55+Math.random()*160;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-30,life:1,dec:.025+Math.random()*.035,r:2+Math.random()*3,col});
+  }
+}
+function stepP(dt){
+  particles=particles.filter(p=>p.life>0);
+  for(const p of particles){
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=190*dt; p.life-=p.dec;
+  }
+}
+
+/* ═══════════════════════
+   DRAW
+═══════════════════════ */
+function T(t,x,y,s,c,a='center'){
+  ctx.font=`${s}px 'Press Start 2P',monospace`;
+  ctx.fillStyle=c; ctx.textAlign=a; ctx.textBaseline='middle';
+  ctx.fillText(t,x,y);
+}
+function TS(t,x,y,s,c,sc,sw=4,a='center'){
+  ctx.font=`${s}px 'Press Start 2P',monospace`;
+  ctx.textAlign=a; ctx.textBaseline='middle';
+  ctx.strokeStyle=sc; ctx.lineWidth=sw;
+  ctx.strokeText(t,x,y);
+  ctx.fillStyle=c; ctx.fillText(t,x,y);
+}
+
+function drawCourt(){
+  ctx.fillStyle='#090216'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(56,189,248,.016)'; ctx.fillRect(0,0,W/2,H);
+  ctx.fillStyle='rgba(168,85,247,.016)'; ctx.fillRect(W/2,0,W/2,H);
+  ctx.setLineDash([12,10]);
+  ctx.strokeStyle='rgba(255,255,255,.09)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(W/2,H/2,46,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=1.5; ctx.stroke();
+}
+function drawPad(x,y,col,glow){
+  ctx.shadowColor=glow; ctx.shadowBlur=18;
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.roundRect(x,y,PADDLE_W,PADDLE_H,4); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.2)';
+  ctx.beginPath(); ctx.roundRect(x+2.5,y+5,3,PADDLE_H-10,2); ctx.fill();
+  ctx.shadowBlur=0;
+}
+function drawBall(){
+  for(let i=0;i<trail.length;i++){
+    const frac=(i+1)/trail.length;
+    ctx.globalAlpha=frac*.35;
+    ctx.fillStyle='#38bdf8';
+    ctx.beginPath(); ctx.arc(trail[i].x,trail[i].y,BALL_R*frac*.8,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  ctx.shadowColor='#38bdf8'; ctx.shadowBlur=16;
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(ball.x,ball.y,BALL_R,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+}
+function drawBallStatic(){
+  ctx.shadowColor='#38bdf8'; ctx.shadowBlur=10;
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(W/2,H/2,BALL_R,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+}
+function drawParts(){
+  for(const p of particles){
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=p.col;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+function drawFlash(){
+  if(flashA<=0) return;
+  ctx.globalAlpha=flashA; ctx.fillStyle=flashC; ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=1; flashA=Math.max(0,flashA-.018);
+}
+function drawHUD(){
+  const isGuest=onlineRole==='guest';
+  // Guest sees themselves on left, so swap scores and labels
+  const sl=isGuest?scoreR:scoreL, sr=isGuest?scoreL:scoreR;
+  const lbl1=gameMode==='online'?'YOU':(gameMode==='2p'?'P1':'YOU');
+  const lbl2=gameMode==='online'?'OPPONENT':(gameMode==='2p'?'P2':'CPU');
+  TS(sl,W/4,  38,30,'#fff',   '#000',6);
+  TS(sr,3*W/4,38,30,'#a855f7','#000',6);
+  T(lbl1,W/4,  70,7,'rgba(255,255,255,.26)');
+  T(lbl2,3*W/4,70,7,'rgba(168,85,247,.34)');
+  if(state==='PLAYING'&&rallyCount>3){
+    const c=rallyCount>9?'#ff6b6b':rallyCount>5?'#ffe259':'#38bdf8';
+    TS('RALLY x'+rallyCount,W/2,H-22,8,c,'#000',3);
+  }
+}
+
+function drawCountdown(){
+  ctx.fillStyle='rgba(0,0,0,.55)'; ctx.fillRect(0,0,W,H);
+  const isLeft   = server==='left';
+  const isGuest  = onlineRole==='guest';
+  // For guest (mirrored view): their paddle is on visual left = game's right (padR)
+  // Ball "toward me" means: toward host (isLeft=true) for host, toward guest (isLeft=false) for guest
+  const towardMe = isGuest ? !isLeft : isLeft;
+  let who, wCol, dir;
+  if(gameMode==='online'){
+    who  = towardMe ? 'YOU' : 'OPPONENT';
+    wCol = '#38bdf8';
+    dir  = towardMe ? '← Ball coming your way' : 'Ball coming your way →';
+  } else {
+    who  = isLeft ? (gameMode==='2p'?'P1':'YOU') : (gameMode==='2p'?'P2':'CPU');
+    wCol = isLeft ? '#38bdf8' : '#a855f7';
+    dir  = isLeft ? '← Ball coming your way' : 'Ball coming your way →';
+  }
+  TS('GET READY',W/2,H/2-70,16,'#ffe259','#000',4);
+  T(who+' — stay alert',W/2,H/2-32,8,wCol);
+  T(dir,W/2,H/2-4,7,'rgba(255,255,255,.45)');
+  const n=Math.ceil(cdTime);
+  const pulse=.72+.28*Math.sin(Date.now()/170);
+  ctx.globalAlpha=pulse;
+  TS(cdTime>0?n:'GO!',W/2,H/2+58,52, n===1||cdTime<=0?'#ff6b6b':'#fff','#000',9);
+  ctx.globalAlpha=1;
+}
+
+function drawStart(){
+  ctx.fillStyle='rgba(0,0,0,.72)'; ctx.fillRect(0,0,W,H);
+  T('🏓',W/2,H/2-106,54,'#fff');
+  TS('PONG',W/2,H/2-40,32,'#38bdf8','#000',7);
+  T('Two paddles. One ball.',W/2,H/2+8,9,'#ffffff88');
+  T('Infinite rivalry.',W/2,H/2+26,9,'#ffffff55');
+  const p=.6+.4*Math.sin(Date.now()/380);
+  ctx.globalAlpha=p;
+  TS('SPACE OR TAP TO START',W/2,H/2+76,9,'#fff','#000',3);
+  ctx.globalAlpha=1;
+  T('FIRST TO '+WIN_SCORE+' WINS',W/2,H/2+104,7,'#ffe25977');
+}
+
+function drawOver(){
+  ctx.fillStyle='rgba(0,0,0,.68)'; ctx.fillRect(0,0,W,H);
+  if(gameMode==='online'){
+    const isGuest=onlineRole==='guest';
+    const won=isGuest?(scoreR>=WIN_SCORE):(scoreL>=WIN_SCORE);
+    TS(won?'YOU WIN!':'YOU LOSE!',W/2,H/2-60,22,won?'#22c55e':'#ff6b6b','#000',5);
+  } else if(gameMode==='2p'){
+    const who=scoreL>=WIN_SCORE?'P1':'P2';
+    TS(who+' WINS!',W/2,H/2-60,22,'#ffe259','#000',5);
+  } else {
+    const won=scoreL>=WIN_SCORE;
+    TS(won?'YOU WIN!':'YOU LOSE!',W/2,H/2-60,22,won?'#22c55e':'#ff6b6b','#000',5);
+  }
+  const sl=onlineRole==='guest'?scoreR:scoreL, sr=onlineRole==='guest'?scoreL:scoreR;
+  TS(sl+'  —  '+sr,W/2,H/2-8,20,'#fff','#000',4);
+  T('FINAL SCORE',W/2,H/2+22,7,'#ffffff44');
+  const p=.6+.4*Math.sin(Date.now()/380);
+  ctx.globalAlpha=p;
+  const restartMsg=onlineRole==='guest'?'SPACE / TAP TO REQUEST REMATCH':'SPACE OR TAP TO PLAY AGAIN';
+  TS(restartMsg,W/2,H/2+62,onlineRole==='guest'?7:8,'#ffe259','#000',3);
+  ctx.globalAlpha=1;
+}
+
+/* ═══════════════════════
+   ONLINE MULTIPLAYER (PeerJS WebRTC)
+═══════════════════════ */
+function genCode(){
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');
+}
+function olShow(id){
+  ['ol-choose','ol-hosting','ol-joining'].forEach(s=>{
+    document.getElementById(s).style.display=s===id?'flex':'none';
+  });
+}
+function openOnlineLobby(){
+  document.getElementById('online-overlay').classList.add('show');
+  olShow('ol-choose');
+}
+function closeOnlineLobby(){
+  document.getElementById('online-overlay').classList.remove('show');
+  if(peer&&!onlineRole){ peer.destroy(); peer=null; }
+}
+function showOlJoin(){
+  olShow('ol-joining');
+  document.getElementById('join-error').textContent='';
+  document.getElementById('btn-connect').disabled=false;
+  document.getElementById('room-code-input').value='';
+  setTimeout(()=>document.getElementById('room-code-input').focus(),50);
+}
+function showOlChoose(){
+  if(peer){ peer.destroy(); peer=null; }
+  olShow('ol-choose');
+}
+function startHost(){
+  olShow('ol-hosting');
+  const codeDisplay=document.getElementById('room-code-display');
+  const statusEl=document.getElementById('host-status');
+  codeDisplay.textContent='······'; statusEl.textContent='Connecting...';
+  const code=genCode();
+  try{ peer=new Peer('pixo-pong-'+code); }
+  catch(e){ statusEl.textContent='PeerJS unavailable'; return; }
+  peer.on('open',()=>{
+    codeDisplay.textContent=code;
+    statusEl.textContent='Waiting for opponent...';
+  });
+  peer.on('connection',c=>{ conn=c; onlineRole='host'; setupConn(); });
+  peer.on('error',err=>{ statusEl.textContent='Error: '+err.type; });
+}
+function cancelHost(){
+  if(peer){ peer.destroy(); peer=null; }
+  conn=null; onlineRole=null;
+  olShow('ol-choose');
+}
+function connectToHost(){
+  const raw=document.getElementById('room-code-input').value.trim().toUpperCase();
+  const errEl=document.getElementById('join-error');
+  if(raw.length!==6){ errEl.textContent='Enter a 6-character code'; return; }
+  errEl.textContent='Connecting...';
+  document.getElementById('btn-connect').disabled=true;
+  try{ peer=new Peer(); }
+  catch(e){ errEl.textContent='PeerJS unavailable'; document.getElementById('btn-connect').disabled=false; return; }
+  peer.on('open',()=>{
+    conn=peer.connect('pixo-pong-'+raw,{reliable:true,serialization:'json'});
+    onlineRole='guest';
+    setupConn();
+  });
+  peer.on('error',err=>{
+    errEl.textContent='Error: '+err.type;
+    document.getElementById('btn-connect').disabled=false;
+  });
+}
+function setupConn(){
+  conn.on('open',()=>{
+    document.getElementById('online-overlay').classList.remove('show');
+    gameMode='online';
+    document.getElementById('diffRow').style.display=onlineRole==='host'?'flex':'none';
+    document.getElementById('btnVsAI').className='mode-btn';
+    document.getElementById('btn2P').className='mode-btn';
+    document.getElementById('btnOnline').className='mode-btn active-online';
+    hardReset(); updateHint();
+  });
+  conn.on('data',data=>{
+    if(onlineRole==='host'){
+      if(data.type==='input') padR.y=Math.max(0,Math.min(H-PADDLE_H,data.padY));
+      if(data.type==='start'&&(state==='START'||state==='OVER')) startGame();
+    } else {
+      if(data.type==='state'){
+        const wasOver=state==='OVER';
+        ball.x=data.bx; ball.y=data.by; ball.vx=data.bvx; ball.vy=data.bvy;
+        padL.y=data.ply; // don't overwrite padR.y — guest uses local prediction
+        scoreL=data.sl; scoreR=data.sr;
+        state=data.st; cdTime=data.cd;
+        trail=data.tr||[]; rallyCount=data.rl||0;
+        flashA=data.fa||0; flashC=data.fc||'#fff';
+        particles=data.pa||[];
+        if(soundOn&&state==='OVER'&&!wasOver){
+          scoreR>=WIN_SCORE ? sfxWin() : sfxLose();
+        }
+      }
+    }
+  });
+  conn.on('close',()=>onlineDisconnect('Opponent disconnected'));
+  conn.on('error',()=>onlineDisconnect('Connection error'));
+  peer.on('error',err=>onlineDisconnect('Network error: '+err.type));
+}
+function onlineDisconnect(msg){
+  if(msg) setTimeout(()=>alert(msg+'. Returning to menu.'),50);
+  try{ if(conn) conn.close(); } catch(e){}
+  try{ if(peer) peer.destroy(); } catch(e){}
+  conn=null; peer=null; onlineRole=null;
+  gameMode='vsai';
+  document.getElementById('btnVsAI').className='mode-btn active-vsai';
+  document.getElementById('btn2P').className='mode-btn';
+  document.getElementById('btnOnline').className='mode-btn';
+  document.getElementById('diffRow').style.display='flex';
+  hardReset(); updateHint();
+}
+
+let lastT=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  const dt=Math.min((ts-lastT)/1000,.05);
+  lastT=ts;
+
+  // Countdown tick — only host runs physics
+  if(state==='COUNTDOWN' && onlineRole!=='guest'){
+    cdAccum+=dt;
+    cdTime=COUNTDOWN_SEC-cdAccum;
+    const cur=Math.ceil(cdTime);
+    if(cur<lastCdTick && cur>=1){ if(soundOn) sfxTick(cur===1); lastCdTick=cur; }
+    if(cdTime<=0){ serveBall(); }
+  }
+
+  // Update — guest only moves their own paddle; host/local run full physics
+  if(state==='PLAYING'){
+    updatePlayers(dt);
+    if(onlineRole!=='guest'){ updateAI(dt); updateBall(dt); }
+  } else if(state==='COUNTDOWN'||state==='OVER'){
+    updatePlayers(dt);
+  }
+  stepP(dt);
+
+  // Host broadcasts state to guest every ~33ms
+  if(onlineRole==='host'){
+    const now=performance.now();
+    if(conn&&conn.open&&now-lastSendT>33){
+      lastSendT=now;
+      conn.send({type:'state',
+        bx:ball.x,by:ball.y,bvx:ball.vx,bvy:ball.vy,
+        ply:padL.y,
+        sl:scoreL,sr:scoreR,st:state,cd:cdTime,
+        tr:trail.filter((_,i)=>i%2===0),
+        rl:rallyCount,fa:flashA,fc:flashC,
+        pa:particles.slice(-12)
+      });
+    }
+  }
+
+  // Draw — mirror canvas for guest so they always appear on left
+  const isGuest=onlineRole==='guest';
+  if(isGuest){ ctx.save(); ctx.scale(-1,1); ctx.translate(-W,0); }
+  drawCourt();
+  drawParts();
+  drawFlash();
+  if(isGuest){
+    // Guest's paddle (padR) drawn on visual left; host's (padL) on visual right
+    drawPad(padR.x,padR.y,'#38bdf8','#38bdf8');
+    drawPad(padL.x,padL.y,'#a855f7','#a855f7');
+  } else {
+    drawPad(padL.x,padL.y,'#38bdf8','#38bdf8');
+    drawPad(padR.x,padR.y,'#a855f7','#a855f7');
+  }
+  if(state==='PLAYING') drawBall();
+  if(state==='COUNTDOWN') drawBallStatic();
+  if(isGuest) ctx.restore(); // restore before drawing text
+
+  if(state!=='START') drawHUD();
+  if(state==='START')          drawStart();
+  else if(state==='COUNTDOWN') drawCountdown();
+  else if(state==='OVER')      drawOver();
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

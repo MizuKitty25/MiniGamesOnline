@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PixoPlays - Free Online Arcade Games | Play Flappy Bird, Snake & Dino</title>
-<meta name="description" content="Play free online arcade games at PixoPlays - Flappy Bird, Snake, Dino Run and more classic mini games. No downloads required, just click and play!">
-<meta name="keywords" content="free online games, arcade games, flappy bird, snake game, dino run, browser games, mini games, pixoplays, free to play">
+<title>PixoPlays — Free Online Arcade Games | Snake, Flappy Bird, Dino Run, Pong & More</title>
+<meta name="description" content="Play free online arcade games at PixoPlays — Snake, Flappy Bird, Dino Run, Pong, and Brick Breaker. No downloads, no ads, no accounts. Just click and play!">
+<meta name="keywords" content="free online games, arcade games, flappy bird, snake game, dino run, pong game, brick breaker, breakout game, browser games, mini games, pixoplays, free to play, no download games">
 <meta name="author" content="PixoPlays">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#1a0a2e">
@@ -13,16 +13,16 @@
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pixoplays.com/">
-<meta property="og:title" content="PixoPlays - Free Online Arcade Games">
-<meta property="og:description" content="Play free classic arcade games online - Flappy Bird, Snake, Dino Run and more. No downloads required!">
+<meta property="og:title" content="PixoPlays — Free Online Arcade Games">
+<meta property="og:description" content="Play free arcade games online — Snake, Flappy Bird, Dino Run, Pong, Brick Breaker and more. No downloads, no ads!">
 <meta property="og:image" content="https://pixoplays.com/applogo.png">
 <meta property="og:site_name" content="PixoPlays">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:url" content="https://pixoplays.com/">
-<meta name="twitter:title" content="PixoPlays - Free Online Arcade Games">
-<meta name="twitter:description" content="Play free classic arcade games online - Flappy Bird, Snake, Dino Run and more. No downloads required!">
+<meta name="twitter:title" content="PixoPlays — Free Online Arcade Games">
+<meta name="twitter:description" content="Play Snake, Flappy Bird, Dino Run, Pong, Brick Breaker and more free online. No downloads, no ads!">
 <meta name="twitter:image" content="https://pixoplays.com/applogo.png">
 
 <!-- Canonical URL -->
@@ -41,7 +41,12 @@
   "@type": "WebSite",
   "name": "PixoPlays",
   "url": "https://pixoplays.com",
-  "description": "Free online arcade games collection"
+  "description": "Free online browser arcade — Snake, Flappy Bird, Dino Run, Pong, Brick Breaker and more. No ads, no downloads.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://pixoplays.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
 }
 </script>
 <script type="application/ld+json">
@@ -49,8 +54,15 @@
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": "PixoPlays Game Arcade",
-  "description": "Play free online arcade games including Flappy Bird, Snake, and Dino Run",
-  "url": "https://pixoplays.com"
+  "description": "Free online arcade games — Snake, Flappy Bird, Dino Run, Pong, Brick Breaker. No downloads, no ads, no accounts.",
+  "url": "https://pixoplays.com",
+  "hasPart": [
+    { "@type": "VideoGame", "name": "Snake",        "url": "https://pixoplays.com/snake/" },
+    { "@type": "VideoGame", "name": "Flappy Bird",  "url": "https://pixoplays.com/flappy/" },
+    { "@type": "VideoGame", "name": "Dino Run",     "url": "https://pixoplays.com/Dino/" },
+    { "@type": "VideoGame", "name": "Pong",         "url": "https://pixoplays.com/pong/" },
+    { "@type": "VideoGame", "name": "Brick Breaker","url": "https://pixoplays.com/brickBreak/" }
+  ]
 }
 </script>
 <style>
@@ -384,6 +396,7 @@
 <!-- NAV -->
 <nav>
   <a href="index.html" class="active">🕹️ Games</a>
+  <a href="aboutPage.html">📖 About PixoPlays</a>
   <a href="about.html">👾 About Me</a>
   <a href="credits.html">📜 Credits</a>
 </nav>
@@ -433,6 +446,32 @@
       <div class="card-thumb-placeholder" style="display:none;">🦕</div>
       <div class="card-footer">
         <span class="card-title">Dino Run</span>
+        <button class="play-btn">Play ▶</button>
+      </div>
+    </div>
+  </a>
+
+  <a class="game-card" href="brickBreak/index.html">
+    <div class="corner-tr"></div><div class="corner-bl"></div>
+    <div class="card-inner">
+      <img class="card-thumb" src="coverImage/brick.png" alt="Brick Break game - destroy bricks in this classic arcade game"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-thumb-placeholder" style="display:none;">🧱</div>
+      <div class="card-footer">
+        <span class="card-title">Brick Break</span>
+        <button class="play-btn">Play ▶</button>
+      </div>
+    </div>
+  </a>
+
+  <a class="game-card" href="pong/index.html">
+    <div class="corner-tr"></div><div class="corner-bl"></div>
+    <div class="card-inner">
+      <img class="card-thumb" src="coverImage/pong.png" alt="Pong game - classic arcade paddle game"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="card-thumb-placeholder" style="display:none;">🏓</div>
+      <div class="card-footer">
+        <span class="card-title">Pong</span>
         <button class="play-btn">Play ▶</button>
       </div>
     </div>
