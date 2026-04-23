@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>⚡ Tetris Battle — Free Online Multiplayer Tetris | PixoPlays</title>
+<meta name="description" content="Play Tetris Battle free online — 1v1 vs CPU, local 2-player, solo high-score, or online multiplayer with a room code. Clear lines, send garbage, bury your opponent. No download needed!">
+<meta name="keywords" content="tetris battle, tetris online, multiplayer tetris, tetris vs ai, free tetris, browser tetris, pixoplays, tetris 2 player, tetris garbage, online tetris room code, tetris battle game">
+<meta name="author" content="PixoPlays">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#08080f">
+<link rel="canonical" href="https://pixoplays.com/Tetris/">
+<link rel="icon" type="image/png" href="../applogo.png">
+<link rel="apple-touch-icon" href="../applogo.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pixoplays.com/Tetris/">
+<meta property="og:title" content="Tetris Battle — Online Multiplayer & VS CPU | PixoPlays">
+<meta property="og:description" content="Free online Tetris Battle — play solo, vs CPU, local 2-player, or online with a room code. Clear lines to send garbage and bury your opponent!">
+<meta property="og:image" content="https://pixoplays.com/coverImage/tetris.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PixoPlays">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://pixoplays.com/Tetris/">
+<meta name="twitter:title" content="Tetris Battle — Online Multiplayer & VS CPU | PixoPlays">
+<meta name="twitter:description" content="Free online Tetris Battle — solo, vs CPU, 2-player, or online with a room code. Send garbage lines to crush your opponent!">
+<meta name="twitter:image" content="https://pixoplays.com/coverImage/tetris.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Tetris Battle",
+  "description": "Free online Tetris Battle — play solo for high score, vs CPU with three difficulty levels, local 2-player, or online multiplayer with a room code. Clear lines to send garbage and be the last one standing.",
+  "genre": ["Puzzle", "Arcade", "Multiplayer"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 2 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "url": "https://pixoplays.com/Tetris/",
+  "publisher": { "@type": "Organization", "name": "PixoPlays", "url": "https://pixoplays.com" }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080f;
+  --panel: #0d0d1a;
+  --border: #1a1a35;
+  --cyan: #00f5ff;
+  --magenta: #ff00aa;
+  --yellow: #ffe600;
+  --green: #00ff88;
+  --red: #ff3355;
+  --orange: #ff7700;
+  --blue: #3366ff;
+  --purple: #aa00ff;
+  --white: #e8e8ff;
+  --dim: rgba(255,255,255,0.1);
+  --glow-c: 0 0 20px #00f5ff88, 0 0 60px #00f5ff22;
+  --glow-m: 0 0 20px #ff00aa88, 0 0 60px #ff00aa22;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  font-family: 'Orbitron', monospace;
+  color: var(--white);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,245,255,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 0% 100%, rgba(255,0,170,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 100% 50%, rgba(170,0,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* NAV */
+nav{display:flex;justify-content:center;gap:8px;padding:20px 20px 0;flex-wrap:wrap;width:100%;position:relative;z-index:10;}
+nav a{font-family:'Press Start 2P',monospace;font-size:8px;color:#ffffff88;text-decoration:none;padding:8px 14px;border:1px solid #ffffff22;border-radius:2px;letter-spacing:1px;transition:color .2s,border-color .2s,text-shadow .2s;}
+nav a:hover,nav a.active{color:var(--yellow);border-color:var(--yellow);text-shadow:0 0 10px var(--yellow);}
+
+/* FOOTER NAV */
+.footer-nav{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;padding:16px 20px 8px;width:100%;position:relative;z-index:10;}
+.footer-nav a{font-family:'Press Start 2P',monospace;font-size:7px;color:#ffffff44;text-decoration:none;letter-spacing:1px;transition:color .2s;}
+.footer-nav a:hover{color:var(--yellow);}
+
+/* HEADER */
+header {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 22px 20px 10px;
+  width: 100%;
+}
+
+.logo {
+  font-size: clamp(20px, 4vw, 32px);
+  font-weight: 900;
+  letter-spacing: 6px;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(0,245,255,0.5));
+  animation: logoFlicker 4s infinite;
+}
+
+@keyframes logoFlicker {
+  0%,95%,100% { opacity: 1; }
+  96% { opacity: 0.8; }
+  97% { opacity: 1; }
+  98% { opacity: 0.6; }
+  99% { opacity: 1; }
+}
+
+.logo-sub {
+  font-size: 8px;
+  letter-spacing: 8px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 4px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* MODE BUTTONS */
+.mode-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 14px 20px 0;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 9px 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 1px;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.mode-btn:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+.mode-btn.active-vsai { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,245,255,0.3), inset 0 0 12px rgba(0,245,255,0.05); }
+.mode-btn.active-2p   { color: var(--magenta); border-color: var(--magenta); box-shadow: 0 0 12px rgba(255,0,170,0.3), inset 0 0 12px rgba(255,0,170,0.05); }
+
+/* DIFF ROW */
+.diff-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.diff-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  padding: 7px 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1px;
+  background: transparent;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.diff-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.diff-btn.active-easy   { color: var(--green); border-color: var(--green); }
+.diff-btn.active-medium { color: var(--yellow); border-color: var(--yellow); }
+.diff-btn.active-hard   { color: var(--red); border-color: var(--red); }
+
+/* GAME AREA */
+.arena {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 12px 10px;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+/* Side panels */
+.side-panel {
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.panel-box {
+  background: rgba(10,10,25,0.8);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 10px;
+  position: relative;
+}
+
+.panel-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.4;
+}
+
+.panel-label {
+  font-size: 6px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.panel-label.right-color::before { background: linear-gradient(90deg, transparent, var(--magenta), transparent); }
+
+.panel-value {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--white);
+}
+
+.panel-value.large { font-size: 22px; }
+
+/* Board wrappers */
+.board-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.board-label {
+  font-size: 7px;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 6px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.board-frame {
+  padding: 3px;
+  position: relative;
+}
+
+.board-frame.left {
+  background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(0,245,255,0.02));
+  box-shadow: var(--glow-c);
+}
+
+.board-frame.right {
+  background: linear-gradient(135deg, rgba(255,0,170,0.15), rgba(255,0,170,0.02));
+  box-shadow: var(--glow-m);
+}
+
+@keyframes lcGlowLeft {
+  0%   { box-shadow: var(--glow-c); filter: brightness(1); }
+  20%  { box-shadow: 0 0 60px #00f5ffcc, 0 0 120px #00f5ff66; filter: brightness(2.2); }
+  100% { box-shadow: var(--glow-c); filter: brightness(1); }
+}
+@keyframes lcGlowRight {
+  0%   { box-shadow: var(--glow-m); filter: brightness(1); }
+  20%  { box-shadow: 0 0 60px #ff00aacc, 0 0 120px #ff00aa66; filter: brightness(2.2); }
+  100% { box-shadow: var(--glow-m); filter: brightness(1); }
+}
+.board-frame.left.line-clear  { animation: lcGlowLeft  0.55s ease-out forwards; }
+.board-frame.right.line-clear { animation: lcGlowRight 0.55s ease-out forwards; }
+
+canvas { display: block; }
+
+/* Preview canvas (next piece) */
+.next-wrap { text-align: center; }
+
+/* BATTLE EFFECTS */
+.attack-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes attackFlash {
+  0% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+.attack-flash.flash {
+  animation: attackFlash 0.35s ease-out forwards;
+}
+
+/* VS DIVIDER */
+.vs-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 4px;
+  min-height: 500px;
+}
+
+.vs-text {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  background: linear-gradient(180deg, var(--cyan), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 10px rgba(0,245,255,0.5));
+}
+
+.battle-arrow {
+  font-size: 10px;
+  animation: arrowPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes arrowPulse {
+  from { opacity: 0.2; transform: scale(0.8); }
+  to   { opacity: 1;   transform: scale(1.2); }
+}
+
+.send-indicator {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  padding: 3px 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 2px;
+  min-width: 50px;
+  text-align: center;
+  transition: all 0.3s;
+  opacity: 0.4;
+}
+
+.send-indicator.p1 { color: var(--cyan); border-color: rgba(0,245,255,0.2); }
+.send-indicator.p2 { color: var(--magenta); border-color: rgba(255,0,170,0.2); }
+.send-indicator.active { opacity: 1; animation: sendFlash 0.4s ease-out; }
+
+@keyframes sendFlash {
+  0% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* GARBAGE INDICATOR */
+.garbage-bar {
+  width: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden;
+}
+
+.garbage-fill {
+  width: 100%;
+  transition: height 0.3s;
+  position: absolute;
+  bottom: 0;
+}
+
+/* CONTROLS HINT */
+.controls-hint {
+  position: relative;
+  z-index: 10;
+  padding: 6px 20px 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+  text-align: center;
+  line-height: 2.2;
+}
+
+/* OVERLAY */
+#overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,4,14,0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#overlay.show { display: flex; }
+
+.overlay-panel {
+  background: rgba(10,10,25,0.97);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 40px 50px;
+  text-align: center;
+  max-width: 380px;
+  width: 90%;
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+}
+
+.overlay-title {
+  font-size: clamp(16px, 4vw, 24px);
+  font-weight: 900;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+}
+
+.overlay-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 2px;
+  margin-bottom: 28px;
+  line-height: 2;
+}
+
+.overlay-score {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  margin-bottom: 6px;
+}
+
+.overlay-score-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 24px;
+}
+
+.overlay-btn {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  padding: 14px 36px;
+  border: 1px solid;
+  border-radius: 1px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.overlay-btn.primary {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+.overlay-btn.primary:hover {
+  background: rgba(0,245,255,0.1);
+  box-shadow: 0 0 20px rgba(0,245,255,0.3);
+}
+
+.overlay-btn.secondary {
+  color: rgba(255,255,255,0.4);
+  border-color: rgba(255,255,255,0.15);
+  font-size: 8px;
+}
+.overlay-btn.secondary:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+
+/* COMBO POPUP */
+.combo-popup {
+  position: fixed;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  pointer-events: none;
+  z-index: 500;
+  animation: comboPop 1.4s ease-out forwards;
+  text-shadow: 0 0 20px currentColor, 0 0 50px currentColor;
+  white-space: nowrap;
+  font-family: 'Orbitron', monospace;
+}
+
+@keyframes comboPop {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(0) scale(2); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1); }
+  70%  { opacity: 1; transform: translateX(-50%) translateY(-40px) scale(1.05); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-90px) scale(0.8); }
+}
+
+/* SFX toggle */
+.sfx-row {
+  display: flex;
+  justify-content: center;
+  padding: 6px 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.sfx-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 2px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1px;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sfx-btn:hover { color: #fff; }
+.sfx-btn.active { color: var(--yellow); border-color: var(--yellow); }
+
+/* Footer */
+footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 8px 20px 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.12);
+}
+
+/* Scanlines */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none;
+  z-index: 500;
+}
+
+/* Online mode active button */
+.mode-btn.active-online {
+  color: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(0,255,136,0.3), inset 0 0 12px rgba(0,255,136,0.05);
+}
+
+/* Online lobby overlay */
+#olOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4,4,14,0.92);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.ol-code {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 10px;
+  color: var(--yellow);
+  margin: 16px 0;
+  text-shadow: 0 0 20px rgba(255,230,0,0.5);
+}
+
+.ol-input {
+  font-family: 'Orbitron', monospace;
+  font-size: 20px;
+  letter-spacing: 8px;
+  text-align: center;
+  width: 100%;
+  padding: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--yellow);
+  border-radius: 2px;
+  margin: 16px 0 8px;
+  text-transform: uppercase;
+  outline: none;
+}
+.ol-input:focus { border-color: var(--cyan); }
+
+.ol-error {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  color: var(--red);
+  min-height: 14px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+/* ── PLAY BUTTON ROW ── */
+.play-row {
+  display: flex;
+  justify-content: center;
+  padding: 12px 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.play-main-btn {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  padding: 14px 56px;
+  border: 1px solid var(--cyan);
+  border-radius: 1px;
+  background: transparent;
+  color: var(--cyan);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 18px rgba(0,245,255,0.15), inset 0 0 18px rgba(0,245,255,0.04);
+  text-transform: uppercase;
+}
+.play-main-btn:hover {
+  background: rgba(0,245,255,0.08);
+  box-shadow: 0 0 32px rgba(0,245,255,0.4), inset 0 0 24px rgba(0,245,255,0.1);
+}
+.play-main-btn:active { transform: scale(0.97); }
+
+/* Solo mode active button */
+.mode-btn.active-solo {
+  color: var(--yellow);
+  border-color: var(--yellow);
+  box-shadow: 0 0 12px rgba(255,230,0,0.3), inset 0 0 12px rgba(255,230,0,0.05);
+}
+
+/* Hide battle elements in solo mode */
+.arena.solo-mode .vs-divider,
+.arena.solo-mode #boardWrapR,
+.arena.solo-mode #rightPanel,
+.arena.solo-mode #garbBarL { display: none !important; }
+.arena.solo-mode { justify-content: center; }
+
+/* Board shake on garbage receive */
+/* Dim controls while game is active */
+body.game-playing .mode-btn,
+body.game-playing .diff-btn {
+  opacity: 0.25;
+  pointer-events: none;
+  cursor: default;
+}
+
+@keyframes boardShake {
+  0%,100% { transform: translateX(0); }
+  15%  { transform: translateX(-6px); }
+  30%  { transform: translateX(6px); }
+  45%  { transform: translateX(-5px); }
+  60%  { transform: translateX(5px); }
+  75%  { transform: translateX(-3px); }
+  90%  { transform: translateX(3px); }
+}
+.board-wrap.shake { animation: boardShake 0.4s ease-out; }
+
+/* Responsive */
+@media (max-width: 680px) {
+  .side-panel { width: 72px; }
+  .panel-value { font-size: 12px; }
+  .panel-value.large { font-size: 16px; }
+  .vs-divider { min-height: 400px; }
+}
+
+@media (max-width: 520px) {
+  .arena { gap: 6px; padding: 10px 6px; }
+  .side-panel { width: 60px; }
+  .vs-text { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<nav>
+  <a href="../index.html">🕹️ Games</a>
+  <a href="../aboutPage.html">📖 About PixoPlays</a>
+  <a href="../about.html">👾 About Me</a>
+  <a href="../credits.html">📜 Credits</a>
+</nav>
+
+<header>
+  <div class="logo">⚡ TETRIS BATTLE</div>
+  <div class="logo-sub">1v1 · REAL-TIME · GARBAGE WARS</div>
+</header>
+
+<div class="mode-row">
+  <button class="mode-btn active-vsai" id="btnVsCPU"   onclick="setMode('vsai')">🤖 VS CPU</button>
+  <button class="mode-btn"             id="btn2P"     onclick="setMode('2p')">👥 2 PLAYERS</button>
+  <button class="mode-btn"             id="btnSolo"   onclick="setMode('solo')">🎮 SOLO</button>
+  <button class="mode-btn"             id="btnOnline" onclick="openOnlineLobby()">🌐 ONLINE</button>
+</div>
+
+<div class="diff-row" id="diffRow">
+  <button class="diff-btn"              id="btnEasy"   onclick="setDiff('easy')">EASY</button>
+  <button class="diff-btn active-medium" id="btnMedium" onclick="setDiff('medium')">MEDIUM</button>
+  <button class="diff-btn"              id="btnHard"   onclick="setDiff('hard')">HARD</button>
+</div>
+
+<div class="play-row" id="playRow">
+  <button class="play-main-btn" id="playMainBtn" onclick="startGame()">▶  PLAY</button>
+</div>
+
+<div class="arena" id="arena">
+
+  <!-- LEFT SIDE PANEL -->
+  <div class="side-panel" id="leftPanel">
+    <div class="panel-box">
+      <div class="panel-label">SCORE</div>
+      <div class="panel-value large" id="scoreL">0</div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-label">LEVEL</div>
+      <div class="panel-value" id="levelL">1</div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-label">LINES</div>
+      <div class="panel-value" id="linesL">0</div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-label">COMBO</div>
+      <div class="panel-value" id="comboL" style="color:var(--yellow)">0</div>
+    </div>
+    <div class="panel-box" id="bestBox" style="display:none">
+      <div class="panel-label">BEST</div>
+      <div class="panel-value" id="bestScore" style="color:var(--yellow)">—</div>
+    </div>
+    <div class="panel-box next-wrap">
+      <div class="panel-label">NEXT</div>
+      <canvas id="nextL" width="80" height="70"></canvas>
+    </div>
+    <div class="panel-box next-wrap">
+      <div class="panel-label">HOLD</div>
+      <canvas id="holdL" width="80" height="70"></canvas>
+    </div>
+  </div>
+
+  <!-- LEFT BOARD -->
+  <div class="board-wrap" id="boardWrapL">
+    <div class="board-label" id="labelL">PLAYER 1</div>
+    <div class="board-frame left" style="position:relative;">
+      <canvas id="boardL" width="300" height="600"></canvas>
+      <div class="attack-flash" id="flashL" style="background:var(--red);"></div>
+      <!-- Garbage bar on right side of left board -->
+      <div class="garbage-bar" id="garbBarL" style="position:absolute;right:-12px;top:0;height:600px;">
+        <div class="garbage-fill" id="garbFillL" style="background:var(--red);height:0%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VS DIVIDER -->
+  <div class="vs-divider">
+    <div class="vs-text">VS</div>
+    <div class="battle-arrow" style="color:var(--cyan)">◀</div>
+    <div class="send-indicator p1" id="sendL">ATTACK</div>
+    <div style="width:1px;flex:1;background:linear-gradient(180deg,rgba(0,245,255,0.2),rgba(255,0,170,0.2));min-height:80px;"></div>
+    <div class="send-indicator p2" id="sendR">ATTACK</div>
+    <div class="battle-arrow" style="color:var(--magenta)">▶</div>
+  </div>
+
+  <!-- RIGHT BOARD -->
+  <div class="board-wrap" id="boardWrapR">
+    <div class="board-label" id="labelR">CPU</div>
+    <div class="board-frame right" style="position:relative;">
+      <canvas id="boardR" width="300" height="600"></canvas>
+      <div class="attack-flash" id="flashR" style="background:var(--magenta);"></div>
+      <!-- Garbage bar on left side of right board -->
+      <div class="garbage-bar" id="garbBarR" style="position:absolute;left:-12px;top:0;height:600px;">
+        <div class="garbage-fill" id="garbFillR" style="background:var(--magenta);height:0%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE PANEL -->
+  <div class="side-panel" id="rightPanel">
+    <div class="panel-box" style="border-left-color:rgba(255,0,170,0.2)">
+      <div class="panel-label">SCORE</div>
+      <div class="panel-value large" id="scoreR">0</div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-label">LEVEL</div>
+      <div class="panel-value" id="levelR">1</div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-label">LINES</div>
+      <div class="panel-value" id="linesR">0</div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-label">COMBO</div>
+      <div class="panel-value" id="comboR" style="color:var(--yellow)">0</div>
+    </div>
+    <div class="panel-box next-wrap">
+      <div class="panel-label">NEXT</div>
+      <canvas id="nextR" width="80" height="70"></canvas>
+    </div>
+    <div class="panel-box next-wrap">
+      <div class="panel-label">HOLD</div>
+      <canvas id="holdR" width="80" height="70"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<div class="sfx-row">
+  <button class="sfx-btn active" id="sfxBtn" onclick="toggleSound()">🔊 SOUND</button>
+</div>
+
+<div class="controls-hint" id="hintBox">
+  <span id="hint1">P1: ← → move &nbsp;·&nbsp; ↑ rotate &nbsp;·&nbsp; ↓ soft drop &nbsp;·&nbsp; SPACE hard drop &nbsp;·&nbsp; C hold</span><br>
+  <span id="hint2" style="color:rgba(255,0,170,0.4)">CPU plays automatically · Difficulty affects speed & AI skill</span>
+</div>
+
+<div class="footer-nav">
+  <a href="../index.html">🕹️ All Games</a>
+  <a href="../aboutPage.html">📖 About PixoPlays</a>
+  <a href="../about.html">👾 About Me</a>
+  <a href="../credits.html">📜 Credits</a>
+</div>
+<footer style="text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;letter-spacing:2px;font-family:'Press Start 2P',monospace;">© PIXOPLAYS · FREE TO PLAY · MADE WITH ❤️</footer>
+
+<!-- ONLINE LOBBY OVERLAY -->
+<div id="olOverlay">
+
+  <!-- Screen 1: Choose host or join -->
+  <div id="olChoose" class="overlay-panel">
+    <div class="overlay-title" style="color:var(--green)">🌐 ONLINE BATTLE</div>
+    <div class="overlay-sub">Host a game and share your code,<br>or enter a friend's code to join.</div>
+    <button class="overlay-btn primary" style="color:var(--cyan);border-color:var(--cyan)" onclick="olHost()">🏠 HOST GAME</button>
+    <button class="overlay-btn primary" style="color:var(--magenta);border-color:var(--magenta);margin-top:8px" onclick="olShowJoin()">🔗 JOIN GAME</button>
+    <button class="overlay-btn secondary" onclick="olCancel()">← BACK</button>
+  </div>
+
+  <!-- Screen 2: Hosting — show room code -->
+  <div id="olHosting" class="overlay-panel" style="display:none">
+    <div class="overlay-title" style="color:var(--cyan)">HOSTING</div>
+    <div class="overlay-sub">Share this code with your opponent:</div>
+    <div class="ol-code" id="olRoomCode">——————</div>
+    <div class="overlay-sub" id="olHostStatus" style="margin-bottom:0">Connecting…</div>
+    <button class="overlay-btn secondary" style="margin-top:20px" onclick="olCancel()">← CANCEL</button>
+  </div>
+
+  <!-- Screen 3: Joining — enter code -->
+  <div id="olJoining" class="overlay-panel" style="display:none">
+    <div class="overlay-title" style="color:var(--magenta)">JOIN GAME</div>
+    <div class="overlay-sub">Enter the host's 6-character code:</div>
+    <input id="olCodeInput" class="ol-input" type="text" maxlength="6" placeholder="ABC123"
+           onkeydown="if(event.key==='Enter') olJoin()">
+    <div class="ol-error" id="olJoinError"></div>
+    <button class="overlay-btn primary" style="color:var(--magenta);border-color:var(--magenta)" onclick="olJoin()">▶ CONNECT</button>
+    <button class="overlay-btn secondary" onclick="olCancel()">← BACK</button>
+  </div>
+
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div class="overlay-panel">
+    <div class="overlay-title" id="ovTitle">TETRIS BATTLE</div>
+    <div class="overlay-sub" id="ovSub">Clear lines to send garbage.<br>Bury your opponent to win.<br>First to top-out loses.</div>
+    <div class="overlay-score" id="ovScore"></div>
+    <div class="overlay-score-label" id="ovScoreLabel"></div>
+    <button class="overlay-btn primary" id="ovPlay" onclick="startGame()">▶  PLAY</button>
+    <button class="overlay-btn secondary" id="ovQuit" style="display:none;" onclick="showMenu()">← MENU</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
+<script>
+/* ════════════════════════════════════
+   CONSTANTS & CONFIG
+════════════════════════════════════ */
+const COLS = 10, ROWS = 20;
+const CELL = 30; // px per cell
+const BOARD_W = COLS * CELL;  // 300
+const BOARD_H = ROWS * CELL;  // 600
+
+const TETROMINOES = {
+  I: { shape: [[1,1,1,1]], color: '#00f5ff' },
+  O: { shape: [[1,1],[1,1]], color: '#ffe600' },
+  T: { shape: [[0,1,0],[1,1,1]], color: '#aa00ff' },
+  S: { shape: [[0,1,1],[1,1,0]], color: '#00ff88' },
+  Z: { shape: [[1,1,0],[0,1,1]], color: '#ff3355' },
+  J: { shape: [[1,0,0],[1,1,1]], color: '#3366ff' },
+  L: { shape: [[0,0,1],[1,1,1]], color: '#ff7700' },
+};
+const PIECE_KEYS = Object.keys(TETROMINOES);
+
+// How many garbage lines sent per lines cleared
+const GARBAGE_TABLE = { 1: 1, 2: 2, 3: 3, 4: 4 }; // 1 line = 1 garbage, Tetris = 4
+const SCORE_TABLE   = { 1: 100, 2: 300, 3: 500, 4: 800 };
+
+// Drop speed in ms per step — linear decrease: level 1=1000ms, ~level 18=50ms
+function dropSpeed(level) {
+  return Math.max(50, 1000 - (level - 1) * 55);
+}
+
+// AI difficulty config
+const AI_CONFIG = {
+  easy:   { thinkMs: 750,  mistakeRate: 0.32, lookAhead: 1 },
+  medium: { thinkMs: 350,  mistakeRate: 0.12, lookAhead: 2 },
+  hard:   { thinkMs: 120,  mistakeRate: 0.02, lookAhead: 2 },
+};
+
+/* ════════════════════════════════════
+   AUDIO
+════════════════════════════════════ */
+const AC = window.AudioContext || window.webkitAudioContext;
+let ac;
+let soundOn = true;
+
+function initAC() { if (!ac) ac = new AC(); }
+
+function beep(freq, dur, vol = 0.15, type = 'square', detune = 0) {
+  if (!soundOn || !ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.connect(g); g.connect(ac.destination);
+  o.type = type; o.frequency.value = freq; o.detune.value = detune;
+  g.gain.setValueAtTime(vol, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+  o.start(ac.currentTime); o.stop(ac.currentTime + dur);
+}
+
+function sfxMove()   { beep(300, 0.04, 0.07); }
+function sfxRotate() { beep(440, 0.05, 0.09, 'sine'); }
+function sfxDrop()   { beep(200, 0.08, 0.15, 'square', -200); }
+function sfxHold()   { beep(380, 0.07, 0.1, 'sine'); }
+function sfxLock()   { beep(260, 0.06, 0.12, 'square'); }
+
+function sfxClear(n) {
+  const freqs = [523, 659, 784, 1047];
+  for (let i = 0; i < n; i++) {
+    setTimeout(() => beep(freqs[i], 0.12, 0.2, 'square'), i * 60);
+  }
+}
+
+function sfxTetris() {
+  [523, 659, 784, 1047, 1319].forEach((f, i) =>
+    setTimeout(() => beep(f, 0.18, 0.25, 'square'), i * 70)
+  );
+}
+
+function sfxAttack() {
+  beep(80, 0.2, 0.3, 'sawtooth');
+  setTimeout(() => beep(60, 0.15, 0.2, 'sawtooth'), 100);
+}
+
+function sfxReceive() {
+  beep(100, 0.25, 0.25, 'sawtooth', -300);
+}
+
+function sfxGameOver() {
+  [523, 466, 415, 370, 330].forEach((f, i) =>
+    setTimeout(() => beep(f, 0.2, 0.22, 'square'), i * 110)
+  );
+}
+
+function sfxWin() {
+  [523, 659, 784, 1047, 1319, 1568].forEach((f, i) =>
+    setTimeout(() => beep(f, 0.2, 0.25, 'square'), i * 90)
+  );
+}
+
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.getElementById('sfxBtn');
+  btn.textContent = soundOn ? '🔊 SOUND' : '🔇 SOUND';
+  btn.classList.toggle('active', soundOn);
+}
+
+/* ════════════════════════════════════
+   GAME STATE
+════════════════════════════════════ */
+let gameMode  = 'vsai';
+let difficulty = 'medium';
+let gameState  = 'menu'; // menu | playing | over
+
+let players; // array of 2 player objects
+
+function makeBoard() {
+  return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+}
+
+function makePlayer(side) {
+  return {
+    side,            // 'left' | 'right'
+    board: makeBoard(),
+    piece: null,     // current piece
+    nextBag: [],     // 7-bag randomizer
+    holdPiece: null,
+    holdUsed: false,
+    score: 0,
+    level: 1,
+    linesCleared: 0,
+    combo: 0,        // consecutive clear combo
+    garbagePending: 0, // queued garbage to receive
+    garbageQueue: [],  // visual only
+    alive: true,
+    dropAccum: 0,    // ms accumulator for gravity
+    lockDelay: 0,    // ms of lock delay
+    lockReset: 0,    // how many times lock was reset
+    isAI: false,
+    aiTimer: 0,
+    aiTarget: null,
+    aiRotsDone: 0,
+    isRemote: false,     // online: opponent board driven by network
+    remotePiece: null,   // online: last received opponent piece position
+    _garbSend: 0,        // online: garbage accumulated this lock cycle
+    flashTimer: 0,
+  };
+}
+
+/* ════════════════════════════════════
+   BAG RANDOMIZER (7-bag)
+════════════════════════════════════ */
+function fillBag() {
+  const bag = [...PIECE_KEYS];
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  return bag;
+}
+
+function nextFromBag(p) {
+  if (p.nextBag.length < 7) p.nextBag.push(...fillBag());
+  return p.nextBag.shift();
+}
+
+/* ════════════════════════════════════
+   PIECE MANAGEMENT
+════════════════════════════════════ */
+function spawnPiece(p) {
+  const key = nextFromBag(p);
+  const def = TETROMINOES[key];
+  const shape = def.shape.map(r => [...r]);
+  const piece = {
+    key,
+    shape,
+    color: def.color,
+    x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
+    y: -1,
+  };
+  p.piece = piece;
+  p.holdUsed = false;
+  p.lockDelay = 0;
+  p.lockReset = 0;
+  if (p.isAI) { p.aiTarget = null; p.aiRotsDone = 0; }
+  if (collides(p.board, piece, 0, 0)) {
+    p.alive = false; // top out
+  }
+}
+
+function rotateCW(shape) {
+  const rows = shape.length, cols = shape[0].length;
+  return Array.from({ length: cols }, (_, c) =>
+    Array.from({ length: rows }, (_, r) => shape[rows - 1 - r][c])
+  );
+}
+
+function rotateCCW(shape) {
+  const rows = shape.length, cols = shape[0].length;
+  return Array.from({ length: cols }, (_, c) =>
+    Array.from({ length: rows }, (_, r) => shape[r][cols - 1 - c])
+  );
+}
+
+function collides(board, piece, dx, dy) {
+  for (let r = 0; r < piece.shape.length; r++) {
+    for (let c = 0; c < piece.shape[r].length; c++) {
+      if (!piece.shape[r][c]) continue;
+      const nx = piece.x + c + dx;
+      const ny = piece.y + r + dy;
+      if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+      if (ny >= 0 && board[ny][nx]) return true;
+    }
+  }
+  return false;
+}
+
+// SRS wall kick offsets (simplified)
+const WALL_KICKS = [
+  [0, 0], [-1, 0], [1, 0], [0, -1], [-1, -1], [1, -1],
+  [0, 1], [-1, 1], [1, 1]
+];
+
+function tryRotate(p, dir) {
+  const newShape = dir === 1 ? rotateCW(p.piece.shape) : rotateCCW(p.piece.shape);
+  const testPiece = { ...p.piece, shape: newShape };
+  for (const [kx, ky] of WALL_KICKS) {
+    if (!collides(p.board, testPiece, kx, ky)) {
+      p.piece = { ...testPiece, x: testPiece.x + kx, y: testPiece.y + ky };
+      p.lockDelay = 0; p.lockReset++;
+      sfxRotate();
+      return true;
+    }
+  }
+  return false;
+}
+
+function moveH(p, dx) {
+  if (!p.piece || !p.alive) return;
+  if (!collides(p.board, p.piece, dx, 0)) {
+    p.piece.x += dx;
+    p.lockDelay = 0;
+    sfxMove();
+  }
+}
+
+function softDrop(p) {
+  if (!p.piece || !p.alive) return;
+  if (!collides(p.board, p.piece, 0, 1)) {
+    p.piece.y++;
+    p.score += 1;
+    p.dropAccum = 0;
+  }
+}
+
+function hardDrop(p, opponent) {
+  if (!p.piece || !p.alive) return;
+  const startY = p.piece.y;
+  let dropped = 0;
+  while (!collides(p.board, p.piece, 0, 1)) {
+    p.piece.y++;
+    dropped++;
+  }
+  if (dropped > 1) vfxSpawnHardDrop(p.side, p.piece, startY);
+  p.score += dropped * 2;
+  sfxDrop();
+  lockPiece(p, opponent);
+}
+
+function ghostY(p) {
+  if (!p.piece) return p.piece?.y ?? 0;
+  let gy = p.piece.y;
+  while (!collides(p.board, p.piece, 0, gy - p.piece.y + 1)) gy++;
+  return gy;
+}
+
+function holdPiece(p) {
+  if (!p.piece || p.holdUsed || !p.alive) return;
+  sfxHold();
+  const prevKey = p.holdPiece;
+  p.holdPiece = p.piece.key;
+  p.holdUsed = true;
+  if (prevKey) {
+    const def = TETROMINOES[prevKey];
+    const shape = def.shape.map(r => [...r]);
+    p.piece = {
+      key: prevKey, shape, color: def.color,
+      x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
+      y: -1,
+    };
+    p.lockDelay = 0; p.lockReset = 0;
+    if (collides(p.board, p.piece, 0, 0)) p.alive = false;
+  } else {
+    spawnPiece(p);
+  }
+}
+
+function lockPiece(p, opponent) {
+  if (!p.piece) return;
+  sfxLock();
+  vfxSpawnLockImpact(p.side, p.piece);
+  // Place on board
+  placeLoop:
+  for (let r = 0; r < p.piece.shape.length; r++) {
+    for (let c = 0; c < p.piece.shape[r].length; c++) {
+      if (!p.piece.shape[r][c]) continue;
+      const ny = p.piece.y + r;
+      if (ny < 0) { p.alive = false; break placeLoop; }
+      p.board[ny][p.piece.x + c] = p.piece.color;
+    }
+  }
+
+  p.piece = null;
+  clearLines(p, opponent);
+  if (p.alive) {
+    applyGarbage(p);
+    spawnPiece(p);
+  }
+
+  // Online: after piece locks, sync board state + queued garbage to opponent
+  if (gameMode === 'online' && p === players[0]) {
+    if (!p.alive) {
+      netSend({ t: 'over' });
+    } else {
+      netSend({ t: 'lock', board: p.board, score: p.score, level: p.level, lines: p.linesCleared, garb: p._garbSend });
+      p._garbSend = 0;
+    }
+  }
+}
+
+function clearLines(p, opponent) {
+  const cleared = [];
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (p.board[r].every(c => c !== null)) cleared.push(r);
+  }
+  if (cleared.length === 0) {
+    p.combo = 0;
+    return;
+  }
+
+  // VFX — must fire before rows are removed so colors are available
+  vfxSpawnLineClear(p.side, cleared, p.board);
+
+  // Remove cleared rows
+  for (const r of cleared) p.board.splice(r, 1);
+  while (p.board.length < ROWS) p.board.unshift(Array(COLS).fill(null));
+
+  const n = cleared.length;
+  const prevLevel = p.level;
+  p.linesCleared += n;
+  p.level = Math.floor(p.linesCleared / 5) + 1;
+  p.combo++;
+
+  if (p.level > prevLevel) showLevelUpPopup(p.side, p.level);
+
+  // Score
+  const baseScore = SCORE_TABLE[n] * p.level;
+  const comboBonus = (p.combo - 1) * 50 * p.level;
+  p.score += baseScore + comboBonus;
+
+  // SFX
+  if (n === 4) sfxTetris();
+  else sfxClear(n);
+
+  // Garbage to send
+  let garbToSend = GARBAGE_TABLE[n] ?? 0;
+  if (p.combo > 1) garbToSend += Math.floor((p.combo - 1) * 0.5);
+  // T-spin bonus (simplified: no detection here, keep clean)
+
+  if (garbToSend > 0 && opponent && opponent.alive) {
+    // Cancel own pending garbage first
+    const cancel = Math.min(garbToSend, p.garbagePending);
+    p.garbagePending -= cancel;
+    garbToSend -= cancel;
+    if (garbToSend > 0) {
+      if (gameMode === 'online') {
+        p._garbSend += garbToSend; // sent with lock message in lockPiece
+      } else {
+        opponent.garbagePending += garbToSend;
+      }
+      showAttack(p.side, garbToSend);
+      sfxAttack();
+    }
+  }
+
+  showComboPopup(p.side, n, p.combo);
+}
+
+function applyGarbage(p) {
+  if (p.garbagePending <= 0) return;
+  const lines = Math.min(p.garbagePending, 8); // cap per turn
+  p.garbagePending -= lines;
+  sfxReceive();
+  triggerFlash(p.side === 'left' ? 'flashL' : 'flashR');
+  shakeBoard(p.side);
+  vfxSpawnGarbage(p.side, lines);
+
+  const holeCol = Math.floor(Math.random() * COLS);
+  for (let i = 0; i < lines; i++) {
+    p.board.shift();
+    const row = Array(COLS).fill('#555555');
+    row[holeCol] = null;
+    p.board.push(row);
+  }
+}
+
+/* ════════════════════════════════════
+   AI
+════════════════════════════════════ */
+function scoreBoard(board) {
+  let score = 0;
+  let heights = Array(COLS).fill(0);
+
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c]) { heights[c] = ROWS - r; break; }
+    }
+  }
+
+  const maxH = Math.max(...heights);
+  const avgH = heights.reduce((a, b) => a + b, 0) / COLS;
+  score -= maxH * 3.5;
+  score -= avgH * 1.5;
+
+  // Holes
+  let holes = 0;
+  for (let c = 0; c < COLS; c++) {
+    let blockFound = false;
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c]) blockFound = true;
+      else if (blockFound) holes++;
+    }
+  }
+  score -= holes * 7;
+
+  // Bumpiness
+  let bump = 0;
+  for (let c = 0; c < COLS - 1; c++) bump += Math.abs(heights[c] - heights[c + 1]);
+  score -= bump * 2;
+
+  // Complete lines bonus
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r].every(c => c)) score += 100;
+  }
+
+  return score;
+}
+
+function simulateLock(board, piece, dy) {
+  // Place at given dy and return new board copy
+  const newBoard = board.map(r => [...r]);
+  for (let r = 0; r < piece.shape.length; r++) {
+    for (let c = 0; c < piece.shape[r].length; c++) {
+      if (!piece.shape[r][c]) continue;
+      const ny = piece.y + dy + r;
+      if (ny >= 0 && ny < ROWS) newBoard[ny][piece.x + c] = piece.color;
+    }
+  }
+  return newBoard;
+}
+
+function findBestPlacement(p) {
+  if (!p.piece) return null;
+  let bestScore = -Infinity;
+  let bestMove = null;
+  const cfg = AI_CONFIG[difficulty];
+
+  let piece = { ...p.piece, shape: p.piece.shape.map(r => [...r]) };
+  // Try all rotations
+  for (let rot = 0; rot < 4; rot++) {
+    // Try all x positions
+    for (let x = -2; x < COLS + 2; x++) {
+      const testPiece = { ...piece, x };
+      if (collides(p.board, testPiece, 0, 0)) continue;
+      // Drop
+      let dy = 0;
+      while (!collides(p.board, testPiece, 0, dy + 1)) dy++;
+      const finalY = testPiece.y + dy;
+      if (finalY < 0) continue;
+
+      const simBoard = simulateLock(p.board, testPiece, dy);
+      let s = scoreBoard(simBoard);
+
+      // Add random noise for mistakes
+      s += (Math.random() - 0.5) * cfg.mistakeRate * 400;
+
+      if (s > bestScore) {
+        bestScore = s;
+        bestMove = { x, rot, dy };
+      }
+    }
+    piece = { ...piece, shape: rotateCW(piece.shape) };
+  }
+  return bestMove;
+}
+
+function stepAI(p, opponent, dt) {
+  if (!p.isAI || !p.piece || !p.alive) return;
+  const cfg = AI_CONFIG[difficulty];
+
+  p.aiTimer -= dt;
+  if (p.aiTimer > 0) return;
+  p.aiTimer = cfg.thinkMs;
+
+  // Compute target for new piece
+  if (!p.aiTarget) {
+    p.aiTarget = findBestPlacement(p);
+    p.aiRotsDone = 0;
+    if (!p.aiTarget) return;
+  }
+
+  const tgt = p.aiTarget;
+
+  // Apply needed CW rotations first
+  if (p.aiRotsDone < tgt.rot) {
+    tryRotate(p, 1);
+    p.aiRotsDone++;
+    return;
+  }
+
+  // Move toward target column
+  if (p.piece.x < tgt.x) { moveH(p, 1); }
+  else if (p.piece.x > tgt.x) { moveH(p, -1); }
+  else {
+    // Aligned — hard drop
+    p.aiTarget = null;
+    p.aiRotsDone = 0;
+    hardDrop(p, opponent);
+  }
+}
+
+/* ════════════════════════════════════
+   DRAWING
+════════════════════════════════════ */
+const COLORS = {
+  bg: '#08080f',
+  grid: 'rgba(255,255,255,0.04)',
+  ghost: 'rgba(255,255,255,0.08)',
+  ghostBorder: 'rgba(255,255,255,0.15)',
+};
+
+function drawCell(ctx, x, y, color, alpha = 1, size = CELL) {
+  ctx.globalAlpha = alpha;
+  // Main fill with gradient
+  const grad = ctx.createLinearGradient(x, y, x + size, y + size);
+  grad.addColorStop(0, lighten(color, 0.25));
+  grad.addColorStop(1, darken(color, 0.2));
+  ctx.fillStyle = grad;
+  ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
+
+  // Inner highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillRect(x + 1, y + 1, size - 2, 3);
+  ctx.fillRect(x + 1, y + 1, 3, size - 2);
+
+  // Border glow
+  ctx.strokeStyle = lighten(color, 0.3);
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
+
+  ctx.globalAlpha = 1;
+}
+
+function lighten(hex, amt) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, (num >> 16) + Math.round(255 * amt));
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(255 * amt));
+  const b = Math.min(255, (num & 0xff) + Math.round(255 * amt));
+  return `rgb(${r},${g},${b})`;
+}
+
+function darken(hex, amt) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, (num >> 16) - Math.round(255 * amt));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * amt));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * amt));
+  return `rgb(${r},${g},${b})`;
+}
+
+function drawBoard(ctx, p) {
+  // Background
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, BOARD_W, BOARD_H);
+
+  // Grid lines
+  ctx.strokeStyle = COLORS.grid;
+  ctx.lineWidth = 0.5;
+  for (let c = 0; c <= COLS; c++) {
+    ctx.beginPath(); ctx.moveTo(c * CELL, 0); ctx.lineTo(c * CELL, BOARD_H); ctx.stroke();
+  }
+  for (let r = 0; r <= ROWS; r++) {
+    ctx.beginPath(); ctx.moveTo(0, r * CELL); ctx.lineTo(BOARD_W, r * CELL); ctx.stroke();
+  }
+
+  // Slow scan beam
+  const sg = ctx.createLinearGradient(0, _scanY - 12, 0, _scanY + 12);
+  sg.addColorStop(0,   'rgba(0,245,255,0)');
+  sg.addColorStop(0.5, 'rgba(0,245,255,0.055)');
+  sg.addColorStop(1,   'rgba(0,245,255,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(0, _scanY - 12, BOARD_W, 24);
+
+  // Ambient drifting particles
+  vfxDrawAmbient(ctx, p.side);
+
+  // Locked cells (subtle glow on shadow)
+  ctx.shadowBlur = 5;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (p.board[r][c]) {
+        ctx.shadowColor = p.board[r][c];
+        drawCell(ctx, c * CELL, r * CELL, p.board[r][c]);
+      }
+    }
+  }
+  ctx.shadowBlur = 0;
+
+  // Dead overlay — drawn regardless of piece state
+  if (!p.alive) {
+    ctx.fillStyle = 'rgba(255,0,0,0.25)';
+    ctx.fillRect(0, 0, BOARD_W, BOARD_H);
+    vfxDraw(ctx, p.side);
+    return;
+  }
+
+  // Remote player: render opponent's piece received over the network
+  if (p.isRemote) {
+    if (p.remotePiece) {
+      const rp = p.remotePiece;
+      for (let r = 0; r < rp.shape.length; r++) {
+        for (let c = 0; c < rp.shape[r].length; c++) {
+          if (!rp.shape[r][c]) continue;
+          const px = (rp.x + c) * CELL, py = (rp.y + r) * CELL;
+          if (py >= 0) drawCell(ctx, px, py, rp.color);
+        }
+      }
+    }
+    vfxDraw(ctx, p.side);
+    return;
+  }
+
+  if (!p.piece) { vfxDraw(ctx, p.side); return; }
+
+  // Ghost piece — colored outline with faint fill
+  const gy = ghostY(p);
+  for (let r = 0; r < p.piece.shape.length; r++) {
+    for (let c = 0; c < p.piece.shape[r].length; c++) {
+      if (!p.piece.shape[r][c]) continue;
+      const gx = (p.piece.x + c) * CELL;
+      const gyy = (gy + r) * CELL;
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = p.piece.color;
+      ctx.fillRect(gx + 1, gyy + 1, CELL - 2, CELL - 2);
+      ctx.globalAlpha = 0.45;
+      ctx.strokeStyle = p.piece.color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(gx + 1, gyy + 1, CELL - 2, CELL - 2);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Active piece — glow via shadowBlur
+  ctx.shadowColor = p.piece.color;
+  ctx.shadowBlur = 18;
+  for (let r = 0; r < p.piece.shape.length; r++) {
+    for (let c = 0; c < p.piece.shape[r].length; c++) {
+      if (!p.piece.shape[r][c]) continue;
+      const px = (p.piece.x + c) * CELL;
+      const py = (p.piece.y + r) * CELL;
+      if (py < -CELL) continue;
+      drawCell(ctx, px, Math.max(0, py), p.piece.color);
+    }
+  }
+  ctx.shadowBlur = 0;
+
+  // VFX on top (particles + flash)
+  vfxDraw(ctx, p.side);
+}
+
+function drawPreview(ctx, key, w, h) {
+  ctx.clearRect(0, 0, w, h);
+  if (!key) return;
+  const def = TETROMINOES[key];
+  const shape = def.shape;
+  const cs = 14;
+  const offX = Math.floor((w - shape[0].length * cs) / 2);
+  const offY = Math.floor((h - shape.length * cs) / 2);
+  for (let r = 0; r < shape.length; r++) {
+    for (let c = 0; c < shape[r].length; c++) {
+      if (!shape[r][c]) continue;
+      drawCell(ctx, offX + c * cs, offY + r * cs, def.color, 1, cs);
+    }
+  }
+}
+
+/* ════════════════════════════════════
+   VFX SYSTEM
+════════════════════════════════════ */
+function _makeAmbient() {
+  return Array.from({length: 22}, () => ({
+    x: Math.random() * BOARD_W,
+    y: Math.random() * BOARD_H,
+    vy: -(Math.random() * 0.35 + 0.08),
+    vx: (Math.random() - 0.5) * 0.25,
+    a: Math.random() * 0.1 + 0.03,
+    size: Math.random() * 1.5 + 0.4,
+    hue: Math.random() < 0.55 ? '#00f5ff' : '#aa00ff',
+  }));
+}
+let _scanY = 0;
+const vfx = {
+  left:  { particles: [], flashAlpha: 0, beams: [], lockFlash: 0, lockColor: '#fff', ambient: _makeAmbient() },
+  right: { particles: [], flashAlpha: 0, beams: [], lockFlash: 0, lockColor: '#fff', ambient: _makeAmbient() },
+};
+
+const _rainbow = ['#ff3355','#ff7700','#ffe600','#00ff88','#00f5ff','#aa00ff','#ff00aa'];
+
+function vfxSpawnLineClear(side, rows, board) {
+  const v = vfx[side];
+  const isTetris = rows.length === 4;
+
+  // Horizontal glow beams along each cleared row
+  for (const r of rows) {
+    v.beams.push({ y: r * CELL + CELL / 2, alpha: 1.6, color: isTetris ? '#ffe600' : '#ffffff' });
+  }
+
+  // Particles
+  const arr = v.particles;
+  const pCount = isTetris ? 9 : 5;
+  for (const r of rows) {
+    for (let c = 0; c < COLS; c++) {
+      const color = isTetris
+        ? _rainbow[Math.floor(Math.random() * _rainbow.length)]
+        : (board[r][c] || '#ffffff');
+      for (let k = 0; k < pCount; k++) {
+        arr.push({
+          x: (c + Math.random()) * CELL,
+          y: (r + Math.random()) * CELL,
+          vx: (Math.random() - 0.5) * (isTetris ? 16 : 11),
+          vy: -(Math.random() * (isTetris ? 12 : 8) + 0.5),
+          color,
+          alpha: 1,
+          size: Math.random() * (isTetris ? 8 : 5) + 2,
+          decay: Math.random() * 0.02 + 0.012,
+        });
+      }
+    }
+  }
+
+  // Tetris special: burst of upward fireworks
+  if (isTetris) {
+    for (let k = 0; k < 30; k++) {
+      arr.push({
+        x: Math.random() * BOARD_W,
+        y: BOARD_H - Math.random() * CELL * 4,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -(Math.random() * 18 + 6),
+        color: _rainbow[k % _rainbow.length],
+        alpha: 1,
+        size: Math.random() * 5 + 2,
+        decay: Math.random() * 0.014 + 0.008,
+      });
+    }
+  }
+
+  v.flashAlpha = isTetris ? 0.75 : 0.45;
+
+  // CSS border glow
+  const wrapId = side === 'left' ? 'boardWrapL' : 'boardWrapR';
+  const frame = document.getElementById(wrapId).querySelector('.board-frame');
+  if (frame) {
+    frame.classList.remove('line-clear');
+    void frame.offsetWidth;
+    frame.classList.add('line-clear');
+    setTimeout(() => frame.classList.remove('line-clear'), 600);
+  }
+}
+
+function vfxSpawnHardDrop(side, piece, startY) {
+  const arr = vfx[side].particles;
+  for (let r = 0; r < piece.shape.length; r++) {
+    for (let c = 0; c < piece.shape[r].length; c++) {
+      if (!piece.shape[r][c]) continue;
+      const px = (piece.x + c) * CELL + CELL / 2;
+      const endRow = piece.y + r;
+      for (let y = startY + r; y < endRow; y += 1.8) {
+        arr.push({
+          x: px + (Math.random() - 0.5) * 6,
+          y: y * CELL + CELL / 2,
+          vx: (Math.random() - 0.5) * 2,
+          vy: -(Math.random() * 1.5 + 0.3),
+          color: piece.color,
+          alpha: 0.65,
+          size: Math.random() * 3 + 1,
+          decay: 0.05 + Math.random() * 0.04,
+        });
+      }
+    }
+  }
+}
+
+function vfxSpawnLockImpact(side, piece) {
+  const arr = vfx[side].particles;
+  for (let r = 0; r < piece.shape.length; r++) {
+    for (let c = 0; c < piece.shape[r].length; c++) {
+      if (!piece.shape[r][c]) continue;
+      const px = (piece.x + c) * CELL;
+      const py = Math.min((piece.y + r) * CELL, BOARD_H - CELL);
+      for (let k = 0; k < 3; k++) {
+        arr.push({
+          x: px + Math.random() * CELL,
+          y: py + CELL,
+          vx: (Math.random() - 0.5) * 6,
+          vy: -(Math.random() * 3.5 + 0.5),
+          color: piece.color,
+          alpha: 0.85,
+          size: Math.random() * 3 + 1,
+          decay: 0.055 + Math.random() * 0.04,
+        });
+      }
+    }
+  }
+  vfx[side].lockFlash = 0.22;
+  vfx[side].lockColor = piece.color;
+}
+
+function vfxSpawnGarbage(side, lines) {
+  const arr = vfx[side].particles;
+  for (let k = 0; k < lines * 6; k++) {
+    arr.push({
+      x: Math.random() * BOARD_W,
+      y: BOARD_H - Math.random() * lines * CELL,
+      vx: (Math.random() - 0.5) * 7,
+      vy: -(Math.random() * 6 + 2),
+      color: '#ff3355',
+      alpha: 0.9,
+      size: Math.random() * 4 + 1,
+      decay: 0.04 + Math.random() * 0.03,
+    });
+  }
+}
+
+function vfxUpdate(side, dt) {
+  const v = vfx[side];
+  const f = dt / 16;
+  v.flashAlpha = Math.max(0, v.flashAlpha - 0.06 * f);
+  v.lockFlash  = Math.max(0, v.lockFlash  - 0.07 * f);
+
+  for (let i = v.particles.length - 1; i >= 0; i--) {
+    const p = v.particles[i];
+    p.x  += p.vx * f;
+    p.y  += p.vy * f;
+    p.vy += 0.28 * f;
+    p.alpha -= p.decay * f;
+    if (p.alpha <= 0) v.particles.splice(i, 1);
+  }
+
+  for (let i = v.beams.length - 1; i >= 0; i--) {
+    v.beams[i].alpha -= 0.07 * f;
+    if (v.beams[i].alpha <= 0) v.beams.splice(i, 1);
+  }
+
+  for (const a of v.ambient) {
+    a.x += a.vx * f;
+    a.y += a.vy * f;
+    if (a.y < -4) { a.y = BOARD_H + 4; a.x = Math.random() * BOARD_W; }
+    if (a.x < -4 || a.x > BOARD_W + 4) a.x = Math.random() * BOARD_W;
+  }
+
+  _scanY = (_scanY + dt * 0.022) % BOARD_H;
+}
+
+function vfxDrawAmbient(ctx, side) {
+  const v = vfx[side];
+  for (const a of v.ambient) {
+    ctx.globalAlpha = a.a;
+    ctx.fillStyle = a.hue;
+    ctx.fillRect(a.x - a.size / 2, a.y - a.size / 2, a.size, a.size);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function vfxDraw(ctx, side) {
+  const v = vfx[side];
+
+  // Square particles
+  for (const p of v.particles) {
+    ctx.globalAlpha = Math.max(0, p.alpha);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+
+  // Horizontal clear beams
+  for (const b of v.beams) {
+    if (b.alpha <= 0) continue;
+    const a = Math.min(1, b.alpha);
+    const g = ctx.createLinearGradient(0, b.y - 8, 0, b.y + 8);
+    g.addColorStop(0,   'rgba(255,255,255,0)');
+    g.addColorStop(0.5, `rgba(255,255,255,${(a * 0.95).toFixed(3)})`);
+    g.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, b.y - 8, BOARD_W, 16);
+    // Side color tint
+    ctx.globalAlpha = a * 0.35;
+    ctx.fillStyle = b.color;
+    ctx.fillRect(0, b.y - 4, BOARD_W, 8);
+    ctx.globalAlpha = 1;
+  }
+
+  // Lock impact flash (piece color tint)
+  if (v.lockFlash > 0) {
+    ctx.globalAlpha = v.lockFlash;
+    ctx.fillStyle = v.lockColor;
+    ctx.fillRect(0, 0, BOARD_W, BOARD_H);
+    ctx.globalAlpha = 1;
+  }
+
+  // Line clear white flash
+  if (v.flashAlpha > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${v.flashAlpha.toFixed(3)})`;
+    ctx.fillRect(0, 0, BOARD_W, BOARD_H);
+  }
+}
+
+function shakeBoard(side) {
+  const el = document.getElementById(side === 'left' ? 'boardWrapL' : 'boardWrapR');
+  el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 400);
+}
+
+/* ════════════════════════════════════
+   UI HELPERS
+════════════════════════════════════ */
+function triggerFlash(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('flash');
+  void el.offsetWidth; // reflow
+  el.classList.add('flash');
+}
+
+function showAttack(senderSide, n) {
+  const id = senderSide === 'left' ? 'sendL' : 'sendR';
+  const el = document.getElementById(id);
+  el.textContent = `+${n} ⚡`;
+  el.classList.remove('active');
+  void el.offsetWidth;
+  el.classList.add('active');
+  setTimeout(() => { el.textContent = 'ATTACK'; el.classList.remove('active'); }, 700);
+}
+
+function showComboPopup(side, lines, combo) {
+  const canvas = side === 'left' ? document.getElementById('boardL') : document.getElementById('boardR');
+  const rect = canvas.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.className = 'combo-popup';
+
+  let text, color;
+  if (lines === 4) { text = 'TETRIS!'; color = '#00f5ff'; }
+  else if (combo >= 4) { text = `COMBO ×${combo}!`; color = '#ff00aa'; }
+  else if (combo >= 2) { text = `COMBO ×${combo}`; color = '#ffe600'; }
+  else if (lines === 3) { text = 'TRIPLE!'; color = '#00ff88'; }
+  else if (lines === 2) { text = 'DOUBLE'; color = '#aa00ff'; }
+  else return;
+
+  popup.textContent = text;
+  popup.style.color = color;
+  popup.style.left = (rect.left + rect.width / 2) + 'px';
+  popup.style.top = (rect.top + rect.height / 2) + 'px';
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 1500);
+}
+
+function showLevelUpPopup(side, level) {
+  const canvas = side === 'left' ? document.getElementById('boardL') : document.getElementById('boardR');
+  const rect = canvas.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.className = 'combo-popup';
+  popup.textContent = `LEVEL ${level}`;
+  popup.style.color = '#ffe600';
+  popup.style.fontSize = '13px';
+  popup.style.left = (rect.left + rect.width / 2) + 'px';
+  popup.style.top  = (rect.top  + rect.height / 3) + 'px';
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 1500);
+}
+
+function updateGarbageBar(side, pending) {
+  const fillId = side === 'left' ? 'garbFillL' : 'garbFillR';
+  const pct = Math.min(100, (pending / 12) * 100);
+  document.getElementById(fillId).style.height = pct + '%';
+}
+
+function updateHUD() {
+  if (!players) return;
+  const L = players[0], R = players[1];
+  document.getElementById('scoreL').textContent = L.score.toLocaleString();
+  document.getElementById('levelL').textContent = L.level;
+  document.getElementById('linesL').textContent = L.linesCleared;
+  document.getElementById('comboL').textContent = L.combo > 0 ? `×${L.combo}` : '—';
+  updateGarbageBar('left', L.garbagePending);
+  if (R) {
+    document.getElementById('scoreR').textContent = R.score.toLocaleString();
+    document.getElementById('levelR').textContent = R.level;
+    document.getElementById('linesR').textContent = R.linesCleared;
+    document.getElementById('comboR').textContent = R.combo > 0 ? `×${R.combo}` : '—';
+    updateGarbageBar('right', R.garbagePending);
+  }
+}
+
+/* ════════════════════════════════════
+   KEYBOARD INPUT
+════════════════════════════════════ */
+const keys = {};
+const keyJust = {};
+let lastKeyTime = {};
+
+document.addEventListener('keydown', e => {
+  if (!keys[e.code]) {
+    keyJust[e.code] = true;
+    lastKeyTime[e.code] = performance.now();
+  }
+  keys[e.code] = true;
+
+  if (gameState !== 'playing') {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      initAC();
+      if (gameState === 'menu') startGame();
+      else if (gameState === 'over') startGame();
+    }
+    return;
+  }
+
+  const L = players[0], R = players[1];
+
+  // P1 controls (left)
+  if (e.code === 'ArrowLeft')  { initAC(); moveH(L, -1); e.preventDefault(); }
+  if (e.code === 'ArrowRight') { initAC(); moveH(L, 1);  e.preventDefault(); }
+  if (e.code === 'ArrowUp')    { initAC(); tryRotate(L, 1); e.preventDefault(); }
+  if (e.code === 'ArrowDown')  { initAC(); softDrop(L); dasL.sd = SOFT_DROP_MS; e.preventDefault(); }
+  if (e.code === 'Space')      { initAC(); hardDrop(L, R); e.preventDefault(); }
+  if (e.code === 'KeyZ')       { initAC(); tryRotate(L, -1); e.preventDefault(); }
+  if (e.code === 'KeyX')       { initAC(); tryRotate(L, 1);  e.preventDefault(); }
+  if (e.code === 'KeyC')       { initAC(); holdPiece(L); e.preventDefault(); }
+
+  // P2 controls (right) — only in 2P mode
+  if (gameMode === '2p') {
+    if (e.code === 'KeyA')       { initAC(); moveH(R, -1); }
+    if (e.code === 'KeyD')       { initAC(); moveH(R, 1);  }
+    if (e.code === 'KeyW')       { initAC(); tryRotate(R, 1); }
+    if (e.code === 'KeyS')       { initAC(); softDrop(R); }
+    if (e.code === 'ShiftLeft')  { initAC(); hardDrop(R, L); }
+    if (e.code === 'KeyQ')       { initAC(); tryRotate(R, -1); }
+    if (e.code === 'KeyE')       { initAC(); tryRotate(R, 1);  }
+    if (e.code === 'KeyR')       { initAC(); holdPiece(R); }
+  }
+
+  if (e.code === 'Escape') { gameState = 'menu'; showMenu(); }
+});
+
+document.addEventListener('keyup', e => {
+  keys[e.code] = false;
+});
+
+/* ════════════════════════════════════
+   TOUCH CONTROLS (P1 only)
+════════════════════════════════════ */
+let touchStartX = 0, touchStartY = 0, touchLastX = 0, touchHoldTimer = null;
+let touchActive = false;
+
+document.getElementById('boardL').addEventListener('touchstart', e => {
+  initAC();
+  if (gameState === 'menu' || gameState === 'over') { startGame(); e.preventDefault(); return; }
+  const t = e.changedTouches[0];
+  touchStartX = touchLastX = t.clientX;
+  touchStartY = t.clientY;
+  touchActive = true;
+
+  // Long press = hard drop
+  touchHoldTimer = setTimeout(() => {
+    if (gameState === 'playing' && players) hardDrop(players[0], players[1]);
+  }, 400);
+  e.preventDefault();
+}, { passive: false });
+
+document.getElementById('boardL').addEventListener('touchmove', e => {
+  if (gameState !== 'playing' || !players) { e.preventDefault(); return; }
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchLastX;
+  const dy = t.clientY - touchStartY;
+
+  if (Math.abs(dx) > 18) {
+    clearTimeout(touchHoldTimer);
+    moveH(players[0], dx > 0 ? 1 : -1);
+    touchLastX = t.clientX;
+  }
+  if (dy > 30) { softDrop(players[0]); touchStartY = t.clientY; }
+  e.preventDefault();
+}, { passive: false });
+
+document.getElementById('boardL').addEventListener('touchend', e => {
+  clearTimeout(touchHoldTimer);
+  const t = e.changedTouches[0];
+  const dx = Math.abs(t.clientX - touchStartX);
+  const dy = Math.abs(t.clientY - touchStartY);
+  if (dx < 10 && dy < 10 && gameState === 'playing' && players) {
+    tryRotate(players[0], 1); // tap = rotate
+  }
+  touchActive = false;
+  e.preventDefault();
+}, { passive: false });
+
+/* ════════════════════════════════════
+   DAS / ARR (auto-repeat)
+════════════════════════════════════ */
+const DAS = 135;         // ms before left/right repeat starts
+const ARR = 40;          // ms between left/right repeats
+const SOFT_DROP_MS = 50; // ms between soft-drop steps (~20 rows/sec)
+
+let dasL = { left: 0, right: 0, sd: 0 };
+let dasR = { left: 0, right: 0, sd: 0 };
+
+function updateDAS(dt) {
+  if (gameState !== 'playing' || !players) return;
+  const L = players[0], R = players[1];
+
+  // P1 left / right
+  if (keys['ArrowLeft'])  { dasL.left += dt;  if (dasL.left  > DAS) { moveH(L, -1); dasL.left  = DAS - ARR; } }
+  else dasL.left = 0;
+  if (keys['ArrowRight']) { dasL.right += dt; if (dasL.right > DAS) { moveH(L, 1);  dasL.right = DAS - ARR; } }
+  else dasL.right = 0;
+
+  // P1 soft drop — delta-time throttled so speed is frame-rate independent
+  if (keys['ArrowDown']) {
+    dasL.sd += dt;
+    if (dasL.sd >= SOFT_DROP_MS) { softDrop(L); dasL.sd = 0; }
+  } else {
+    dasL.sd = 0;
+  }
+
+  // P2
+  if (gameMode === '2p') {
+    if (keys['KeyA']) { dasR.left += dt;  if (dasR.left  > DAS) { moveH(R, -1); dasR.left  = DAS - ARR; } }
+    else dasR.left = 0;
+    if (keys['KeyD']) { dasR.right += dt; if (dasR.right > DAS) { moveH(R, 1);  dasR.right = DAS - ARR; } }
+    else dasR.right = 0;
+
+    if (keys['KeyS']) {
+      dasR.sd += dt;
+      if (dasR.sd >= SOFT_DROP_MS) { softDrop(R); dasR.sd = 0; }
+    } else {
+      dasR.sd = 0;
+    }
+  }
+}
+
+/* ════════════════════════════════════
+   GRAVITY & LOCK
+════════════════════════════════════ */
+const LOCK_DELAY_MS = 500;
+const LOCK_RESET_MAX = 15;
+
+function updateGravity(p, opponent, dt) {
+  if (!p.piece || !p.alive) return;
+
+  const onGround = collides(p.board, p.piece, 0, 1);
+
+  // Lock delay accumulates every frame (not gated by drop timer)
+  if (onGround) {
+    p.lockDelay += dt;
+    if (p.lockDelay >= LOCK_DELAY_MS || p.lockReset >= LOCK_RESET_MAX) {
+      lockPiece(p, opponent);
+      return;
+    }
+  }
+
+  p.dropAccum += dt;
+  const spd = dropSpeed(p.level);
+  if (p.dropAccum >= spd) {
+    p.dropAccum = 0;
+    if (!onGround) {
+      p.piece.y++;
+      p.lockDelay = 0;
+    }
+  }
+}
+
+/* ════════════════════════════════════
+   GAME LOOP
+════════════════════════════════════ */
+const ctxL = document.getElementById('boardL').getContext('2d');
+const ctxR = document.getElementById('boardR').getContext('2d');
+const ctxNL = document.getElementById('nextL').getContext('2d');
+const ctxNR = document.getElementById('nextR').getContext('2d');
+const ctxHL = document.getElementById('holdL').getContext('2d');
+const ctxHR = document.getElementById('holdR').getContext('2d');
+
+let lastT = 0;
+let rafId = null;
+
+function _doGameOver(L, R) {
+  gameState = 'over';
+  document.body.classList.remove('game-playing');
+  // Draw final board state before overlay appears
+  drawBoard(ctxL, L);
+  if (R) drawBoard(ctxR, R);
+  if (gameMode === 'solo') {
+    sfxGameOver();
+    showGameOver(false, false);
+  } else {
+    const Lwon = R && !R.alive && L.alive;
+    sfxGameOver();
+    if (Lwon) sfxWin();
+    showGameOver(Lwon, !Lwon);
+  }
+}
+
+function gameLoop(ts) {
+  rafId = requestAnimationFrame(gameLoop);
+  const dt = Math.min((ts - lastT), 80); // cap at 80ms
+  lastT = ts;
+
+  if (gameState !== 'playing') {
+    _scanY = (_scanY + dt * 0.022) % BOARD_H;
+    drawIdleBoards();
+    return;
+  }
+
+  const L = players[0], R = players[1];
+
+  updateDAS(dt);
+  vfxUpdate('left', dt);
+  if (R) vfxUpdate('right', dt);
+
+  // Gravity + lock (remote player is driven by network, not local physics)
+  updateGravity(L, R, dt);
+
+  // Check after human update (catches human topping out before AI step runs)
+  if (!L.alive) { _doGameOver(L, R); return; }
+
+  if (gameMode === '2p') {
+    updateGravity(R, L, dt);
+    if (!R.alive) { _doGameOver(L, R); return; }
+  } else if (gameMode === 'vsai') {
+    stepAI(R, L, dt);
+    if (R && !R.alive) { _doGameOver(L, R); return; }
+  }
+  // gameMode === 'online': R is isRemote, no local physics
+
+  // Online: broadcast local piece position at ~20 Hz for smooth opponent display
+  if (gameMode === 'online' && L.piece) {
+    pieceSendTimer -= dt;
+    if (pieceSendTimer <= 0) {
+      pieceSendTimer = PIECE_SEND_MS;
+      netSend({ t: 'piece', x: L.piece.x, y: L.piece.y, shape: L.piece.shape, color: L.piece.color });
+    }
+  }
+
+  // Final safety check (online / edge cases)
+  if (!L.alive || (R && !R.alive)) { _doGameOver(L, R); return; }
+
+  // Draw
+  drawBoard(ctxL, L);
+  if (R) drawBoard(ctxR, R);
+  drawPreview(ctxNL, L.nextBag[0], 80, 70);
+  if (R) drawPreview(ctxNR, R.nextBag[0], 80, 70);
+  drawPreview(ctxHL, L.holdPiece, 80, 70);
+  if (R) drawPreview(ctxHR, R.holdPiece, 80, 70);
+  updateHUD();
+}
+
+function drawIdleBoards() {
+  [ctxL, ctxR].forEach((ctx, i) => {
+    const side = i === 0 ? 'left' : 'right';
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0, 0, BOARD_W, BOARD_H);
+
+    ctx.strokeStyle = COLORS.grid;
+    ctx.lineWidth = 0.5;
+    for (let c = 0; c <= COLS; c++) {
+      ctx.beginPath(); ctx.moveTo(c*CELL,0); ctx.lineTo(c*CELL,BOARD_H); ctx.stroke();
+    }
+    for (let r = 0; r <= ROWS; r++) {
+      ctx.beginPath(); ctx.moveTo(0,r*CELL); ctx.lineTo(BOARD_W,r*CELL); ctx.stroke();
+    }
+
+    // Scan beam
+    const sg = ctx.createLinearGradient(0, _scanY - 12, 0, _scanY + 12);
+    sg.addColorStop(0,   'rgba(0,245,255,0)');
+    sg.addColorStop(0.5, 'rgba(0,245,255,0.055)');
+    sg.addColorStop(1,   'rgba(0,245,255,0)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(0, _scanY - 12, BOARD_W, 24);
+
+    vfxDrawAmbient(ctx, side);
+
+    // Update ambient for idle
+    for (const a of vfx[side].ambient) {
+      a.x += a.vx;
+      a.y += a.vy;
+      if (a.y < -4) { a.y = BOARD_H + 4; a.x = Math.random() * BOARD_W; }
+    }
+  });
+}
+
+requestAnimationFrame(gameLoop);
+
+/* ════════════════════════════════════
+   ONLINE MULTIPLAYER (PeerJS / WebRTC)
+   No dedicated server needed — PeerJS
+   handles the signaling handshake, then
+   all data flows peer-to-peer.
+════════════════════════════════════ */
+let peer = null;
+let conn = null;
+let onlineRole = null;   // 'host' | 'guest'
+let pieceSendTimer = 0;
+const PIECE_SEND_MS = 50; // ~20 Hz piece position updates
+
+function netSend(msg) {
+  if (conn && conn.open) { try { conn.send(msg); } catch(e) {} }
+}
+
+// Show one of the three lobby screens
+function olShow(screenId) {
+  ['olChoose', 'olHosting', 'olJoining'].forEach(id => {
+    document.getElementById(id).style.display = id === screenId ? '' : 'none';
+  });
+  document.getElementById('olOverlay').style.display = 'flex';
+}
+function olHide() { document.getElementById('olOverlay').style.display = 'none'; }
+
+function olCancel() {
+  if (peer) { peer.destroy(); peer = null; }
+  conn = null; onlineRole = null;
+  olHide();
+  // Return to vsai mode
+  gameMode = 'vsai';
+  document.getElementById('btnOnline').className = 'mode-btn';
+  document.getElementById('btnVsCPU').className  = 'mode-btn active-vsai';
+  document.getElementById('diffRow').style.display = 'flex';
+  updateHint();
+  showMenu();
+}
+
+function genCode() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => c[Math.floor(Math.random() * c.length)]).join('');
+}
+
+function openOnlineLobby() {
+  initAC();
+  gameMode = 'online';
+  ['btnVsCPU','btn2P','btnSolo'].forEach(id => document.getElementById(id).className = 'mode-btn');
+  document.getElementById('btnOnline').className = 'mode-btn active-online';
+  document.getElementById('diffRow').style.display = 'none';
+  document.getElementById('arena').classList.remove('solo-mode');
+  document.getElementById('bestBox').style.display = 'none';
+  // Hide main game overlay and play button while lobby is open
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('playRow').style.display = 'none';
+  olShow('olChoose');
+}
+
+function olHost() {
+  olShow('olHosting');
+  document.getElementById('olRoomCode').textContent = '——————';
+  document.getElementById('olHostStatus').textContent = 'Connecting to relay…';
+  if (peer) { peer.destroy(); peer = null; }
+  const code = genCode();
+  peer = new Peer('tetbat-' + code);
+
+  peer.on('open', () => {
+    document.getElementById('olRoomCode').textContent = code;
+    document.getElementById('olHostStatus').textContent = 'Share this code · waiting for opponent…';
+  });
+
+  peer.on('connection', c => {
+    if (conn) conn.close();
+    conn = c; onlineRole = 'host';
+    document.getElementById('olHostStatus').textContent = 'Opponent connected! Starting…';
+    conn.on('open', () => {
+      conn.on('data',  onNetData);
+      conn.on('close', onConnClose);
+      netSend({ t: 'start' });
+      setTimeout(() => { olHide(); startOnlineGame(); }, 900);
+    });
+    conn.on('error', () => {});
+  });
+
+  peer.on('error', e => {
+    const map = { 'unavailable-id': 'Code taken — try hosting again.', 'network': 'Network error.' };
+    document.getElementById('olHostStatus').textContent = map[e.type] || ('Error: ' + e.type);
+  });
+}
+
+function olShowJoin() {
+  olShow('olJoining');
+  document.getElementById('olJoinError').textContent = '';
+  document.getElementById('olCodeInput').value = '';
+  setTimeout(() => document.getElementById('olCodeInput').focus(), 100);
+}
+
+function olJoin() {
+  const raw = document.getElementById('olCodeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const errEl = document.getElementById('olJoinError');
+  errEl.textContent = '';
+  if (raw.length < 6) { errEl.textContent = 'Code must be 6 characters.'; return; }
+
+  errEl.textContent = 'Connecting…';
+  if (peer) { peer.destroy(); peer = null; }
+  peer = new Peer();
+
+  peer.on('open', () => {
+    conn = peer.connect('tetbat-' + raw, { reliable: true });
+    conn.on('open', () => {
+      onlineRole = 'guest';
+      conn.on('data',  onNetData);
+      conn.on('close', onConnClose);
+      errEl.textContent = 'Connected! Waiting for host to start…';
+    });
+    conn.on('error', () => { errEl.textContent = 'Cannot connect — check the code and try again.'; });
+  });
+
+  peer.on('error', e => {
+    const map = { 'peer-unavailable': 'Room not found. Check the code.' };
+    errEl.textContent = map[e.type] || ('Error: ' + e.type);
+  });
+}
+
+function onNetData(msg) {
+  if (!msg || !msg.t) return;
+  const R = players ? players[1] : null;
+
+  switch (msg.t) {
+    case 'start':
+      // Guest receives host start signal
+      if (onlineRole === 'guest') { olHide(); startOnlineGame(); }
+      break;
+
+    case 'piece':
+      // Smooth opponent piece movement
+      if (R) R.remotePiece = msg;
+      break;
+
+    case 'lock':
+      // Opponent locked a piece — update their displayed board
+      if (R) {
+        R.board = msg.board;
+        R.score = msg.score; R.level = msg.level; R.linesCleared = msg.lines;
+        R.remotePiece = null;
+        if (msg.garb > 0 && players[0].alive) {
+          players[0].garbagePending += msg.garb;
+          showAttack('right', msg.garb); // show attack from right side
+        }
+      }
+      break;
+
+    case 'over':
+      // Opponent topped out — we win
+      if (R) { R.alive = false; }
+      break;
+  }
+}
+
+function onConnClose() {
+  if (gameState !== 'playing') return;
+  gameState = 'over';
+  const ov = document.getElementById('overlay');
+  ov.classList.add('show');
+  document.getElementById('ovTitle').textContent = 'DISCONNECTED';
+  document.getElementById('ovTitle').style.color = '#ff3355';
+  document.getElementById('ovSub').textContent   = 'Connection with opponent was lost.';
+  document.getElementById('ovScore').textContent = '';
+  document.getElementById('ovScoreLabel').textContent = '';
+  document.getElementById('ovPlay').textContent  = '▶ PLAY AGAIN';
+  document.getElementById('ovQuit').style.display = 'block';
+}
+
+function startOnlineGame() {
+  gameState = 'playing';
+  document.body.classList.add('game-playing');
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('playRow').style.display = 'none';
+  vfx.left.particles = []; vfx.left.flashAlpha = 0; vfx.left.beams = []; vfx.left.lockFlash = 0;
+  vfx.right.particles = []; vfx.right.flashAlpha = 0; vfx.right.beams = []; vfx.right.lockFlash = 0;
+
+  players = [makePlayer('left'), makePlayer('right')];
+  players[1].isRemote = true;
+
+  document.getElementById('labelL').textContent = 'YOU';
+  document.getElementById('labelR').textContent = onlineRole === 'host' ? 'OPPONENT' : 'HOST';
+
+  spawnPiece(players[0]);
+  for (let i = 0; i < 7; i++) nextFromBag(players[0]);
+
+  dasL = { left: 0, right: 0, sd: 0 };
+  dasR = { left: 0, right: 0, sd: 0 };
+  pieceSendTimer = 0;
+}
+
+/* ════════════════════════════════════
+   GAME MANAGEMENT
+════════════════════════════════════ */
+function setMode(m) {
+  if (gameState === 'playing') return;
+  initAC();
+  gameMode = m;
+  document.getElementById('btnVsCPU').className  = 'mode-btn' + (m === 'vsai'   ? ' active-vsai'   : '');
+  document.getElementById('btn2P').className     = 'mode-btn' + (m === '2p'     ? ' active-2p'     : '');
+  document.getElementById('btnSolo').className   = 'mode-btn' + (m === 'solo'   ? ' active-solo'   : '');
+  document.getElementById('btnOnline').className = 'mode-btn'; // online uses openOnlineLobby(), never setMode
+  document.getElementById('diffRow').style.display = m === 'vsai' ? 'flex' : 'none';
+  document.getElementById('arena').classList.toggle('solo-mode', m === 'solo');
+  const showBest = m === 'solo' || m === 'vsai';
+  document.getElementById('bestBox').style.display = showBest ? '' : 'none';
+  if (showBest) {
+    const key = m === 'vsai' ? 'tetrisVsaiBest' : 'tetrisSoloBest';
+    const best = parseInt(localStorage.getItem(key) || '0');
+    document.getElementById('bestScore').textContent = best > 0 ? best.toLocaleString() : '—';
+  }
+  updateHint();
+}
+
+function setDiff(d) {
+  if (gameState === 'playing') return;
+  initAC();
+  difficulty = d;
+  ['easy', 'medium', 'hard'].forEach(x => {
+    const k = x[0].toUpperCase() + x.slice(1);
+    document.getElementById('btn' + k).className = 'diff-btn' + (x === d ? ' active-' + d : '');
+  });
+}
+
+function updateHint() {
+  const h2 = document.getElementById('hint2');
+  if (gameMode === '2p') {
+    document.getElementById('hint1').textContent = 'P1: ← → move · ↑ rotate · ↓ drop · SPACE hard drop · C hold';
+    h2.textContent = 'P2: A D move · W rotate · S drop · LSHIFT hard drop · R hold';
+    h2.style.color = 'rgba(255,0,170,0.5)';
+  } else if (gameMode === 'solo') {
+    document.getElementById('hint1').textContent = '← → move · ↑ rotate · ↓ soft drop · SPACE hard drop · C hold';
+    h2.textContent = 'Solo mode — survive, score, and beat your best · speed up every 5 lines';
+    h2.style.color = 'rgba(255,230,0,0.35)';
+  } else if (gameMode === 'online') {
+    document.getElementById('hint1').textContent = '← → move · ↑ rotate · ↓ soft drop · SPACE hard drop · C hold';
+    h2.textContent = 'Online battle — clear lines to send garbage · bury your opponent to win';
+    h2.style.color = 'rgba(0,255,136,0.35)';
+  } else {
+    document.getElementById('hint1').textContent = 'P1: ← → move · ↑ rotate · ↓ soft · SPACE hard drop · C hold';
+    h2.textContent = 'CPU plays automatically · Difficulty affects speed & AI skill';
+    h2.style.color = 'rgba(255,255,255,0.2)';
+  }
+}
+
+function showMenu() {
+  // Clean up any lingering online connection when returning to menu
+  if (gameMode === 'online') {
+    if (peer) { peer.destroy(); peer = null; }
+    conn = null; onlineRole = null;
+    gameMode = 'vsai';
+    document.getElementById('btnOnline').className = 'mode-btn';
+    document.getElementById('btnVsCPU').className  = 'mode-btn active-vsai';
+    document.getElementById('diffRow').style.display = 'flex';
+    document.getElementById('arena').classList.remove('solo-mode');
+    document.getElementById('bestBox').style.display = 'none';
+    updateHint();
+  }
+  gameState = 'menu';
+  document.body.classList.remove('game-playing');
+  // Hide the blocking overlay — it is only used for game-over results now
+  document.getElementById('overlay').classList.remove('show');
+  // Show the play button so user can pick mode then start
+  document.getElementById('playRow').style.display = 'flex';
+}
+
+function startGame() {
+  initAC();
+  // Online "Play Again" goes back to the lobby, not directly into a game
+  if (gameMode === 'online') {
+    document.getElementById('overlay').classList.remove('show');
+    openOnlineLobby();
+    return;
+  }
+  gameState = 'playing';
+  document.body.classList.add('game-playing');
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('playRow').style.display = 'none';
+
+  // Reset VFX
+  vfx.left.particles  = []; vfx.left.flashAlpha  = 0; vfx.left.beams  = []; vfx.left.lockFlash  = 0;
+  vfx.right.particles = []; vfx.right.flashAlpha = 0; vfx.right.beams = []; vfx.right.lockFlash = 0;
+
+  players = [makePlayer('left')];
+  if (gameMode === 'solo') {
+    players[1] = null;
+    document.getElementById('labelL').textContent = 'PLAYER';
+  } else {
+    players[1] = makePlayer('right');
+    if (gameMode === 'vsai') {
+      players[1].isAI = true;
+      players[1].aiTimer = AI_CONFIG[difficulty].thinkMs;
+    }
+    document.getElementById('labelL').textContent = 'PLAYER 1';
+    document.getElementById('labelR').textContent = gameMode === '2p' ? 'PLAYER 2' : 'CPU';
+  }
+
+  // Spawn first pieces & pre-fill bags
+  spawnPiece(players[0]);
+  for (let i = 0; i < 7; i++) nextFromBag(players[0]);
+  if (players[1]) {
+    spawnPiece(players[1]);
+    for (let i = 0; i < 7; i++) nextFromBag(players[1]);
+  }
+
+  // Reset DAS
+  dasL = { left: 0, right: 0, sd: 0 };
+  dasR = { left: 0, right: 0, sd: 0 };
+}
+
+function showGameOver(p1won, p2won) {
+  const ov = document.getElementById('overlay');
+  ov.classList.add('show');
+
+  if (gameMode === 'solo') {
+    const score = players[0].score;
+    let best = parseInt(localStorage.getItem('tetrisSoloBest') || '0');
+    const isNewBest = score > best;
+    if (isNewBest) {
+      best = score;
+      localStorage.setItem('tetrisSoloBest', best);
+      document.getElementById('bestScore').textContent = best.toLocaleString();
+    }
+    document.getElementById('ovTitle').textContent = isNewBest ? '🏆 NEW RECORD!' : 'GAME OVER';
+    document.getElementById('ovTitle').style.color = isNewBest ? '#ffe600' : '#ff3355';
+    document.getElementById('ovSub').textContent   = isNewBest ? 'New high score!' : 'Try again?';
+    document.getElementById('ovScore').textContent = score.toLocaleString();
+    document.getElementById('ovScore').style.color = isNewBest ? '#ffe600' : '#fff';
+    document.getElementById('ovScoreLabel').textContent =
+      `LINES: ${players[0].linesCleared}  ·  LEVEL: ${players[0].level}`;
+    document.getElementById('ovPlay').textContent  = '▶  PLAY AGAIN';
+    document.getElementById('ovQuit').style.display = 'block';
+    return;
+  }
+
+  if (gameMode === 'online') {
+    const won = players[0].alive && players[1] && !players[1].alive;
+    document.getElementById('ovTitle').textContent = won ? '🏆 YOU WIN!' : 'GAME OVER';
+    document.getElementById('ovTitle').style.color = won ? '#00ff88' : '#ff3355';
+    document.getElementById('ovSub').textContent   = won ? 'Opponent topped out!' : 'Better luck next time!';
+    document.getElementById('ovScore').textContent = players[0].score.toLocaleString();
+    document.getElementById('ovScore').style.color = won ? '#00ff88' : '#fff';
+    document.getElementById('ovScoreLabel').textContent =
+      `LINES: ${players[0].linesCleared}  ·  LEVEL: ${players[0].level}`;
+    document.getElementById('ovPlay').textContent  = '▶ PLAY AGAIN';
+    document.getElementById('ovQuit').style.display = 'block';
+    return;
+  }
+
+  let title, color;
+  if (gameMode === 'vsai') {
+    // Track high score for vsai
+    const score = players[0].score;
+    let best = parseInt(localStorage.getItem('tetrisVsaiBest') || '0');
+    const isNewBest = score > best;
+    if (isNewBest) {
+      best = score;
+      localStorage.setItem('tetrisVsaiBest', best);
+      document.getElementById('bestScore').textContent = best.toLocaleString();
+    }
+    title = p1won ? (isNewBest ? '🏆 YOU WIN!' : 'YOU WIN!') : 'GAME OVER';
+    color = p1won ? '#00ff88' : '#ff3355';
+    const R = players[1];
+    document.getElementById('ovTitle').textContent = title;
+    document.getElementById('ovTitle').style.color = color;
+    document.getElementById('ovSub').textContent   = isNewBest ? '⭐ NEW BEST SCORE!' : (p1won ? 'CPU defeated!' : 'Better luck next time!');
+    document.getElementById('ovScore').textContent = score.toLocaleString();
+    document.getElementById('ovScore').style.color = isNewBest ? '#ffe600' : (p1won ? '#00ff88' : '#fff');
+    document.getElementById('ovScoreLabel').textContent =
+      `LINES: ${players[0].linesCleared}  ·  LEVEL: ${players[0].level}  ·  BEST: ${best.toLocaleString()}`;
+    document.getElementById('ovPlay').textContent  = '▶  PLAY AGAIN';
+    document.getElementById('ovQuit').style.display = 'block';
+    return;
+  }
+
+  // 2P mode
+  title = p1won ? 'P1 WINS!' : 'P2 WINS!';
+  color = p1won ? '#00f5ff' : '#ff00aa';
+
+  const R = players[1];
+  document.getElementById('ovTitle').textContent = title;
+  document.getElementById('ovTitle').style.color = color;
+  document.getElementById('ovSub').textContent   = 'Final Scores';
+  document.getElementById('ovScore').textContent =
+    `${players[0].score.toLocaleString()}  —  ${R ? R.score.toLocaleString() : '0'}`;
+  document.getElementById('ovScore').style.color = '#fff';
+  document.getElementById('ovScoreLabel').textContent =
+    `LINES: ${players[0].linesCleared} — ${R ? R.linesCleared : 0}`;
+  document.getElementById('ovPlay').textContent  = '▶  PLAY AGAIN';
+  document.getElementById('ovQuit').style.display = 'block';
+}
+
+// Init idle state — no blocking overlay, user picks mode then clicks PLAY
+gameState = 'menu';
+updateHint();
+</script>
+</body>
+</html>

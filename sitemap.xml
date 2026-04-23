@@ -74,6 +74,18 @@
     </image:image>
   </url>
 
+  <!-- Tetris Battle -->
+  <url>
+    <loc>https://pixoplays.com/Tetris/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/tetris.png</image:loc>
+      <image:title>Tetris Battle — PixoPlays</image:title>
+    </image:image>
+  </url>
+
   <!-- About PixoPlays -->
   <url>
     <loc>https://pixoplays.com/aboutPage.html</loc>
