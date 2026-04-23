@@ -405,7 +405,7 @@ function serveBall(){
   // server='left'  → left player lost → ball fires left  (dirX = -1)
   // server='right' → right player/AI lost → ball fires right (dirX = +1)
   const dirX = server==='left' ? -1 : 1;
-  const maxAng = 28 * Math.PI/180;
+  const maxAng = 20 * Math.PI/180;
   const ang = (Math.random()*2-1)*maxAng;
   const spd = cfg.ballStart;
   ball.vx = spd * dirX * Math.cos(ang);
@@ -806,6 +806,9 @@ function setupConn(){
     } else {
       if(data.type==='state'){
         const wasOver=state==='OVER';
+        const prevScoreL=scoreL, prevScoreR=scoreR;
+        const prevRallyCount=rallyCount;
+        const prevState=state;
         // Dead-reckoning correction: lerp on small errors, snap on large ones
         const errX=data.bx-ball.x, errY=data.by-ball.y;
         const err=Math.hypot(errX,errY);
@@ -818,8 +821,19 @@ function setupConn(){
         trail=data.tr||[]; rallyCount=data.rl||0;
         flashA=data.fa||0; flashC=data.fc||'#fff';
         particles=data.pa||[];
-        if(soundOn&&state==='OVER'&&!wasOver){
-          scoreR>=WIN_SCORE ? sfxWin() : sfxLose();
+        if(soundOn){
+          if(state==='OVER'&&!wasOver){
+            scoreR>=WIN_SCORE ? sfxWin() : sfxLose();
+          } else if(scoreL!==prevScoreL||scoreR!==prevScoreR){
+            sfxPt();
+          } else if(rallyCount>prevRallyCount){
+            sfxPad();
+          }
+          if(state==='COUNTDOWN'){
+            if(prevState!=='COUNTDOWN') lastCdTick=COUNTDOWN_SEC;
+            const cur=Math.ceil(cdTime);
+            if(cur<lastCdTick&&cur>=1){ sfxTick(cur===1); lastCdTick=cur; }
+          }
         }
       }
     }
@@ -864,8 +878,8 @@ function loop(ts){
       // Extrapolate ball between host packets so it moves smoothly every frame
       ball.x += ball.vx * dt;
       ball.y += ball.vy * dt;
-      if(ball.y-BALL_R<=0){ ball.y=BALL_R;   ball.vy= Math.abs(ball.vy); }
-      if(ball.y+BALL_R>=H){ ball.y=H-BALL_R; ball.vy=-Math.abs(ball.vy); }
+      if(ball.y-BALL_R<=0){ ball.y=BALL_R;   ball.vy= Math.abs(ball.vy); sfxWall(); }
+      if(ball.y+BALL_R>=H){ ball.y=H-BALL_R; ball.vy=-Math.abs(ball.vy); sfxWall(); }
     }
   } else if(state==='COUNTDOWN'||state==='OVER'){
     updatePlayers(dt);

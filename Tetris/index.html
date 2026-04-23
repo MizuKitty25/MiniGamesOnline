@@ -906,7 +906,7 @@ body.game-playing .diff-btn {
     <div class="overlay-sub" id="ovSub">Clear lines to send garbage.<br>Bury your opponent to win.<br>First to top-out loses.</div>
     <div class="overlay-score" id="ovScore"></div>
     <div class="overlay-score-label" id="ovScoreLabel"></div>
-    <button class="overlay-btn primary" id="ovPlay" onclick="startGame()">▶  PLAY</button>
+    <button class="overlay-btn primary" id="ovPlay" onclick="onPlayAgainClick()">▶  PLAY</button>
     <button class="overlay-btn secondary" id="ovQuit" style="display:none;" onclick="showMenu()">← MENU</button>
   </div>
 </div>
@@ -2230,6 +2230,29 @@ function netSend(msg) {
   if (conn && conn.open) { try { conn.send(msg); } catch(e) {} }
 }
 
+let rematchFlags = { local: false, remote: false };
+
+function onPlayAgainClick() {
+  initAC();
+  if (gameMode === 'online' && conn && conn.open) {
+    rematchFlags.local = true;
+    const btn = document.getElementById('ovPlay');
+    btn.textContent = 'Waiting for opponent…';
+    btn.disabled = true;
+    netSend({ t: 'rematch_req' });
+    if (rematchFlags.remote) _doRematch();
+  } else {
+    startGame();
+  }
+}
+
+function _doRematch() {
+  if (onlineRole !== 'host') return; // guest waits for host's 'start' message
+  rematchFlags = { local: false, remote: false };
+  netSend({ t: 'start' });
+  startOnlineGame();
+}
+
 // Show one of the three lobby screens
 function olShow(screenId) {
   ['olChoose', 'olHosting', 'olJoining'].forEach(id => {
@@ -2343,8 +2366,21 @@ function onNetData(msg) {
 
   switch (msg.t) {
     case 'start':
-      // Guest receives host start signal
-      if (onlineRole === 'guest') { olHide(); startOnlineGame(); }
+      if (onlineRole === 'guest') {
+        rematchFlags = { local: false, remote: false };
+        olHide();
+        startOnlineGame();
+      }
+      break;
+
+    case 'rematch_req':
+      rematchFlags.remote = true;
+      if (rematchFlags.local && onlineRole === 'host') {
+        _doRematch();
+      } else if (!rematchFlags.local) {
+        const btn = document.getElementById('ovPlay');
+        if (btn) btn.textContent = '▶ PLAY AGAIN  ✓ Opponent Ready!';
+      }
       break;
 
     case 'piece':
@@ -2373,7 +2409,17 @@ function onNetData(msg) {
 }
 
 function onConnClose() {
+  // Reset rematch state whenever connection drops
+  rematchFlags = { local: false, remote: false };
+  const ovPlayBtn = document.getElementById('ovPlay');
+  if (ovPlayBtn) { ovPlayBtn.textContent = '▶ PLAY AGAIN'; ovPlayBtn.disabled = false; }
+
+  if (gameState === 'over') {
+    document.getElementById('ovSub').textContent = 'Opponent disconnected.';
+    return;
+  }
   if (gameState !== 'playing') return;
+
   gameState = 'over';
   const ov = document.getElementById('overlay');
   ov.classList.add('show');
@@ -2382,11 +2428,13 @@ function onConnClose() {
   document.getElementById('ovSub').textContent   = 'Connection with opponent was lost.';
   document.getElementById('ovScore').textContent = '';
   document.getElementById('ovScoreLabel').textContent = '';
-  document.getElementById('ovPlay').textContent  = '▶ PLAY AGAIN';
   document.getElementById('ovQuit').style.display = 'block';
 }
 
 function startOnlineGame() {
+  rematchFlags = { local: false, remote: false };
+  const ovPlayBtn = document.getElementById('ovPlay');
+  ovPlayBtn.textContent = '▶ PLAY AGAIN'; ovPlayBtn.disabled = false;
   gameState = 'playing';
   document.body.classList.add('game-playing');
   document.getElementById('overlay').classList.remove('show');
