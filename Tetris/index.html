@@ -1947,7 +1947,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'ArrowRight') { initAC(); moveH(L, 1);  e.preventDefault(); }
   if (e.code === 'ArrowUp')    { initAC(); tryRotate(L, 1); e.preventDefault(); }
   if (e.code === 'ArrowDown')  { initAC(); softDrop(L); dasL.sd = SOFT_DROP_MS; e.preventDefault(); }
-  if (e.code === 'Space')      { initAC(); hardDrop(L, R); e.preventDefault(); }
+  if (e.code === 'Space')      { initAC(); if (!keys['Space_cooling']) { hardDrop(L, R); keys['Space_cooling'] = true; setTimeout(() => { keys['Space_cooling'] = false; }, 120); } e.preventDefault(); }
   if (e.code === 'KeyZ')       { initAC(); tryRotate(L, -1); e.preventDefault(); }
   if (e.code === 'KeyX')       { initAC(); tryRotate(L, 1);  e.preventDefault(); }
   if (e.code === 'KeyC')       { initAC(); holdPiece(L); e.preventDefault(); }
@@ -1958,7 +1958,7 @@ document.addEventListener('keydown', e => {
     if (e.code === 'KeyD')       { initAC(); moveH(R, 1);  }
     if (e.code === 'KeyW')       { initAC(); tryRotate(R, 1); }
     if (e.code === 'KeyS')       { initAC(); softDrop(R); }
-    if (e.code === 'ShiftLeft')  { initAC(); hardDrop(R, L); }
+    if (e.code === 'ShiftLeft')  { initAC(); if (!keys['Shift_cooling']) { hardDrop(R, L); keys['Shift_cooling'] = true; setTimeout(() => { keys['Shift_cooling'] = false; }, 120); } }
     if (e.code === 'KeyQ')       { initAC(); tryRotate(R, -1); }
     if (e.code === 'KeyE')       { initAC(); tryRotate(R, 1);  }
     if (e.code === 'KeyR')       { initAC(); holdPiece(R); }
