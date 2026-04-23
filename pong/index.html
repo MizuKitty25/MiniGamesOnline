@@ -405,11 +405,9 @@ function serveBall(){
   // server='left'  → left player lost → ball fires left  (dirX = -1)
   // server='right' → right player/AI lost → ball fires right (dirX = +1)
   const dirX = server==='left' ? -1 : 1;
-  const maxAng = 20 * Math.PI/180;
-  const ang = (Math.random()*2-1)*maxAng;
   const spd = cfg.ballStart;
-  ball.vx = spd * dirX * Math.cos(ang);
-  ball.vy = spd * Math.sin(ang);
+  ball.vx = spd * dirX;
+  ball.vy = 0;
   state='PLAYING';
 }
 
@@ -881,7 +879,7 @@ function loop(ts){
       if(ball.y-BALL_R<=0){ ball.y=BALL_R;   ball.vy= Math.abs(ball.vy); sfxWall(); }
       if(ball.y+BALL_R>=H){ ball.y=H-BALL_R; ball.vy=-Math.abs(ball.vy); sfxWall(); }
     }
-  } else if(state==='COUNTDOWN'||state==='OVER'){
+    } else if(state==='OVER'){
     updatePlayers(dt);
   }
   stepP(dt);
