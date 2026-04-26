@@ -210,6 +210,13 @@ header {
 .diff-btn.active-easy   { color: var(--green); border-color: var(--green); }
 .diff-btn.active-medium { color: var(--yellow); border-color: var(--yellow); }
 .diff-btn.active-hard   { color: var(--red); border-color: var(--red); }
+.diff-btn.active-expert { color: var(--orange); border-color: var(--orange); }
+.diff-btn.active-master   { color: var(--magenta); border-color: var(--magenta); text-shadow: 0 0 8px var(--magenta); }
+.diff-btn.active-immortal { color: #fff; border-color: #fff; text-shadow: 0 0 10px #fff, 0 0 24px var(--cyan), 0 0 40px var(--magenta); animation: immortalGlow 1.5s ease-in-out infinite alternate; }
+@keyframes immortalGlow {
+  from { border-color: var(--cyan);    text-shadow: 0 0 10px var(--cyan),    0 0 24px var(--cyan); }
+  to   { border-color: var(--magenta); text-shadow: 0 0 10px var(--magenta), 0 0 24px var(--magenta); }
+}
 
 /* GAME AREA */
 .arena {
@@ -412,13 +419,13 @@ canvas { display: block; }
 .controls-hint {
   position: relative;
   z-index: 10;
-  padding: 6px 20px 0;
+  padding: 10px 20px 0;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 7px;
-  color: rgba(255,255,255,0.2);
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
   letter-spacing: 1px;
   text-align: center;
-  line-height: 2.2;
+  line-height: 2.4;
 }
 
 /* OVERLAY */
@@ -542,16 +549,17 @@ canvas { display: block; }
 .sfx-row {
   display: flex;
   justify-content: center;
-  padding: 6px 20px 0;
+  gap: 10px;
+  padding: 10px 20px 0;
   position: relative;
   z-index: 10;
 }
 
 .sfx-btn {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 7px;
+  font-size: 10px;
   letter-spacing: 2px;
-  padding: 6px 14px;
+  padding: 10px 22px;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 1px;
   background: transparent;
@@ -739,9 +747,12 @@ body.game-playing .diff-btn {
 </div>
 
 <div class="diff-row" id="diffRow">
-  <button class="diff-btn"              id="btnEasy"   onclick="setDiff('easy')">EASY</button>
+  <button class="diff-btn"               id="btnEasy"   onclick="setDiff('easy')">EASY</button>
   <button class="diff-btn active-medium" id="btnMedium" onclick="setDiff('medium')">MEDIUM</button>
-  <button class="diff-btn"              id="btnHard"   onclick="setDiff('hard')">HARD</button>
+  <button class="diff-btn"               id="btnHard"   onclick="setDiff('hard')">HARD</button>
+  <button class="diff-btn"               id="btnExpert" onclick="setDiff('expert')">EXPERT</button>
+  <button class="diff-btn"               id="btnMaster"   onclick="setDiff('master')">MASTER</button>
+  <button class="diff-btn"               id="btnImmortal" onclick="setDiff('immortal')">IMMORTAL</button>
 </div>
 
 <div class="play-row" id="playRow">
@@ -850,6 +861,7 @@ body.game-playing .diff-btn {
 
 <div class="sfx-row">
   <button class="sfx-btn active" id="sfxBtn" onclick="toggleSound()">🔊 SOUND</button>
+  <button class="sfx-btn" onclick="openSettings()">⚙ CONTROLS</button>
 </div>
 
 <div class="controls-hint" id="hintBox">
@@ -864,6 +876,32 @@ body.game-playing .diff-btn {
   <a href="../credits.html">📜 Credits</a>
 </div>
 <footer style="text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;letter-spacing:2px;font-family:'Press Start 2P',monospace;">© PIXOPLAYS · FREE TO PLAY · MADE WITH ❤️</footer>
+
+<!-- SETTINGS OVERLAY -->
+<div id="settingsOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,4,14,0.88);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(6px);">
+  <div class="overlay-panel" style="max-width:360px;">
+    <div class="overlay-title" style="color:var(--yellow);font-size:16px;margin-bottom:6px;">⚙ CONTROLS</div>
+    <div class="overlay-sub" style="margin-bottom:20px;">Fine-tune your key response speed.<br><span style="font-size:7px;opacity:0.5">Lower value = faster / more responsive</span></div>
+    <div style="text-align:left;font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.55);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="width:140px;">DAS <span style="color:rgba(255,255,255,0.3)">(shift delay)</span></span>
+        <input type="range" id="sliderDAS" min="50" max="300" value="135" style="flex:1;accent-color:var(--cyan);">
+        <span id="valDAS" style="width:44px;color:var(--yellow);text-align:right;">135ms</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="width:140px;">ARR <span style="color:rgba(255,255,255,0.3)">(repeat rate)</span></span>
+        <input type="range" id="sliderARR" min="0" max="150" value="40" style="flex:1;accent-color:var(--cyan);">
+        <span id="valARR" style="width:44px;color:var(--yellow);text-align:right;">40ms</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="width:140px;">SOFT DROP <span style="color:rgba(255,255,255,0.3)">(↓ speed)</span></span>
+        <input type="range" id="sliderSD" min="10" max="200" value="50" style="flex:1;accent-color:var(--cyan);">
+        <span id="valSD" style="width:44px;color:var(--yellow);text-align:right;">50ms</span>
+      </div>
+    </div>
+    <button class="overlay-btn primary" onclick="closeSettings()">DONE</button>
+  </div>
+</div>
 
 <!-- ONLINE LOBBY OVERLAY -->
 <div id="olOverlay">
@@ -943,9 +981,12 @@ function dropSpeed(level) {
 
 // AI difficulty config
 const AI_CONFIG = {
-  easy:   { thinkMs: 750,  mistakeRate: 0.32, lookAhead: 1 },
-  medium: { thinkMs: 350,  mistakeRate: 0.12, lookAhead: 2 },
-  hard:   { thinkMs: 120,  mistakeRate: 0.02, lookAhead: 2 },
+  easy:   { thinkMs: 450,  mistakeRate: 0.22,  lookAhead: 1 },
+  medium: { thinkMs: 250,  mistakeRate: 0.12,  lookAhead: 1 },
+  hard:   { thinkMs: 170,  mistakeRate: 0.05,  lookAhead: 2 },
+  expert: { thinkMs: 120,   mistakeRate: 0.03, lookAhead: 2 },
+  master:   { thinkMs: 80,   mistakeRate: 0.02,     lookAhead: 2, enhanced: true },
+  immortal: { thinkMs: 30,   mistakeRate: 0,     lookAhead: 2, enhanced: true },
 };
 
 /* ════════════════════════════════════
@@ -1007,6 +1048,16 @@ function sfxWin() {
   );
 }
 
+function sfxCountdownTick() {
+  beep(880, 0.06, 0.22, 'square');
+  setTimeout(() => beep(1320, 0.04, 0.10, 'sine'), 50);
+}
+function sfxCountdownGo() {
+  [523, 784, 1047, 1568].forEach((f, i) =>
+    setTimeout(() => beep(f, 0.14, 0.28, 'square'), i * 65)
+  );
+}
+
 function toggleSound() {
   soundOn = !soundOn;
   const btn = document.getElementById('sfxBtn');
@@ -1053,13 +1104,44 @@ function makePlayer(side) {
     remotePiece: null,   // online: last received opponent piece position
     _garbSend: 0,        // online: garbage accumulated this lock cycle
     flashTimer: 0,
+    seqIdx: 0,           // shared piece sequence cursor
   };
 }
 
 /* ════════════════════════════════════
-   BAG RANDOMIZER (7-bag)
+   SHARED PIECE SEQUENCE (7-bag)
+   Both players in any non-solo mode
+   draw from the same ordered sequence
+   so match-ups are always fair.
 ════════════════════════════════════ */
-function fillBag() {
+function _lcg(seed) {
+  let s = seed >>> 0;
+  return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+let _seqRng  = null;
+let _seqData = [];
+
+function _seqFill(minLen) {
+  while (_seqData.length < minLen) {
+    const bag = [...PIECE_KEYS];
+    const rng = _seqRng || Math.random.bind(Math);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+    _seqData.push(...bag);
+  }
+}
+
+function initPieceSeq(seed) {
+  _seqRng  = (seed != null) ? _lcg(seed) : null;
+  _seqData = [];
+  _seqFill(84); // pre-fill 12 bags
+}
+
+// For solo mode individual bags (unchanged behaviour)
+function _fillIndivBag() {
   const bag = [...PIECE_KEYS];
   for (let i = bag.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -1069,8 +1151,20 @@ function fillBag() {
 }
 
 function nextFromBag(p) {
-  if (p.nextBag.length < 7) p.nextBag.push(...fillBag());
-  return p.nextBag.shift();
+  if (gameMode === 'solo') {
+    if (p.nextBag.length < 7) p.nextBag.push(..._fillIndivBag());
+    return p.nextBag.shift();
+  }
+  if (p.isRemote) return null; // remote player driven by network
+  _seqFill(p.seqIdx + 2);
+  return _seqData[p.seqIdx++];
+}
+
+function peekNextPiece(p) {
+  if (p.isRemote) return null;
+  if (gameMode === 'solo') return p.nextBag[0] || null;
+  _seqFill(p.seqIdx + 2);
+  return _seqData[p.seqIdx];
 }
 
 /* ════════════════════════════════════
@@ -1092,7 +1186,7 @@ function spawnPiece(p) {
   p.lockDelay = 0;
   p.lockReset = 0;
   if (p.isAI) { p.aiTarget = null; p.aiRotsDone = 0; }
-  if (collides(p.board, piece, 0, 0)) {
+  if (collides(p.board, piece, 0, 0) || (piece.y < 0 && collides(p.board, piece, 0, 1))) {
     p.alive = false; // top out
   }
 }
@@ -1331,7 +1425,6 @@ function scoreBoard(board) {
   score -= maxH * 3.5;
   score -= avgH * 1.5;
 
-  // Holes
   let holes = 0;
   for (let c = 0; c < COLS; c++) {
     let blockFound = false;
@@ -1342,12 +1435,10 @@ function scoreBoard(board) {
   }
   score -= holes * 7;
 
-  // Bumpiness
   let bump = 0;
   for (let c = 0; c < COLS - 1; c++) bump += Math.abs(heights[c] - heights[c + 1]);
   score -= bump * 2;
 
-  // Complete lines bonus
   for (let r = 0; r < ROWS; r++) {
     if (board[r].every(c => c)) score += 100;
   }
@@ -1355,8 +1446,57 @@ function scoreBoard(board) {
   return score;
 }
 
+// Stronger heuristic used by Expert/Master
+function scoreBoardEnhanced(board) {
+  let score = 0;
+  let heights = Array(COLS).fill(0);
+
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c]) { heights[c] = ROWS - r; break; }
+    }
+  }
+
+  const maxH = Math.max(...heights);
+  const avgH = heights.reduce((a, b) => a + b, 0) / COLS;
+  score -= maxH * 5;
+  score -= avgH * 2.5;
+
+  // Holes weighted by depth above them
+  let holes = 0, covered = 0;
+  for (let c = 0; c < COLS; c++) {
+    let depth = 0, blockFound = false;
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c]) { blockFound = true; depth++; }
+      else if (blockFound) { holes++; covered += depth; }
+    }
+  }
+  score -= holes * 10;
+  score -= covered * 1.5;
+
+  let bump = 0;
+  for (let c = 0; c < COLS - 1; c++) bump += Math.abs(heights[c] - heights[c + 1]);
+  score -= bump * 3.5;
+
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r].every(c => c !== null)) score += 150;
+  }
+
+  // Reward a well (column significantly lower on both sides — good for Tetris)
+  for (let c = 1; c < COLS - 1; c++) {
+    if (heights[c - 1] - heights[c] >= 3 && heights[c + 1] - heights[c] >= 3) score += 18;
+  }
+
+  return score;
+}
+
+function clearLinesFromBoard(board) {
+  const rows = board.filter(row => !row.every(c => c !== null));
+  while (rows.length < ROWS) rows.unshift(Array(COLS).fill(null));
+  return rows;
+}
+
 function simulateLock(board, piece, dy) {
-  // Place at given dy and return new board copy
   const newBoard = board.map(r => [...r]);
   for (let r = 0; r < piece.shape.length; r++) {
     for (let c = 0; c < piece.shape[r].length; c++) {
@@ -1373,24 +1513,44 @@ function findBestPlacement(p) {
   let bestScore = -Infinity;
   let bestMove = null;
   const cfg = AI_CONFIG[difficulty];
+  const scoreFn = cfg.enhanced ? scoreBoardEnhanced : scoreBoard;
+
+  // Peek at next piece for look-ahead (Expert/Master)
+  const nextKey = cfg.lookAhead >= 2 ? peekNextPiece(p) : null;
 
   let piece = { ...p.piece, shape: p.piece.shape.map(r => [...r]) };
-  // Try all rotations
   for (let rot = 0; rot < 4; rot++) {
-    // Try all x positions
     for (let x = -2; x < COLS + 2; x++) {
       const testPiece = { ...piece, x };
       if (collides(p.board, testPiece, 0, 0)) continue;
-      // Drop
       let dy = 0;
       while (!collides(p.board, testPiece, 0, dy + 1)) dy++;
-      const finalY = testPiece.y + dy;
-      if (finalY < 0) continue;
+      if (testPiece.y + dy < 0) continue;
 
-      const simBoard = simulateLock(p.board, testPiece, dy);
-      let s = scoreBoard(simBoard);
+      const simBoard   = simulateLock(p.board, testPiece, dy);
+      const afterClear = clearLinesFromBoard(simBoard);
+      let s = scoreFn(afterClear);
 
-      // Add random noise for mistakes
+      // One-piece look-ahead
+      if (nextKey) {
+        const nDef = TETROMINOES[nextKey];
+        let nPiece = { shape: nDef.shape.map(r => [...r]), x: 5, y: 0, color: nDef.color };
+        let nBest = -Infinity;
+        for (let rot2 = 0; rot2 < 4; rot2++) {
+          for (let x2 = -2; x2 < COLS + 2; x2++) {
+            const tp2 = { ...nPiece, x: x2 };
+            if (collides(afterClear, tp2, 0, 0)) continue;
+            let dy2 = 0;
+            while (!collides(afterClear, tp2, 0, dy2 + 1)) dy2++;
+            if (tp2.y + dy2 < 0) continue;
+            const s2 = scoreFn(clearLinesFromBoard(simulateLock(afterClear, tp2, dy2)));
+            if (s2 > nBest) nBest = s2;
+          }
+          nPiece = { ...nPiece, shape: rotateCW(nPiece.shape) };
+        }
+        if (nBest > -Infinity) s += nBest * 0.45;
+      }
+
       s += (Math.random() - 0.5) * cfg.mistakeRate * 400;
 
       if (s > bestScore) {
@@ -1415,7 +1575,7 @@ function stepAI(p, opponent, dt) {
   if (!p.aiTarget) {
     p.aiTarget = findBestPlacement(p);
     p.aiRotsDone = 0;
-    if (!p.aiTarget) return;
+    if (!p.aiTarget) { hardDrop(p, opponent); return; }
   }
 
   const tgt = p.aiTarget;
@@ -1932,7 +2092,7 @@ document.addEventListener('keydown', e => {
   keys[e.code] = true;
 
   if (gameState !== 'playing') {
-    if (e.code === 'Space' || e.code === 'Enter') {
+    if (e.code === 'Enter') {
       initAC();
       if (gameState === 'menu') startGame();
       else if (gameState === 'over') startGame();
@@ -2022,9 +2182,9 @@ document.getElementById('boardL').addEventListener('touchend', e => {
 /* ════════════════════════════════════
    DAS / ARR (auto-repeat)
 ════════════════════════════════════ */
-const DAS = 135;         // ms before left/right repeat starts
-const ARR = 40;          // ms between left/right repeats
-const SOFT_DROP_MS = 50; // ms between soft-drop steps (~20 rows/sec)
+let DAS = +( localStorage.getItem('tetrisDAS') ?? 135);
+let ARR = +( localStorage.getItem('tetrisARR') ?? 40);
+let SOFT_DROP_MS = +(localStorage.getItem('tetrisSD')  ?? 50);
 
 let dasL = { left: 0, right: 0, sd: 0 };
 let dasR = { left: 0, right: 0, sd: 0 };
@@ -2129,6 +2289,18 @@ function gameLoop(ts) {
   const dt = Math.min((ts - lastT), 80); // cap at 80ms
   lastT = ts;
 
+  if (gameState === 'countdown') {
+    _scanY = (_scanY + dt * 0.022) % BOARD_H;
+    const L = players[0], R = players[1];
+    drawBoard(ctxL, L);
+    if (R) drawBoard(ctxR, R);
+    drawPreview(ctxNL, peekNextPiece(L), 80, 70);
+    if (R) drawPreview(ctxNR, peekNextPiece(R), 80, 70);
+    drawPreview(ctxHL, L.holdPiece, 80, 70);
+    if (R) drawPreview(ctxHR, R.holdPiece, 80, 70);
+    updateHUD();
+    return;
+  }
   if (gameState !== 'playing') {
     _scanY = (_scanY + dt * 0.022) % BOARD_H;
     drawIdleBoards();
@@ -2171,8 +2343,8 @@ function gameLoop(ts) {
   // Draw
   drawBoard(ctxL, L);
   if (R) drawBoard(ctxR, R);
-  drawPreview(ctxNL, L.nextBag[0], 80, 70);
-  if (R) drawPreview(ctxNR, R.nextBag[0], 80, 70);
+  drawPreview(ctxNL, peekNextPiece(L), 80, 70);
+  if (R) drawPreview(ctxNR, peekNextPiece(R), 80, 70);
   drawPreview(ctxHL, L.holdPiece, 80, 70);
   if (R) drawPreview(ctxHR, R.holdPiece, 80, 70);
   updateHUD();
@@ -2222,9 +2394,10 @@ requestAnimationFrame(gameLoop);
 ════════════════════════════════════ */
 let peer = null;
 let conn = null;
-let onlineRole = null;   // 'host' | 'guest'
+let onlineRole = null;      // 'host' | 'guest'
 let pieceSendTimer = 0;
-const PIECE_SEND_MS = 50; // ~20 Hz piece position updates
+const PIECE_SEND_MS = 50;   // ~20 Hz piece position updates
+let _onlineSeed = null;     // shared piece-sequence seed for online games
 
 function netSend(msg) {
   if (conn && conn.open) { try { conn.send(msg); } catch(e) {} }
@@ -2249,8 +2422,71 @@ function onPlayAgainClick() {
 function _doRematch() {
   if (onlineRole !== 'host') return; // guest waits for host's 'start' message
   rematchFlags = { local: false, remote: false };
-  netSend({ t: 'start' });
-  startOnlineGame();
+  _onlineSeed = (Math.floor(Math.random() * 0x7fffffff) + 1);
+  netSend({ t: 'start', seed: _onlineSeed });
+  showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
+}
+
+function showCountdown(callback) {
+  initAC();
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3000;pointer-events:none;background:rgba(4,4,14,0.60);backdrop-filter:blur(2px);';
+  document.body.appendChild(el);
+
+  const sub = document.createElement('div');
+  sub.style.cssText = 'font-family:Orbitron,monospace;font-weight:700;font-size:12px;letter-spacing:7px;color:rgba(255,255,255,0.45);margin-bottom:18px;text-transform:uppercase;';
+  sub.textContent = 'GET READY';
+  el.appendChild(sub);
+
+  const num = document.createElement('div');
+  num.style.cssText = 'font-family:Orbitron,monospace;font-weight:900;letter-spacing:4px;text-align:center;line-height:1;will-change:transform,opacity;';
+  el.appendChild(num);
+
+  const ring = document.createElement('div');
+  ring.style.cssText = 'margin-top:22px;width:10px;height:10px;border-radius:50%;';
+  el.appendChild(ring);
+
+  function popIn(el, scale = 1.7) {
+    el.animate([
+      { transform: `scale(${scale})`, opacity: 0 },
+      { transform: 'scale(1)',        opacity: 1 }
+    ], { duration: 200, easing: 'cubic-bezier(0.175,0.885,0.32,1.275)', fill: 'forwards' });
+  }
+
+  let n = 3;
+  function tick() {
+    if (n > 0) {
+      const clr = n === 3 ? '#ff3355' : n === 2 ? '#ffe600' : '#00ff88';
+      num.textContent = n;
+      num.style.fontSize = '160px';
+      num.style.color = clr;
+      num.style.textShadow = `0 0 30px ${clr}, 0 0 70px ${clr}, 0 0 130px ${clr}`;
+      ring.style.background = clr;
+      ring.style.boxShadow = `0 0 12px ${clr}`;
+      popIn(num);
+      sfxCountdownTick();
+      n--;
+      setTimeout(tick, 1000);
+    } else {
+      sub.textContent = '';
+      ring.style.display = 'none';
+      num.textContent = 'GO!';
+      num.style.fontSize = '100px';
+      num.style.color = '#00f5ff';
+      num.style.textShadow = '0 0 30px #00f5ff, 0 0 80px #00f5ff, 0 0 150px #00f5ff';
+      num.animate([
+        { transform: 'scale(0.4)', opacity: 0 },
+        { transform: 'scale(1.15)', opacity: 1, offset: 0.55 },
+        { transform: 'scale(1)',    opacity: 1 }
+      ], { duration: 380, easing: 'ease-out', fill: 'forwards' });
+      sfxCountdownGo();
+      setTimeout(() => {
+        el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, fill: 'forwards' });
+        setTimeout(() => { el.remove(); callback(); }, 180);
+      }, 620);
+    }
+  }
+  tick();
 }
 
 // Show one of the three lobby screens
@@ -2310,12 +2546,14 @@ function olHost() {
   peer.on('connection', c => {
     if (conn) conn.close();
     conn = c; onlineRole = 'host';
-    document.getElementById('olHostStatus').textContent = 'Opponent connected! Starting…';
+    document.getElementById('olHostStatus').textContent = 'Opponent connected! Get ready…';
     conn.on('open', () => {
       conn.on('data',  onNetData);
       conn.on('close', onConnClose);
-      netSend({ t: 'start' });
-      setTimeout(() => { olHide(); startOnlineGame(); }, 900);
+      _onlineSeed = (Math.floor(Math.random() * 0x7fffffff) + 1);
+      netSend({ t: 'go', seed: _onlineSeed });
+      olHide();
+      showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
     });
     conn.on('error', () => {});
   });
@@ -2365,11 +2603,22 @@ function onNetData(msg) {
   const R = players ? players[1] : null;
 
   switch (msg.t) {
-    case 'start':
+    case 'go':
+      // Initial game start — show countdown then begin
       if (onlineRole === 'guest') {
+        _onlineSeed = msg.seed;
         rematchFlags = { local: false, remote: false };
         olHide();
-        startOnlineGame();
+        showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
+      }
+      break;
+
+    case 'start':
+      // Rematch start from host
+      if (onlineRole === 'guest') {
+        rematchFlags = { local: false, remote: false };
+        if (msg.seed) _onlineSeed = msg.seed;
+        showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
       }
       break;
 
@@ -2449,7 +2698,6 @@ function startOnlineGame() {
   document.getElementById('labelR').textContent = onlineRole === 'host' ? 'OPPONENT' : 'HOST';
 
   spawnPiece(players[0]);
-  for (let i = 0; i < 7; i++) nextFromBag(players[0]);
 
   dasL = { left: 0, right: 0, sd: 0 };
   dasR = { left: 0, right: 0, sd: 0 };
@@ -2460,7 +2708,7 @@ function startOnlineGame() {
    GAME MANAGEMENT
 ════════════════════════════════════ */
 function setMode(m) {
-  if (gameState === 'playing') return;
+  if (gameState === 'playing' || gameState === 'countdown') return;
   initAC();
   gameMode = m;
   document.getElementById('btnVsCPU').className  = 'mode-btn' + (m === 'vsai'   ? ' active-vsai'   : '');
@@ -2480,10 +2728,10 @@ function setMode(m) {
 }
 
 function setDiff(d) {
-  if (gameState === 'playing') return;
+  if (gameState === 'playing' || gameState === 'countdown') return;
   initAC();
   difficulty = d;
-  ['easy', 'medium', 'hard'].forEach(x => {
+  ['easy', 'medium', 'hard', 'expert', 'master', 'immortal'].forEach(x => {
     const k = x[0].toUpperCase() + x.slice(1);
     document.getElementById('btn' + k).className = 'diff-btn' + (x === d ? ' active-' + d : '');
   });
@@ -2539,7 +2787,7 @@ function startGame() {
     openOnlineLobby();
     return;
   }
-  gameState = 'playing';
+  gameState = 'countdown';
   document.body.classList.add('game-playing');
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('playRow').style.display = 'none';
@@ -2562,17 +2810,18 @@ function startGame() {
     document.getElementById('labelR').textContent = gameMode === '2p' ? 'PLAYER 2' : 'CPU';
   }
 
-  // Spawn first pieces & pre-fill bags
+  // Init shared piece sequence for all non-solo modes
+  if (gameMode !== 'solo') initPieceSeq(null);
+
+  // Spawn first pieces
   spawnPiece(players[0]);
-  for (let i = 0; i < 7; i++) nextFromBag(players[0]);
-  if (players[1]) {
-    spawnPiece(players[1]);
-    for (let i = 0; i < 7; i++) nextFromBag(players[1]);
-  }
+  if (players[1]) spawnPiece(players[1]);
 
   // Reset DAS
   dasL = { left: 0, right: 0, sd: 0 };
   dasR = { left: 0, right: 0, sd: 0 };
+
+  showCountdown(() => { gameState = 'playing'; lastT = performance.now(); });
 }
 
 function showGameOver(p1won, p2won) {
@@ -2656,6 +2905,39 @@ function showGameOver(p1won, p2won) {
   document.getElementById('ovPlay').textContent  = '▶  PLAY AGAIN';
   document.getElementById('ovQuit').style.display = 'block';
 }
+
+/* ════════════════════════════════════
+   SETTINGS (DAS / ARR / Soft Drop)
+════════════════════════════════════ */
+function openSettings() {
+  document.getElementById('sliderDAS').value = DAS;
+  document.getElementById('valDAS').textContent = DAS + 'ms';
+  document.getElementById('sliderARR').value = ARR;
+  document.getElementById('valARR').textContent = ARR + 'ms';
+  document.getElementById('sliderSD').value = SOFT_DROP_MS;
+  document.getElementById('valSD').textContent = SOFT_DROP_MS + 'ms';
+  document.getElementById('settingsOverlay').style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').style.display = 'none';
+}
+
+document.getElementById('sliderDAS').addEventListener('input', e => {
+  DAS = +e.target.value;
+  document.getElementById('valDAS').textContent = DAS + 'ms';
+  localStorage.setItem('tetrisDAS', DAS);
+});
+document.getElementById('sliderARR').addEventListener('input', e => {
+  ARR = +e.target.value;
+  document.getElementById('valARR').textContent = ARR + 'ms';
+  localStorage.setItem('tetrisARR', ARR);
+});
+document.getElementById('sliderSD').addEventListener('input', e => {
+  SOFT_DROP_MS = +e.target.value;
+  document.getElementById('valSD').textContent = SOFT_DROP_MS + 'ms';
+  localStorage.setItem('tetrisSD', SOFT_DROP_MS);
+});
 
 // Init idle state — no blocking overlay, user picks mode then clicks PLAY
 gameState = 'menu';
