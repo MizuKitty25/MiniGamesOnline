@@ -5,7 +5,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://pixoplays.com/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -17,7 +17,7 @@
   <!-- Snake Game -->
   <url>
     <loc>https://pixoplays.com/snake/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -29,7 +29,7 @@
   <!-- Flappy Bird Game -->
   <url>
     <loc>https://pixoplays.com/flappy/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -41,7 +41,7 @@
   <!-- Dino Run Game -->
   <url>
     <loc>https://pixoplays.com/Dino/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -53,7 +53,7 @@
   <!-- Pong Game -->
   <url>
     <loc>https://pixoplays.com/pong/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -65,7 +65,7 @@
   <!-- Brick Breaker Game -->
   <url>
     <loc>https://pixoplays.com/brickBreak/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -77,7 +77,7 @@
   <!-- Tetris Battle -->
   <url>
     <loc>https://pixoplays.com/Tetris/</loc>
-    <lastmod>2026-04-24</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -86,10 +86,34 @@
     </image:image>
   </url>
 
+  <!-- PartyBlast 3D -->
+  <url>
+    <loc>https://pixoplays.com/PartyBlast/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/party.png</image:loc>
+      <image:title>PartyBlast 3D — PixoPlays</image:title>
+    </image:image>
+  </url>
+
+  <!-- NeonBrawl 3D -->
+  <url>
+    <loc>https://pixoplays.com/NeonBrawl/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://pixoplays.com/coverImage/neon.png</image:loc>
+      <image:title>NeonBrawl 3D — PixoPlays</image:title>
+    </image:image>
+  </url>
+
   <!-- About PixoPlays -->
   <url>
     <loc>https://pixoplays.com/aboutPage.html</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -97,7 +121,7 @@
   <!-- About the Developer -->
   <url>
     <loc>https://pixoplays.com/about.html</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -105,7 +129,7 @@
   <!-- Credits -->
   <url>
     <loc>https://pixoplays.com/credits.html</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-05-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

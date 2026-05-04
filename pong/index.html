@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🏓 Pong — Free Online Multiplayer Arcade Game | PixoPlays</title>
-<meta name="description" content="Play Pong online for free — challenge the AI, a local friend, or play online multiplayer with a room code. No download needed. First to 7 wins!">
+<title>Play Pong Online Free - Multiplayer & VS CPU | PixoPlays</title>
+<meta name="description" content="Play Pong online for free in your browser. Challenge the CPU, play local 2-player, or start online multiplayer with a room code. No download needed.">
 <meta name="keywords" content="pong game, pong online, online pong multiplayer, pong vs ai, classic arcade pong, browser pong, free pong game, pixoplays, 2 player pong, pong room code">
 <meta name="author" content="PixoPlays">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#1a0a2e">
+<meta name="application-name" content="PixoPlays Pong">
 <link rel="canonical" href="https://pixoplays.com/pong/">
 <link rel="icon" type="image/png" href="../applogo.png">
 <link rel="apple-touch-icon" href="../applogo.png">
@@ -21,6 +22,7 @@
 <meta property="og:image" content="https://pixoplays.com/coverImage/pong.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PixoPlays Pong online browser game with neon paddles and ball">
 <meta property="og:site_name" content="PixoPlays">
 <meta property="og:locale" content="en_US">
 
@@ -30,22 +32,30 @@
 <meta name="twitter:title" content="Pong – Online Multiplayer & VS AI | PixoPlays">
 <meta name="twitter:description" content="Play Pong free — vs AI, local 2-player, or online with a room code. No download needed.">
 <meta name="twitter:image" content="https://pixoplays.com/coverImage/pong.png">
+<meta name="twitter:image:alt" content="PixoPlays Pong online browser game with neon paddles and ball">
 
 <!-- Structured Data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "VideoGame",
+  "@id": "https://pixoplays.com/pong/#game",
   "name": "Pong",
+  "alternateName": "PixoPlays Pong",
   "description": "Classic Pong arcade game. Play vs AI, local 2-player, or online multiplayer with a room code. First to 7 wins. Free browser game.",
+  "image": "https://pixoplays.com/coverImage/pong.png",
   "genre": ["Arcade", "Sports", "Multiplayer"],
   "gamePlatform": "Web Browser",
   "applicationCategory": "Game",
   "operatingSystem": "Any",
+  "playMode": ["SinglePlayer", "MultiPlayer"],
+  "isAccessibleForFree": true,
+  "inLanguage": "en",
   "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 2 },
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "url": "https://pixoplays.com/pong/",
-  "publisher": { "@type": "Organization", "name": "PixoPlays", "url": "https://pixoplays.com" }
+  "publisher": { "@type": "Organization", "name": "PixoPlays", "url": "https://pixoplays.com" },
+  "potentialAction": { "@type": "PlayAction", "target": "https://pixoplays.com/pong/" }
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -128,9 +138,10 @@ footer{text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;let
   <div class="header-divider"></div>
 </header>
 
+<main>
 <div class="game-wrap">
   <div class="game-inner">
-    <canvas id="pongCanvas" width="500" height="600"></canvas>
+    <canvas id="pongCanvas" width="500" height="600" role="img" aria-label="Playable Pong game canvas with VS CPU, local 2-player, and online multiplayer modes.">Play Pong online for free on PixoPlays. Use a modern browser with JavaScript enabled to play VS CPU, local 2-player, or online multiplayer.</canvas>
   </div>
 </div>
 
@@ -152,6 +163,14 @@ footer{text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;let
   <span id="h1">W / S  or  ↑ / ↓ — move paddle &nbsp;·&nbsp; SPACE — start</span><br>
   <span id="h2" style="color:#a855f755">Mobile: drag the left side</span>
 </div>
+
+<noscript>
+  <section>
+    <h2>Play Pong Online</h2>
+    <p>PixoPlays Pong is a free browser arcade game with VS CPU, local 2-player, and online multiplayer room-code modes. Enable JavaScript to play instantly with no download.</p>
+  </section>
+</noscript>
+</main>
 
 <div class="footer-nav"><a href="../index.html">🕹️ All Games</a></div>
 <footer>© PIXOPLAYS · FREE TO PLAY · MADE WITH ❤️</footer>
