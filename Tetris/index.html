@@ -672,12 +672,37 @@ canvas { display: block; }
   margin-bottom: 10px;
 }
 
+.summary-result-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.summary-result-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(24px, 4.5vw, 46px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-align: center;
+  min-width: 160px;
+  padding: 10px 8px;
+  line-height: 1.15;
+  border: 2px solid currentColor;
+  background: rgba(0,0,0,0.3);
+  text-shadow: 0 0 18px currentColor;
+  box-shadow: 0 0 18px rgba(0,0,0,0.5), inset 0 0 12px rgba(0,0,0,0.3);
+}
+
+.summary-time-block {
+  flex: 1;
+}
+
 .summary-time {
   background: rgba(0,0,0,0.36);
   border: 1px solid rgba(255,255,255,0.06);
   text-align: center;
   font-family: 'Orbitron', monospace;
-  font-size: clamp(42px, 8vw, 82px);
+  font-size: clamp(26px, 4.5vw, 52px);
   font-weight: 900;
   line-height: 1.4;
   color: var(--yellow);
@@ -750,6 +775,23 @@ canvas { display: block; }
   cursor: pointer;
 }
 .summary-menu:hover { color: #fff; border-color: rgba(255,255,255,0.45); }
+
+.summary-again:disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.rematch-status {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-align: center;
+  padding: 8px 14px;
+  margin-top: -8px;
+  margin-bottom: 6px;
+  color: rgba(255,255,255,0.55);
+}
 
 .summary-table {
   font-family: 'Share Tech Mono', monospace;
@@ -1463,9 +1505,14 @@ body.game-playing .diff-btn {
     <div class="overlay-score" id="ovScore"></div>
     <div class="overlay-score-label" id="ovScoreLabel"></div>
     <div class="summary-wrap" id="summaryWrap">
-      <section class="summary-card">
-        <div class="summary-title">FINAL TIME</div>
-        <div class="summary-time" id="summaryFinalTime">0:00.000</div>
+      <section class="summary-card summary-result-card">
+        <div class="summary-result-row">
+          <div id="summaryResultBadge" class="summary-result-badge">—</div>
+          <div class="summary-time-block">
+            <div class="summary-title">FINAL TIME</div>
+            <div class="summary-time" id="summaryFinalTime">0:00.000</div>
+          </div>
+        </div>
       </section>
       <section class="summary-card summary-actions">
         <div class="summary-player-tabs">
@@ -1473,8 +1520,9 @@ body.game-playing .diff-btn {
           <button class="summary-tab" id="summaryPlayerRight" onclick="setSummarySide('right')">OPPONENT</button>
         </div>
         <button class="summary-menu" onclick="showMenu()">MENU</button>
-        <button class="summary-again" onclick="onPlayAgainClick()">AGAIN</button>
+        <button class="summary-again" id="summaryAgainBtn" onclick="onPlayAgainClick()">AGAIN</button>
       </section>
+      <div id="rematchStatus" class="rematch-status" style="display:none;"></div>
       <section class="summary-card">
         <div class="summary-title">STATS</div>
         <div class="summary-tabs">
@@ -1572,9 +1620,10 @@ const SCORE_TABLE   = { 1: 100, 2: 300, 3: 500, 4: 800 };
 const T_SPIN_SCORE_TABLE = { 0: 400, 1: 800, 2: 1200, 3: 1600 };
 const T_SPIN_GARBAGE_TABLE = { 0: 0, 1: 2, 2: 4, 3: 6 };
 
-// Drop speed in ms per step - linear decrease: level 1=1000ms, ~level 18=50ms
+// Tetris Guideline gravity: ms per row, levels 1-20+ (frame table at 60fps converted to ms)
+const GRAVITY_MS = [800, 717, 633, 550, 467, 383, 300, 217, 133, 100, 83, 83, 67, 67, 50, 50, 50, 33, 33, 17];
 function dropSpeed(level) {
-  return Math.max(50, 1000 - (level - 1) * 55);
+  return GRAVITY_MS[Math.min(level - 1, GRAVITY_MS.length - 1)];
 }
 
 // AI difficulty config
@@ -2148,7 +2197,7 @@ function clearLines(p, opponent, lockInfo = {}) {
   if (p.board.every(row => row.every(cell => cell === null))) p.lineStats.allClears++;
   const prevLevel = p.level;
   p.linesCleared += n;
-  p.level = Math.floor(p.linesCleared / 5) + 1;
+  p.level = Math.floor(p.linesCleared / 10) + 1;
   p.combo++;
   p.maxCombo = Math.max(p.maxCombo, p.combo);
   if (n === 4 || isTSpin) {
@@ -3163,22 +3212,78 @@ const ctxHR = document.getElementById('holdR').getContext('2d');
 let lastT = 0;
 let rafId = null;
 
-function _doGameOver(L, R) {
-  gameState = 'over';
-  document.body.classList.remove('game-playing');
-  // Draw final board state before overlay appears
-  drawBoard(ctxL, L);
-  if (R) drawBoard(ctxR, R);
-  if (gameMode === 'solo') {
-    sfxGameOver();
-    showGameOver(false, false);
-  } else {
-    const Lwon = R && !R.alive && L.alive;
-    if (gameMode === 'online' && !L.alive) netSend({ t: 'over', stats: playerStatsSnapshot(L) });
-    sfxGameOver();
-    if (Lwon) sfxWin();
-    showGameOver(Lwon, !Lwon);
+function playDeathAnimation(L, R, callback) {
+  const ANIM_MS = 1050;
+  const startTime = performance.now();
+  const loserP    = (!L.alive) ? L : R;
+  const winnerP   = (!L.alive) ? R : L;
+  const loserCtx  = (loserP  === L) ? ctxL : ctxR;
+  const winnerCtx = (winnerP === L) ? ctxL : ctxR;
+
+  function frame(now) {
+    const t = Math.min((now - startTime) / ANIM_MS, 1);
+    const sweepT = Math.min(t / 0.85, 1);
+
+    drawBoard(loserCtx, loserP);
+    if (winnerP) drawBoard(winnerCtx, winnerP);
+
+    // Sweep rows dark bottom-to-top on the loser board
+    loserCtx.save();
+    loserCtx.translate(0, BOARD_OFFSET_Y);
+    const numSwept = Math.floor(sweepT * ROWS);
+    const flashRow = ROWS - numSwept - 1;
+    for (let r = ROWS - 1; r >= flashRow; r--) {
+      if (r > flashRow) {
+        loserCtx.fillStyle = 'rgba(12,0,0,0.84)';
+        loserCtx.fillRect(0, r * CELL, BOARD_W, CELL);
+      } else {
+        const rowT = (sweepT * ROWS) - numSwept;
+        const flash = Math.sin(rowT * Math.PI);
+        loserCtx.fillStyle = `rgba(255,55,55,${0.45 + flash * 0.55})`;
+        loserCtx.fillRect(-1, r * CELL - 1, BOARD_W + 2, CELL + 2);
+      }
+    }
+    loserCtx.restore();
+
+    // Brief green glow on winner board
+    if (winnerP && winnerP.alive) {
+      const wt = t * 1.25;
+      const wAlpha = wt < 0.5 ? wt : Math.max(0, 1 - wt);
+      if (wAlpha > 0.01) {
+        winnerCtx.save();
+        winnerCtx.translate(0, BOARD_OFFSET_Y);
+        winnerCtx.fillStyle = `rgba(0,255,136,${wAlpha * 0.3})`;
+        winnerCtx.fillRect(0, 0, BOARD_W, BOARD_H);
+        winnerCtx.restore();
+      }
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      callback();
+    }
   }
+  requestAnimationFrame(frame);
+}
+
+function _doGameOver(L, R) {
+  gameState = 'dying';
+  document.body.classList.remove('game-playing');
+  sfxGameOver();
+  const Lwon = R && !R.alive && L.alive;
+  playDeathAnimation(L, R, () => {
+    gameState = 'over';
+    drawBoard(ctxL, L);
+    if (R) drawBoard(ctxR, R);
+    if (gameMode === 'solo') {
+      showGameOver(false, false);
+    } else {
+      if (gameMode === 'online' && !L.alive) netSend({ t: 'over', stats: playerStatsSnapshot(L) });
+      if (Lwon) sfxWin();
+      showGameOver(Lwon, !Lwon);
+    }
+  });
 }
 
 const IDLE_FILL = ['#00f5ff', '#ff00aa', '#ffe600', '#00ff88', '#3366ff', '#ff7700'];
@@ -3362,6 +3467,10 @@ function gameLoop(ts) {
     updateHUD();
     return;
   }
+  if (gameState === 'dying') {
+    _scanY = (_scanY + dt * 0.022) % BOARD_H;
+    return; // death animation handles its own drawing
+  }
   if (gameState !== 'playing') {
     _scanY = (_scanY + dt * 0.022) % BOARD_H;
     updateIdleDemo(dt);
@@ -3484,9 +3593,16 @@ function onPlayAgainClick() {
   initAC();
   if (gameMode === 'online' && conn && conn.open) {
     rematchFlags.local = true;
-    const btn = document.getElementById('ovPlay');
-    btn.textContent = 'Waiting for opponent…';
-    btn.disabled = true;
+    const ovBtn = document.getElementById('ovPlay');
+    ovBtn.textContent = 'Waiting for opponent…';
+    ovBtn.disabled = true;
+    const againBtn = document.getElementById('summaryAgainBtn');
+    if (againBtn) { againBtn.textContent = 'WAITING…'; againBtn.disabled = true; }
+    if (rematchFlags.remote) {
+      _setRematchStatus('Both ready — starting…', '#00ff88');
+    } else {
+      _setRematchStatus('Waiting for opponent to ready up…');
+    }
     netSend({ t: 'rematch_req' });
     if (rematchFlags.remote) _doRematch();
   } else {
@@ -3499,13 +3615,15 @@ function _doRematch() {
   rematchFlags = { local: false, remote: false };
   _onlineSeed = (Math.floor(Math.random() * 0x7fffffff) + 1);
   netSend({ t: 'start', seed: _onlineSeed });
-  showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
+  document.getElementById('overlay').classList.remove('show', 'summary-mode');
+  _prepareOnlineGame(_onlineSeed);
+  showCountdown(() => { startOnlineGame(); });
 }
 
 function showCountdown(callback) {
   initAC();
   const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3000;pointer-events:none;background:rgba(4,4,14,0.60);backdrop-filter:blur(2px);';
+  el.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3000;pointer-events:none;background:radial-gradient(ellipse 520px 420px at center, rgba(4,4,18,0.93) 0%, rgba(4,4,14,0.6) 45%, rgba(4,4,14,0.15) 70%, transparent 90%);';
   document.body.appendChild(el);
 
   const sub = document.createElement('div');
@@ -3628,7 +3746,8 @@ function olHost() {
       _onlineSeed = (Math.floor(Math.random() * 0x7fffffff) + 1);
       netSend({ t: 'go', seed: _onlineSeed });
       olHide();
-      showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
+      _prepareOnlineGame(_onlineSeed);
+      showCountdown(() => { startOnlineGame(); });
     });
     conn.on('error', () => {});
   });
@@ -3684,7 +3803,8 @@ function onNetData(msg) {
         _onlineSeed = msg.seed;
         rematchFlags = { local: false, remote: false };
         olHide();
-        showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
+        _prepareOnlineGame(_onlineSeed);
+        showCountdown(() => { startOnlineGame(); });
       }
       break;
 
@@ -3693,17 +3813,21 @@ function onNetData(msg) {
       if (onlineRole === 'guest') {
         rematchFlags = { local: false, remote: false };
         if (msg.seed) _onlineSeed = msg.seed;
-        showCountdown(() => { initPieceSeq(_onlineSeed); startOnlineGame(); });
+        document.getElementById('overlay').classList.remove('show', 'summary-mode');
+        _prepareOnlineGame(_onlineSeed);
+        showCountdown(() => { startOnlineGame(); });
       }
       break;
 
     case 'rematch_req':
       rematchFlags.remote = true;
       if (rematchFlags.local && onlineRole === 'host') {
+        _setRematchStatus('Both ready — starting…', '#00ff88');
         _doRematch();
       } else if (!rematchFlags.local) {
         const btn = document.getElementById('ovPlay');
         if (btn) btn.textContent = '▶ PLAY AGAIN  ✓ Opponent Ready!';
+        _setRematchStatus('✓ Opponent is ready — click AGAIN to start!', '#00ff88');
       }
       break;
 
@@ -3741,12 +3865,13 @@ function onNetData(msg) {
 }
 
 function onConnClose() {
-  // Reset rematch state whenever connection drops
   rematchFlags = { local: false, remote: false };
   const ovPlayBtn = document.getElementById('ovPlay');
   if (ovPlayBtn) { ovPlayBtn.textContent = '▶ PLAY AGAIN'; ovPlayBtn.disabled = false; }
+  _resetRematchUI();
 
   if (gameState === 'over') {
+    _setRematchStatus('Opponent left the room.', '#ff3355');
     document.getElementById('ovSub').textContent = 'Opponent disconnected.';
     return;
   }
@@ -3764,25 +3889,27 @@ function onConnClose() {
   document.getElementById('ovQuit').style.display = 'block';
 }
 
+// Called before showCountdown so the next-queue preview during 3-2-1 matches the actual game pieces.
+function _prepareOnlineGame(seed) {
+  initPieceSeq(seed);
+  vfx.left.particles  = []; vfx.left.flashAlpha  = 0; vfx.left.beams  = []; vfx.left.lockFlash  = 0;
+  vfx.right.particles = []; vfx.right.flashAlpha = 0; vfx.right.beams = []; vfx.right.lockFlash = 0;
+  players = [makePlayer('left'), makePlayer('right')];
+  players[1].isRemote = true;
+  document.getElementById('labelL').textContent = 'YOU';
+  document.getElementById('labelR').textContent = onlineRole === 'host' ? 'OPPONENT' : 'HOST';
+  gameState = 'countdown';
+  document.body.classList.add('game-playing');
+}
+
 function startOnlineGame() {
   rematchFlags = { local: false, remote: false };
   const ovPlayBtn = document.getElementById('ovPlay');
   ovPlayBtn.textContent = '▶ PLAY AGAIN'; ovPlayBtn.disabled = false;
   gameState = 'playing';
-  document.body.classList.add('game-playing');
   document.getElementById('overlay').classList.remove('show', 'summary-mode');
   document.getElementById('playRow').style.display = 'none';
-  vfx.left.particles = []; vfx.left.flashAlpha = 0; vfx.left.beams = []; vfx.left.lockFlash = 0;
-  vfx.right.particles = []; vfx.right.flashAlpha = 0; vfx.right.beams = []; vfx.right.lockFlash = 0;
-
-  players = [makePlayer('left'), makePlayer('right')];
-  players[1].isRemote = true;
-
-  document.getElementById('labelL').textContent = 'YOU';
-  document.getElementById('labelR').textContent = onlineRole === 'host' ? 'OPPONENT' : 'HOST';
-
   spawnPiece(players[0]);
-
   dasL = { left: 0, right: 0, sd: 0 };
   dasR = { left: 0, right: 0, sd: 0 };
   pieceSendTimer = 0;
@@ -4000,6 +4127,26 @@ function setSummaryTab(tab) {
   renderGameSummary();
 }
 
+function _setBadge(text, color) {
+  const b = document.getElementById('summaryResultBadge');
+  b.textContent = text;
+  b.style.color = color;
+}
+
+function _setRematchStatus(msg, color) {
+  const el = document.getElementById('rematchStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color || 'rgba(255,255,255,0.55)';
+  el.style.display = msg ? '' : 'none';
+}
+
+function _resetRematchUI() {
+  const btn = document.getElementById('summaryAgainBtn');
+  if (btn) { btn.textContent = 'AGAIN'; btn.disabled = false; }
+  _setRematchStatus('');
+}
+
 function showGameOver(p1won, p2won) {
   const ov = document.getElementById('overlay');
   ov.classList.add('show');
@@ -4007,6 +4154,7 @@ function showGameOver(p1won, p2won) {
   summarySide = 'left';
   summaryTab = 'overview';
   renderGameSummary();
+  _resetRematchUI();
 
   if (gameMode === 'solo') {
     const score = players[0].score;
@@ -4017,6 +4165,7 @@ function showGameOver(p1won, p2won) {
       localStorage.setItem('tetrisSoloBest', best);
       document.getElementById('bestScore').textContent = best.toLocaleString();
     }
+    _setBadge(isNewBest ? 'NEW RECORD' : 'GAME OVER', isNewBest ? '#ffe600' : '#ff3355');
     document.getElementById('ovTitle').textContent = isNewBest ? '🏆 NEW RECORD!' : 'GAME OVER';
     document.getElementById('ovTitle').style.color = isNewBest ? '#ffe600' : '#ff3355';
     document.getElementById('ovSub').textContent   = isNewBest ? 'New high score!' : 'Try again?';
@@ -4031,6 +4180,7 @@ function showGameOver(p1won, p2won) {
 
   if (gameMode === 'online') {
     const won = players[0].alive && players[1] && !players[1].alive;
+    _setBadge(won ? 'YOU WIN' : 'YOU LOSE', won ? '#00ff88' : '#ff3355');
     document.getElementById('ovTitle').textContent = won ? '🏆 YOU WIN!' : 'GAME OVER';
     document.getElementById('ovTitle').style.color = won ? '#00ff88' : '#ff3355';
     document.getElementById('ovSub').textContent   = won ? 'Opponent topped out!' : 'Better luck next time!';
@@ -4045,7 +4195,6 @@ function showGameOver(p1won, p2won) {
 
   let title, color;
   if (gameMode === 'vsai') {
-    // Track high score for vsai
     const score = players[0].score;
     let best = parseInt(localStorage.getItem('tetrisVsaiBest') || '0');
     const isNewBest = score > best;
@@ -4054,6 +4203,7 @@ function showGameOver(p1won, p2won) {
       localStorage.setItem('tetrisVsaiBest', best);
       document.getElementById('bestScore').textContent = best.toLocaleString();
     }
+    _setBadge(p1won ? 'YOU WIN' : 'YOU LOSE', p1won ? '#00ff88' : '#ff3355');
     title = p1won ? (isNewBest ? '🏆 YOU WIN!' : 'YOU WIN!') : 'GAME OVER';
     color = p1won ? '#00ff88' : '#ff3355';
     const R = players[1];
@@ -4070,6 +4220,7 @@ function showGameOver(p1won, p2won) {
   }
 
   // 2P mode
+  _setBadge(p1won ? 'P1 WINS' : 'P2 WINS', p1won ? '#00f5ff' : '#ff00aa');
   title = p1won ? 'P1 WINS!' : 'P2 WINS!';
   color = p1won ? '#00f5ff' : '#ff00aa';
 
