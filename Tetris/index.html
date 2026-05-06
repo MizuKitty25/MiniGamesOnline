@@ -321,6 +321,57 @@ header {
   min-height: 104px;
 }
 
+.online-room-panel {
+  display: none;
+}
+
+body.online-room .online-room-panel {
+  display: block;
+}
+
+.online-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.online-player-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.035);
+  color: rgba(255,255,255,0.72);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.online-player-row:hover,
+.online-player-row.active {
+  color: #fff;
+  border-color: rgba(0,245,255,0.55);
+  box-shadow: inset 0 0 12px rgba(0,245,255,0.08);
+}
+
+.online-player-row.dead {
+  opacity: 0.45;
+}
+
+.online-player-row .status {
+  font-size: 7px;
+  color: var(--green);
+}
+
+.online-player-row.dead .status {
+  color: var(--red);
+}
+
 .stats-panel {
   margin-top: auto;
   background: transparent;
@@ -936,8 +987,36 @@ footer {
   font-weight: 900;
   letter-spacing: 10px;
   color: var(--yellow);
-  margin: 16px 0;
   text-shadow: 0 0 20px rgba(255,230,0,0.5);
+}
+
+.ol-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.ol-copy-btn {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,230,0,0.55);
+  background: rgba(255,230,0,0.06);
+  color: var(--yellow);
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: inset 0 0 12px rgba(255,230,0,0.04);
+}
+
+.ol-copy-btn:hover {
+  color: #05050b;
+  background: var(--yellow);
+  box-shadow: 0 0 18px rgba(255,230,0,0.35);
 }
 
 .ol-input {
@@ -956,6 +1035,37 @@ footer {
   outline: none;
 }
 .ol-input:focus { border-color: var(--cyan); }
+
+.ol-input.name-input {
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: none;
+}
+
+.ol-roster {
+  margin: 14px 0 4px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.035);
+  padding: 8px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.ol-roster-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.72);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.ol-roster-row:last-child {
+  border-bottom: 0;
+}
 
 .ol-error {
   font-family: 'Share Tech Mono', monospace;
@@ -1407,6 +1517,10 @@ body.game-playing .diff-btn {
 
   <!-- OPPONENT SIDE PANEL -->
   <div class="side-panel opponent-panel" id="opponentPanel">
+    <div class="panel-box online-room-panel">
+      <div class="panel-label">ROOM</div>
+      <div class="online-player-list" id="onlineLeaderboard"></div>
+    </div>
     <div class="panel-box next-wrap queue-panel hold-panel">
       <div class="panel-label">HOLD</div>
       <canvas id="holdR" width="120" height="82"></canvas>
@@ -1425,7 +1539,7 @@ body.game-playing .diff-btn {
 </div>
 
 <div class="controls-hint" id="hintBox">
-  <span id="hint1">P1: ← → move &nbsp;·&nbsp; ↑ rotate &nbsp;·&nbsp; ↓ soft drop &nbsp;·&nbsp; SPACE hard drop &nbsp;·&nbsp; C hold</span><br>
+  <span id="hint1">P1: ← → move &nbsp;·&nbsp; ↑/X rotate &nbsp;·&nbsp; Z rotate back &nbsp;·&nbsp; A 180 &nbsp;·&nbsp; ↓ soft drop &nbsp;·&nbsp; SPACE hard drop &nbsp;·&nbsp; C hold</span><br>
   <span id="hint2" style="color:rgba(255,0,170,0.4)">CPU plays automatically · Difficulty affects speed & AI skill</span>
 </div>
 
@@ -1469,7 +1583,8 @@ body.game-playing .diff-btn {
   <!-- Screen 1: Choose host or join -->
   <div id="olChoose" class="overlay-panel">
     <div class="overlay-title" style="color:var(--green)">🌐 ONLINE BATTLE</div>
-    <div class="overlay-sub">Host a game and share your code,<br>or enter a friend's code to join.</div>
+    <div class="overlay-sub">Enter your name, then host a room<br>or join a friend's room code.</div>
+    <input id="olNameInput" class="ol-input name-input" type="text" maxlength="14" placeholder="Your name">
     <button class="overlay-btn primary" style="color:var(--cyan);border-color:var(--cyan)" onclick="olHost()">🏠 HOST GAME</button>
     <button class="overlay-btn primary" style="color:var(--magenta);border-color:var(--magenta);margin-top:8px" onclick="olShowJoin()">🔗 JOIN GAME</button>
     <button class="overlay-btn secondary" onclick="olCancel()">← BACK</button>
@@ -1479,8 +1594,13 @@ body.game-playing .diff-btn {
   <div id="olHosting" class="overlay-panel" style="display:none">
     <div class="overlay-title" style="color:var(--cyan)">HOSTING</div>
     <div class="overlay-sub">Share this code with your opponent:</div>
-    <div class="ol-code" id="olRoomCode">——————</div>
+    <div class="ol-code-row">
+      <div class="ol-code" id="olRoomCode">------</div>
+      <button class="ol-copy-btn" id="olCopyBtn" onclick="copyRoomCode()" title="Copy room code" aria-label="Copy room code">⧉</button>
+    </div>
     <div class="overlay-sub" id="olHostStatus" style="margin-bottom:0">Connecting…</div>
+    <div class="ol-roster" id="olHostRoster"></div>
+    <button class="overlay-btn primary" id="olStartBtn" style="color:var(--green);border-color:var(--green);margin-top:12px" onclick="olStartRoom()">START ROOM</button>
     <button class="overlay-btn secondary" style="margin-top:20px" onclick="olCancel()">← CANCEL</button>
   </div>
 
@@ -1491,6 +1611,7 @@ body.game-playing .diff-btn {
     <input id="olCodeInput" class="ol-input" type="text" maxlength="6" placeholder="ABC123"
            onkeydown="if(event.key==='Enter') olJoin()">
     <div class="ol-error" id="olJoinError"></div>
+    <div class="ol-roster" id="olJoinRoster" style="display:none"></div>
     <button class="overlay-btn primary" style="color:var(--magenta);border-color:var(--magenta)" onclick="olJoin()">▶ CONNECT</button>
     <button class="overlay-btn secondary" onclick="olCancel()">← BACK</button>
   </div>
@@ -1773,6 +1894,7 @@ function makePlayer(side) {
     maxB2B: 0,
     b2b: 0,
     lineStats: { singles: 0, doubles: 0, triples: 0, quads: 0, spins: 0, spinSingles: 0, spinDoubles: 0, spinTriples: 0, allClears: 0 },
+    lastClearEvent: null,
     combo: 0,        // consecutive clear combo
     garbagePending: 0, // queued garbage to receive
     garbageQueue: [],  // visual only
@@ -1788,6 +1910,7 @@ function makePlayer(side) {
     remotePiece: null,   // online: last received opponent piece position
     remoteNextQueue: [],
     _garbSend: 0,        // online: garbage accumulated this lock cycle
+    _garbTarget: null,
     flashTimer: 0,
     seqIdx: 0,           // shared piece sequence cursor
   };
@@ -1880,7 +2003,7 @@ function spawnPiece(p) {
   p.lockDelay = 0;
   p.lockReset = 0;
   if (p.isAI) { p.aiTarget = null; p.aiRotsDone = 0; }
-  if (collides(p.board, piece, 0, 0) || (piece.y < 0 && collides(p.board, piece, 0, 1))) {
+  if (collides(p.board, piece, 0, 0)) {
     p.alive = false; // top out
   }
 }
@@ -1912,24 +2035,6 @@ function collides(board, piece, dx, dy) {
   return false;
 }
 
-function boardTouchesTop(board) {
-  return board[0].some(cell => cell !== null);
-}
-
-function pieceTouchesTop(piece) {
-  for (let r = 0; r < piece.shape.length; r++) {
-    for (let c = 0; c < piece.shape[r].length; c++) {
-      if (piece.shape[r][c] && piece.y + r <= 0) return true;
-    }
-  }
-  return false;
-}
-
-function isToppedOut(p) {
-  if (boardTouchesTop(p.board)) return true;
-  return p.piece && pieceTouchesTop(p.piece) && collides(p.board, p.piece, 0, 1);
-}
-
 // Super Rotation System wall kicks. Y offsets are inverted for canvas coordinates.
 const SRS_JLSTZ = {
   '0>1': [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
@@ -1953,18 +2058,38 @@ const SRS_I = {
   '0>3': [[0,0],[-1,0],[2,0],[-1,-2],[2,1]],
 };
 
+const KICKS_180_JLSTZ = [
+  [0,0],[1,0],[-1,0],[0,-1],[0,1],
+  [1,-1],[-1,-1],[1,1],[-1,1],
+  [2,0],[-2,0],[0,-2],[0,2],
+  [2,-1],[-2,-1],[2,1],[-2,1],
+];
+
+const KICKS_180_I = [
+  [0,0],[1,0],[-1,0],[2,0],[-2,0],
+  [0,-1],[0,1],[1,-1],[-1,-1],[1,1],[-1,1],
+  [0,-2],[0,2],[2,-1],[-2,-1],[2,1],[-2,1],
+];
+
 function getWallKicks(piece, from, to) {
   if (piece.key === 'O') return [[0, 0]];
   return (piece.key === 'I' ? SRS_I : SRS_JLSTZ)[`${from}>${to}`] || [[0, 0]];
 }
 
+function get180Kicks(piece) {
+  if (piece.key === 'O') return [[0, 0]];
+  return piece.key === 'I' ? KICKS_180_I : KICKS_180_JLSTZ;
+}
+
 function tryRotate(p, dir) {
   if (!p.piece || !p.alive) return false;
   const from = p.piece.rot ?? 0;
-  const to = (from + (dir === 1 ? 1 : 3)) % 4;
+  const turn = dir === 2 ? 2 : (dir === 1 ? 1 : 3);
+  const to = (from + turn) % 4;
   const newShape = pieceShape(p.piece.key, to);
   const testPiece = { ...p.piece, shape: newShape };
-  for (const [kx, ky] of getWallKicks(p.piece, from, to)) {
+  const kicks = dir === 2 ? get180Kicks(p.piece) : getWallKicks(p.piece, from, to);
+  for (const [kx, ky] of kicks) {
     if (!collides(p.board, testPiece, kx, ky)) {
       p.piece = { ...testPiece, x: testPiece.x + kx, y: testPiece.y + ky, rot: to };
       p.lockDelay = 0; p.lockReset++;
@@ -2132,17 +2257,13 @@ function lockPiece(p, opponent) {
   clearLines(p, opponent, lockInfo);
   if (p.alive) {
     applyGarbage(p);
-    if (p.alive && !boardTouchesTop(p.board)) {
-      spawnPiece(p);
-    } else {
-      p.alive = false;
-    }
+    if (p.alive) spawnPiece(p);
   }
 
   // Online: after piece locks, sync board state + queued garbage to opponent
   if (gameMode === 'online' && p === players[0]) {
     if (!p.alive) {
-      netSend({ t: 'over', stats: playerStatsSnapshot(p) });
+      sendOnlineOverOnce();
     } else {
       netSend({
         t: 'lock',
@@ -2151,16 +2272,20 @@ function lockPiece(p, opponent) {
         level: p.level,
         lines: p.linesCleared,
         garb: p._garbSend,
+        garbTarget: p._garbTarget,
         hold: p.holdPiece,
         next: peekNextPieces(p, 5),
+        clearEvent: p.lastClearEvent,
         stats: playerStatsSnapshot(p),
       });
       p._garbSend = 0;
+      p._garbTarget = null;
     }
   }
 }
 
 function clearLines(p, opponent, lockInfo = {}) {
+  p.lastClearEvent = null;
   const cleared = [];
   for (let r = ROWS - 1; r >= 0; r--) {
     if (p.board[r].every(c => c !== null)) cleared.push(r);
@@ -2168,6 +2293,7 @@ function clearLines(p, opponent, lockInfo = {}) {
   if (cleared.length === 0) {
     p.combo = 0;
     if (lockInfo.tSpin) {
+      p.lastClearEvent = { lines: 0, tSpin: true };
       p.lineStats.spins++;
       p.score += T_SPIN_SCORE_TABLE[0] * p.level;
       showComboPopup(p.side, 0, p.combo, 'T-SPIN');
@@ -2184,6 +2310,7 @@ function clearLines(p, opponent, lockInfo = {}) {
 
   const n = cleared.length;
   const isTSpin = !!lockInfo.tSpin;
+  p.lastClearEvent = { lines: n, tSpin: isTSpin };
   if (n === 1) p.lineStats.singles++;
   else if (n === 2) p.lineStats.doubles++;
   else if (n === 3) p.lineStats.triples++;
@@ -2222,7 +2349,18 @@ function clearLines(p, opponent, lockInfo = {}) {
   let garbToSend = (isTSpin ? T_SPIN_GARBAGE_TABLE[n] : GARBAGE_TABLE[n]) ?? 0;
   if (p.combo > 1) garbToSend += Math.floor((p.combo - 1) * 0.5);
 
-  if (garbToSend > 0 && opponent && opponent.alive) {
+  if (garbToSend > 0 && gameMode === 'online') {
+    const cancel = Math.min(garbToSend, p.garbagePending);
+    p.garbagePending -= cancel;
+    garbToSend -= cancel;
+    const targetId = garbToSend > 0 ? onlineAttackTargetId(p.onlineId || onlineId) : null;
+    if (targetId) {
+      p._garbSend += garbToSend;
+      p._garbTarget = targetId;
+      showAttack(p.side, garbToSend);
+      sfxAttack();
+    }
+  } else if (garbToSend > 0 && opponent && opponent.alive) {
     // Cancel own pending garbage first
     const cancel = Math.min(garbToSend, p.garbagePending);
     p.garbagePending -= cancel;
@@ -2258,8 +2396,6 @@ function applyGarbage(p) {
     row[holeCol] = null;
     p.board.push(row);
   }
-
-  if (boardTouchesTop(p.board)) p.alive = false;
 }
 
 /* AI */
@@ -2418,10 +2554,6 @@ function findBestPlacement(p) {
 
 function stepAI(p, opponent, dt) {
   if (!p.isAI || !p.piece || !p.alive) return;
-  if (isToppedOut(p)) {
-    p.alive = false;
-    return;
-  }
   const cfg = AI_CONFIG[difficulty];
 
   p.aiTimer -= dt;
@@ -3019,7 +3151,8 @@ function applyPlayerStatsSnapshot(p, stats) {
 
 function updateHUD() {
   if (!players) return;
-  const L = players[0], R = players[1];
+  if (gameMode === 'online') syncOnlineViewedPlayer();
+  let L = players[0], R = players[1];
   updatePlayerStats(L);
   updateGarbageBar('left', L.garbagePending);
   if (R) {
@@ -3063,6 +3196,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space')      { initAC(); countKeyPress(L, wasDown); if (!wasDown && !keys['Space_cooling']) { hardDrop(L, R); keys['Space_cooling'] = true; setTimeout(() => { keys['Space_cooling'] = false; }, 120); } e.preventDefault(); }
   if (e.code === 'KeyZ')       { initAC(); countKeyPress(L, wasDown); if (!wasDown) tryRotate(L, -1); e.preventDefault(); }
   if (e.code === 'KeyX')       { initAC(); countKeyPress(L, wasDown); if (!wasDown) tryRotate(L, 1);  e.preventDefault(); }
+  if (e.code === 'KeyA' && gameMode !== '2p') { initAC(); countKeyPress(L, wasDown); if (!wasDown) tryRotate(L, 2); e.preventDefault(); }
   if (e.code === 'KeyC')       { initAC(); countKeyPress(L, wasDown); if (!wasDown) holdPiece(L); e.preventDefault(); }
 
   // P2 controls (right) - only in 2P mode
@@ -3174,10 +3308,6 @@ function updateGravity(p, opponent, dt) {
   if (!p.piece || !p.alive) return;
 
   const onGround = collides(p.board, p.piece, 0, 1);
-  if (boardTouchesTop(p.board) || (onGround && pieceTouchesTop(p.piece))) {
-    p.alive = false;
-    return;
-  }
 
   // Lock delay accumulates every frame (not gated by drop timer)
   if (onGround) {
@@ -3457,6 +3587,7 @@ function gameLoop(ts) {
 
   if (gameState === 'countdown') {
     _scanY = (_scanY + dt * 0.022) % BOARD_H;
+    if (gameMode === 'online') syncOnlineViewedPlayer();
     const L = players[0], R = players[1];
     drawBoard(ctxL, L);
     if (R) drawBoard(ctxR, R);
@@ -3489,8 +3620,16 @@ function gameLoop(ts) {
   // Gravity + lock (remote player is driven by network, not local physics)
   updateGravity(L, R, dt);
 
-  // Check after human update (catches human topping out before AI step runs)
-  if (!L.alive) { _doGameOver(L, R); return; }
+  // Check after human update (online players can spectate after topping out)
+  if (!L.alive) {
+    if (gameMode === 'online') {
+      sendOnlineOverOnce();
+      maybeEndOnlineRound();
+    } else {
+      _doGameOver(L, R);
+      return;
+    }
+  }
 
   if (gameMode === '2p') {
     updateGravity(R, L, dt);
@@ -3502,7 +3641,7 @@ function gameLoop(ts) {
   // gameMode === 'online': R is isRemote, no local physics
 
   // Online: broadcast local piece position at ~20 Hz for smooth opponent display
-  if (gameMode === 'online' && L.piece) {
+  if (gameMode === 'online' && L.alive && L.piece) {
     pieceSendTimer -= dt;
     if (pieceSendTimer <= 0) {
       pieceSendTimer = PIECE_SEND_MS;
@@ -3519,8 +3658,15 @@ function gameLoop(ts) {
     }
   }
 
-  // Final safety check (online / edge cases)
-  if (!L.alive || (R && !R.alive)) { _doGameOver(L, R); return; }
+  // Final safety check
+  if (gameMode === 'online') {
+    if (maybeEndOnlineRound()) return;
+    syncOnlineViewedPlayer();
+    R = players[1];
+  } else if (!L.alive || (R && !R.alive)) {
+    _doGameOver(L, R);
+    return;
+  }
 
   // Draw
   drawBoard(ctxL, L);
@@ -3579,18 +3725,35 @@ requestAnimationFrame(gameLoop);
 let peer = null;
 let conn = null;
 let onlineRole = null;      // 'host' | 'guest'
+let onlineId = null;
+let onlineName = 'PLAYER';
+let onlineConnections = new Map();
+let onlineRoster = [];
+let onlineOrder = [];
+let onlineRemotePlayers = new Map();
+let onlineViewedId = null;
+let onlineGameOverSent = false;
 let pieceSendTimer = 0;
 const PIECE_SEND_MS = 50;   // ~20 Hz piece position updates
+const ONLINE_MAX_PLAYERS = 8;
 let _onlineSeed = null;     // shared piece-sequence seed for online games
 
 function netSend(msg) {
-  if (conn && conn.open) { try { conn.send(msg); } catch(e) {} }
+  const packed = { ...msg, from: onlineId };
+  if (onlineRole === 'host') {
+    for (const c of onlineConnections.values()) {
+      if (c.open) { try { c.send(packed); } catch(e) {} }
+    }
+  } else if (conn && conn.open) {
+    try { conn.send(packed); } catch(e) {}
+  }
 }
 
 let rematchFlags = { local: false, remote: false };
 
 function onPlayAgainClick() {
   initAC();
+  if (gameMode === 'online') { showMenu(); return; }
   if (gameMode === 'online' && conn && conn.open) {
     rematchFlags.local = true;
     const ovBtn = document.getElementById('ovPlay');
@@ -3682,6 +3845,168 @@ function showCountdown(callback) {
   tick();
 }
 
+function cleanOnlineName(value) {
+  const name = (value || '').trim().replace(/\s+/g, ' ').slice(0, 14);
+  return name || 'PLAYER';
+}
+
+function getLobbyName() {
+  return cleanOnlineName(document.getElementById('olNameInput')?.value || localStorage.getItem('tetrisOnlineName') || 'PLAYER');
+}
+
+function sendConn(c, msg) {
+  if (c && c.open) { try { c.send(msg); } catch(e) {} }
+}
+
+function hostBroadcast(msg, exceptConn = null) {
+  for (const c of onlineConnections.values()) {
+    if (c !== exceptConn) sendConn(c, msg);
+  }
+}
+
+function lcg(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0x100000000;
+  };
+}
+
+function shuffledIds(ids, seed) {
+  const arr = ids.slice();
+  const rnd = lcg(seed || Date.now());
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function rosterEntry(id) {
+  return onlineRoster.find(p => p.id === id) || null;
+}
+
+function setRosterAlive(id, alive) {
+  const entry = rosterEntry(id);
+  if (entry) entry.alive = alive;
+}
+
+function onlineAliveIds() {
+  return onlineOrder.filter(id => rosterEntry(id)?.alive);
+}
+
+function onlineAttackTargetId(fromId = onlineId) {
+  const alive = new Set(onlineAliveIds());
+  if (!alive.has(fromId) || alive.size <= 1 || onlineOrder.length <= 1) return null;
+  const start = onlineOrder.indexOf(fromId);
+  for (let i = 1; i <= onlineOrder.length; i++) {
+    const id = onlineOrder[(start + i + onlineOrder.length) % onlineOrder.length];
+    if (id !== fromId && alive.has(id)) return id;
+  }
+  return null;
+}
+
+function nextViewId() {
+  const target = onlineAttackTargetId(onlineId);
+  if (target) return target;
+  return onlineOrder.find(id => id !== onlineId) || null;
+}
+
+function ensureRemotePlayer(id) {
+  if (!id || id === onlineId) return players?.[0] || null;
+  if (!onlineRemotePlayers.has(id)) {
+    const p = makePlayer('right');
+    p.isRemote = true;
+    p.onlineId = id;
+    p.name = rosterEntry(id)?.name || 'PLAYER';
+    p.alive = rosterEntry(id)?.alive ?? true;
+    onlineRemotePlayers.set(id, p);
+  }
+  const p = onlineRemotePlayers.get(id);
+  p.name = rosterEntry(id)?.name || p.name;
+  p.alive = rosterEntry(id)?.alive ?? p.alive;
+  return p;
+}
+
+function onlinePlayerById(id) {
+  if (!id) return null;
+  if (id === onlineId) return players?.[0] || null;
+  return ensureRemotePlayer(id);
+}
+
+function syncOnlineViewedPlayer() {
+  if (gameMode !== 'online' || !players) return;
+  if (!onlineViewedId || onlineViewedId === onlineId || !rosterEntry(onlineViewedId)) {
+    onlineViewedId = nextViewId();
+  }
+  if (onlineViewedId && !rosterEntry(onlineViewedId)?.alive && players[0]?.alive) {
+    onlineViewedId = nextViewId();
+  }
+  players[1] = onlinePlayerById(onlineViewedId) || null;
+  const viewed = rosterEntry(onlineViewedId);
+  document.getElementById('labelL').textContent = onlineName || 'YOU';
+  document.getElementById('labelR').textContent = viewed ? viewed.name : 'WAITING';
+  updateOnlineLeaderboard();
+}
+
+function selectOnlineView(id) {
+  if (id === onlineId) return;
+  onlineViewedId = id;
+  syncOnlineViewedPlayer();
+}
+
+function updateOnlineLeaderboard() {
+  const box = document.getElementById('onlineLeaderboard');
+  if (!box) return;
+  if (gameMode !== 'online' || !onlineRoster.length) {
+    box.innerHTML = '';
+    return;
+  }
+  const order = onlineOrder.length ? onlineOrder : onlineRoster.map(p => p.id);
+  box.innerHTML = order.map((id, idx) => {
+    const p = rosterEntry(id);
+    if (!p) return '';
+    const you = id === onlineId ? ' YOU' : '';
+    const target = id === onlineAttackTargetId(onlineId) && players?.[0]?.alive ? ' TARGET' : '';
+    const cls = ['online-player-row', p.alive ? '' : 'dead', id === onlineViewedId ? 'active' : ''].join(' ');
+    const status = p.alive ? (idx + 1) : 'OUT';
+    return `<button class="${cls}" onclick="selectOnlineView('${id}')"><span>${p.name}${you}${target}</span><span class="status">${status}</span></button>`;
+  }).join('');
+}
+
+function renderOnlineLobbyRoster() {
+  const rows = onlineRoster.map((p, i) =>
+    `<div class="ol-roster-row"><span>${i + 1}. ${p.name}${p.id === onlineId ? ' (you)' : ''}</span><span>${p.alive ? 'READY' : 'OUT'}</span></div>`
+  ).join('');
+  const hostBox = document.getElementById('olHostRoster');
+  const joinBox = document.getElementById('olJoinRoster');
+  if (hostBox) hostBox.innerHTML = rows || '<div class="ol-roster-row"><span>Waiting...</span><span></span></div>';
+  if (joinBox) {
+    joinBox.style.display = rows ? '' : 'none';
+    joinBox.innerHTML = rows;
+  }
+  const startBtn = document.getElementById('olStartBtn');
+  if (startBtn) {
+    startBtn.disabled = onlineRole !== 'host' || onlineRoster.length < 2;
+    startBtn.style.opacity = startBtn.disabled ? '0.45' : '1';
+  }
+}
+
+function applyOnlineRoster(roster, order = onlineOrder) {
+  onlineRoster = (roster || []).map(p => ({ id: p.id, name: cleanOnlineName(p.name), alive: p.alive !== false }));
+  onlineOrder = (order && order.length ? order : onlineRoster.map(p => p.id)).slice();
+  for (const entry of onlineRoster) ensureRemotePlayer(entry.id);
+  renderOnlineLobbyRoster();
+  syncOnlineViewedPlayer();
+}
+
+function sendRosterToRoom() {
+  const msg = { t: 'roster', roster: onlineRoster, order: onlineOrder };
+  hostBroadcast(msg);
+  renderOnlineLobbyRoster();
+  updateOnlineLeaderboard();
+}
+
 // Show one of the three lobby screens
 function olShow(screenId) {
   ['olChoose', 'olHosting', 'olJoining'].forEach(id => {
@@ -3693,13 +4018,16 @@ function olHide() { document.getElementById('olOverlay').style.display = 'none';
 
 function olCancel() {
   if (peer) { peer.destroy(); peer = null; }
-  conn = null; onlineRole = null;
+  for (const c of onlineConnections.values()) { try { c.close(); } catch(e) {} }
+  conn = null; onlineRole = null; onlineId = null;
+  onlineConnections.clear(); onlineRoster = []; onlineOrder = []; onlineRemotePlayers.clear(); onlineViewedId = null;
   olHide();
   // Return to vsai mode
   gameMode = 'vsai';
   document.getElementById('btnOnline').className = 'mode-btn';
   document.getElementById('btnVsCPU').className  = 'mode-btn active-vsai';
   document.getElementById('diffRow').style.display = 'flex';
+  document.body.classList.remove('online-room');
   updateHint();
   showMenu();
 }
@@ -3709,9 +4037,42 @@ function genCode() {
   return Array.from({ length: 6 }, () => c[Math.floor(Math.random() * c.length)]).join('');
 }
 
+async function copyRoomCode() {
+  const code = document.getElementById('olRoomCode').textContent.trim();
+  if (!code || code.includes('-') || code.includes('—')) return;
+  const btn = document.getElementById('olCopyBtn');
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(code);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = '✓';
+      btn.title = 'Copied';
+      setTimeout(() => { btn.textContent = old; btn.title = 'Copy room code'; }, 900);
+    }
+  } catch (e) {
+    if (btn) {
+      btn.textContent = '!';
+      btn.title = 'Copy failed';
+      setTimeout(() => { btn.textContent = '⧉'; btn.title = 'Copy room code'; }, 900);
+    }
+  }
+}
+
 function openOnlineLobby() {
   initAC();
   gameMode = 'online';
+  document.body.classList.add('online-room');
   ['btnVsCPU','btn2P','btnSolo','btnTSpin'].forEach(id => document.getElementById(id).className = 'mode-btn');
   document.getElementById('btnOnline').className = 'mode-btn active-online';
   document.getElementById('diffRow').style.display = 'none';
@@ -3720,6 +4081,7 @@ function openOnlineLobby() {
   // Hide main game overlay and play button while lobby is open
   document.getElementById('overlay').classList.remove('show', 'summary-mode');
   document.getElementById('playRow').style.display = 'none';
+  document.getElementById('olNameInput').value = localStorage.getItem('tetrisOnlineName') || '';
   olShow('olChoose');
 }
 
@@ -3792,6 +4154,21 @@ function olJoin() {
   });
 }
 
+function playRemoteLockSfx(msg, previousLines) {
+  sfxLock();
+  const ev = msg.clearEvent || null;
+  if (ev && ev.lines > 0) {
+    if (ev.tSpin || ev.lines === 4) sfxTetris();
+    else sfxClear(Math.max(1, Math.min(4, ev.lines)));
+    return;
+  }
+  const lineDelta = Math.max(0, (msg.lines || 0) - (previousLines || 0));
+  if (lineDelta > 0) {
+    if (lineDelta === 4) sfxTetris();
+    else sfxClear(Math.min(4, lineDelta));
+  }
+}
+
 function onNetData(msg) {
   if (!msg || !msg.t) return;
   const R = players ? players[1] : null;
@@ -3844,6 +4221,8 @@ function onNetData(msg) {
     case 'lock':
       // Opponent locked a piece - update their displayed board
       if (R) {
+        const previousLines = R.linesCleared;
+        playRemoteLockSfx(msg, previousLines);
         R.board = msg.board;
         R.score = msg.score; R.level = msg.level; R.linesCleared = msg.lines;
         applyPlayerStatsSnapshot(R, msg.stats);
@@ -3853,6 +4232,7 @@ function onNetData(msg) {
         if (msg.garb > 0 && players[0].alive) {
           players[0].garbagePending += msg.garb;
           showAttack('right', msg.garb); // show attack from right side
+          sfxAttack();
         }
       }
       break;
@@ -3915,6 +4295,274 @@ function startOnlineGame() {
   pieceSendTimer = 0;
 }
 
+function netSend(msg) {
+  const packed = { ...msg, from: onlineId };
+  if (onlineRole === 'host') hostBroadcast(packed);
+  else sendConn(conn, packed);
+}
+
+function olHost() {
+  onlineName = getLobbyName();
+  localStorage.setItem('tetrisOnlineName', onlineName);
+  olShow('olHosting');
+  document.getElementById('olRoomCode').textContent = '------';
+  document.getElementById('olHostStatus').textContent = 'Connecting to relay...';
+  if (peer) { peer.destroy(); peer = null; }
+  for (const c of onlineConnections.values()) { try { c.close(); } catch(e) {} }
+  onlineConnections.clear();
+  onlineRemotePlayers.clear();
+  onlineViewedId = null;
+  const code = genCode();
+  peer = new Peer('tetbat-' + code);
+
+  peer.on('open', () => {
+    onlineRole = 'host';
+    onlineId = peer.id;
+    onlineRoster = [{ id: onlineId, name: onlineName, alive: true }];
+    onlineOrder = onlineRoster.map(p => p.id);
+    document.getElementById('olRoomCode').textContent = code;
+    document.getElementById('olHostStatus').textContent = 'Share this code. Host starts when everyone is in.';
+    renderOnlineLobbyRoster();
+  });
+
+  peer.on('connection', c => {
+    c.on('data', msg => onNetData(msg, c));
+    c.on('close', () => onConnClose(c));
+    c.on('error', () => {});
+  });
+
+  peer.on('error', e => {
+    const map = { 'unavailable-id': 'Code taken - try hosting again.', 'network': 'Network error.' };
+    document.getElementById('olHostStatus').textContent = map[e.type] || ('Error: ' + e.type);
+  });
+}
+
+function olShowJoin() {
+  onlineName = getLobbyName();
+  localStorage.setItem('tetrisOnlineName', onlineName);
+  olShow('olJoining');
+  document.getElementById('olJoinError').textContent = '';
+  document.getElementById('olCodeInput').value = '';
+  document.getElementById('olJoinRoster').style.display = 'none';
+  setTimeout(() => document.getElementById('olCodeInput').focus(), 100);
+}
+
+function olJoin() {
+  onlineName = getLobbyName();
+  localStorage.setItem('tetrisOnlineName', onlineName);
+  const raw = document.getElementById('olCodeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const errEl = document.getElementById('olJoinError');
+  errEl.textContent = '';
+  if (raw.length < 6) { errEl.textContent = 'Code must be 6 characters.'; return; }
+
+  errEl.textContent = 'Connecting...';
+  if (peer) { peer.destroy(); peer = null; }
+  peer = new Peer();
+
+  peer.on('open', () => {
+    onlineId = peer.id;
+    onlineRole = 'guest';
+    conn = peer.connect('tetbat-' + raw, { reliable: true });
+    conn.on('open', () => {
+      conn.on('data', msg => onNetData(msg, conn));
+      conn.on('close', () => onConnClose(conn));
+      sendConn(conn, { t: 'join', id: onlineId, name: onlineName });
+      errEl.textContent = 'Joined. Waiting for host to start...';
+    });
+    conn.on('error', () => { errEl.textContent = 'Cannot connect - check the code and try again.'; });
+  });
+
+  peer.on('error', e => {
+    const map = { 'peer-unavailable': 'Room not found. Check the code.' };
+    errEl.textContent = map[e.type] || ('Error: ' + e.type);
+  });
+}
+
+function olStartRoom() {
+  if (onlineRole !== 'host' || onlineRoster.length < 2) return;
+  _onlineSeed = (Math.floor(Math.random() * 0x7fffffff) + 1);
+  const orderSeed = (Math.floor(Math.random() * 0x7fffffff) + 1);
+  onlineRoster.forEach(p => { p.alive = true; });
+  onlineOrder = shuffledIds(onlineRoster.map(p => p.id), orderSeed);
+  const msg = { t: 'start', seed: _onlineSeed, roster: onlineRoster, order: onlineOrder };
+  hostBroadcast(msg);
+  olHide();
+  _prepareOnlineGame(_onlineSeed, onlineRoster, onlineOrder);
+  showCountdown(() => { startOnlineGame(); });
+}
+
+function processHostLobbyMessage(msg, sourceConn) {
+  if (msg.t !== 'join') return false;
+  if (gameState === 'playing' || gameState === 'countdown') {
+    sendConn(sourceConn, { t: 'reject', reason: 'Game already started.' });
+    return true;
+  }
+  if (onlineRoster.length >= ONLINE_MAX_PLAYERS) {
+    sendConn(sourceConn, { t: 'reject', reason: 'Room is full.' });
+    return true;
+  }
+  const id = msg.id || sourceConn.peer;
+  sourceConn._onlineId = id;
+  onlineConnections.set(id, sourceConn);
+  if (!onlineRoster.some(p => p.id === id)) {
+    onlineRoster.push({ id, name: cleanOnlineName(msg.name), alive: true });
+  }
+  onlineOrder = onlineRoster.map(p => p.id);
+  sendConn(sourceConn, { t: 'accept', id, roster: onlineRoster, order: onlineOrder });
+  sendRosterToRoom();
+  document.getElementById('olHostStatus').textContent = `${onlineRoster.length}/${ONLINE_MAX_PLAYERS} players in room.`;
+  return true;
+}
+
+function processOnlineGameplayMessage(msg) {
+  const id = msg.from;
+  if (!id || id === onlineId) return;
+  const R = ensureRemotePlayer(id);
+
+  if (msg.t === 'piece') {
+    R.remotePiece = msg;
+    R.holdPiece = msg.hold || null;
+    R.remoteNextQueue = Array.isArray(msg.next) ? msg.next : [];
+    applyPlayerStatsSnapshot(R, msg.stats);
+  } else if (msg.t === 'lock') {
+    const previousLines = R.linesCleared;
+    playRemoteLockSfx(msg, previousLines);
+    R.board = msg.board;
+    R.score = msg.score; R.level = msg.level; R.linesCleared = msg.lines;
+    applyPlayerStatsSnapshot(R, msg.stats);
+    R.holdPiece = msg.hold || null;
+    R.remoteNextQueue = Array.isArray(msg.next) ? msg.next : R.remoteNextQueue;
+    R.remotePiece = null;
+    if (msg.garb > 0 && msg.garbTarget === onlineId && players?.[0]?.alive) {
+      players[0].garbagePending += msg.garb;
+      showAttack('right', msg.garb);
+      sfxAttack();
+    }
+  } else if (msg.t === 'over') {
+    applyPlayerStatsSnapshot(R, msg.stats);
+    R.alive = false;
+    setRosterAlive(id, false);
+    if (onlineViewedId === id) onlineViewedId = nextViewId();
+  }
+  syncOnlineViewedPlayer();
+  maybeEndOnlineRound();
+}
+
+function onNetData(msg, sourceConn = null) {
+  if (!msg || !msg.t) return;
+
+  if (onlineRole === 'host' && sourceConn && processHostLobbyMessage(msg, sourceConn)) return;
+
+  if (msg.t === 'accept') {
+    onlineId = msg.id || onlineId;
+    applyOnlineRoster(msg.roster, msg.order);
+    document.getElementById('olJoinError').textContent = 'In room. Waiting for host to start...';
+    return;
+  }
+  if (msg.t === 'reject') {
+    document.getElementById('olJoinError').textContent = msg.reason || 'Could not join room.';
+    return;
+  }
+  if (msg.t === 'roster') {
+    applyOnlineRoster(msg.roster, msg.order);
+    return;
+  }
+  if (msg.t === 'start' || msg.t === 'go') {
+    _onlineSeed = msg.seed;
+    applyOnlineRoster(msg.roster || onlineRoster, msg.order || onlineOrder);
+    olHide();
+    document.getElementById('overlay').classList.remove('show', 'summary-mode');
+    _prepareOnlineGame(_onlineSeed, msg.roster || onlineRoster, msg.order || onlineOrder);
+    showCountdown(() => { startOnlineGame(); });
+    return;
+  }
+
+  if (onlineRole === 'host' && sourceConn && ['piece','lock','over'].includes(msg.t)) {
+    msg.from = msg.from || sourceConn._onlineId || sourceConn.peer;
+    hostBroadcast(msg, sourceConn);
+    if (msg.t === 'over') setTimeout(sendRosterToRoom, 0);
+  }
+  processOnlineGameplayMessage(msg);
+}
+
+function onConnClose(closedConn = null) {
+  if (closedConn && onlineRole === 'host') {
+    const id = closedConn._onlineId || closedConn.peer;
+    onlineConnections.delete(id);
+    setRosterAlive(id, false);
+    hostBroadcast({ t: 'over', from: id, stats: null });
+    sendRosterToRoom();
+    maybeEndOnlineRound();
+    return;
+  }
+
+  if (gameState === 'over') return;
+  if (onlineRole === 'guest') {
+    gameState = 'over';
+    const ov = document.getElementById('overlay');
+    ov.classList.remove('summary-mode');
+    ov.classList.add('show');
+    document.getElementById('ovTitle').textContent = 'DISCONNECTED';
+    document.getElementById('ovTitle').style.color = '#ff3355';
+    document.getElementById('ovSub').textContent = 'Connection with host was lost.';
+    document.getElementById('ovScore').textContent = '';
+    document.getElementById('ovScoreLabel').textContent = '';
+  }
+}
+
+function _prepareOnlineGame(seed, roster = onlineRoster, order = onlineOrder) {
+  initPieceSeq(seed);
+  vfx.left.particles  = []; vfx.left.flashAlpha  = 0; vfx.left.beams  = []; vfx.left.lockFlash  = 0;
+  vfx.right.particles = []; vfx.right.flashAlpha = 0; vfx.right.beams = []; vfx.right.lockFlash = 0;
+  onlineRemotePlayers.clear();
+  onlineRoster = (roster || []).map(p => ({ id: p.id, name: cleanOnlineName(p.name), alive: true }));
+  onlineOrder = (order && order.length ? order : onlineRoster.map(p => p.id)).slice();
+  players = [makePlayer('left'), null];
+  players[0].onlineId = onlineId;
+  players[0].name = onlineName;
+  onlineGameOverSent = false;
+  onlineViewedId = nextViewId();
+  document.body.classList.add('game-playing', 'online-room');
+  document.getElementById('labelL').textContent = onlineName || 'YOU';
+  gameState = 'countdown';
+  syncOnlineViewedPlayer();
+}
+
+function startOnlineGame() {
+  rematchFlags = { local: false, remote: false };
+  const ovPlayBtn = document.getElementById('ovPlay');
+  ovPlayBtn.textContent = 'MENU'; ovPlayBtn.disabled = false;
+  gameState = 'playing';
+  document.getElementById('overlay').classList.remove('show', 'summary-mode');
+  document.getElementById('playRow').style.display = 'none';
+  spawnPiece(players[0]);
+  dasL = { left: 0, right: 0, sd: 0 };
+  dasR = { left: 0, right: 0, sd: 0 };
+  pieceSendTimer = 0;
+  syncOnlineViewedPlayer();
+}
+
+function sendOnlineOverOnce() {
+  if (onlineGameOverSent) return;
+  onlineGameOverSent = true;
+  setRosterAlive(onlineId, false);
+  netSend({ t: 'over', stats: playerStatsSnapshot(players[0]) });
+  if (onlineRole === 'host') sendRosterToRoom();
+  syncOnlineViewedPlayer();
+}
+
+function maybeEndOnlineRound() {
+  if (gameMode !== 'online' || gameState !== 'playing') return false;
+  const alive = onlineAliveIds();
+  if (alive.length > 1) return false;
+  gameState = 'over';
+  document.body.classList.remove('game-playing');
+  const winner = rosterEntry(alive[0]);
+  showGameOver(alive[0] === onlineId, false);
+  document.getElementById('ovSub').textContent = winner ? `${winner.name} is the last player alive.` : 'No players left alive.';
+  return true;
+}
+
 /* GAME MANAGEMENT */
 function setMode(m) {
   if (gameState === 'playing' || gameState === 'countdown') return;
@@ -3927,6 +4575,7 @@ function setMode(m) {
   document.getElementById('btnOnline').className = 'mode-btn'; // online uses openOnlineLobby(), never setMode
   document.getElementById('diffRow').style.display = m === 'vsai' ? 'flex' : 'none';
   document.getElementById('arena').classList.toggle('solo-mode', m === 'solo' || m === 'tspin');
+  document.body.classList.remove('online-room');
   document.getElementById('bestBox').style.display = 'none';
   if (m === 'solo' || m === 'vsai') {
     const key = m === 'vsai' ? 'tetrisVsaiBest' : 'tetrisSoloBest';
@@ -3949,23 +4598,23 @@ function setDiff(d) {
 function updateHint() {
   const h2 = document.getElementById('hint2');
   if (gameMode === '2p') {
-    document.getElementById('hint1').textContent = 'P1: ← → move · ↑ rotate · ↓ drop · SPACE hard drop · C hold';
+    document.getElementById('hint1').textContent = 'P1: ← → move · ↑/X rotate · Z rotate back · ↓ drop · SPACE hard drop · C hold';
     h2.textContent = 'P2: A D move · W rotate · S drop · LSHIFT hard drop · R hold';
     h2.style.color = 'rgba(255,0,170,0.5)';
   } else if (gameMode === 'solo') {
-    document.getElementById('hint1').textContent = '← → move · ↑ rotate · ↓ soft drop · SPACE hard drop · C hold';
+    document.getElementById('hint1').textContent = '← → move · ↑/X rotate · Z rotate back · A 180 · ↓ soft drop · SPACE hard drop · C hold';
     h2.textContent = 'Solo mode — survive, score, and beat your best · speed up every 5 lines';
     h2.style.color = 'rgba(255,230,0,0.35)';
   } else if (gameMode === 'tspin') {
-    document.getElementById('hint1').textContent = 'T-SPIN TRAINING: drop from top, guide the T into the notch, rotate into the pocket';
+    document.getElementById('hint1').textContent = 'T-SPIN TRAINING: drop from top, guide the T into the notch, rotate or A 180 into the pocket';
     h2.textContent = 'Practice path: wait near the notch · Z · right · soft drop · rotate CW twice';
     h2.style.color = 'rgba(255,0,170,0.5)';
   } else if (gameMode === 'online') {
-    document.getElementById('hint1').textContent = '← → move · ↑ rotate · ↓ soft drop · SPACE hard drop · C hold';
+    document.getElementById('hint1').textContent = '← → move · ↑/X rotate · Z rotate back · A 180 · ↓ soft drop · SPACE hard drop · C hold';
     h2.textContent = 'Online battle — clear lines to send garbage · bury your opponent to win';
     h2.style.color = 'rgba(0,255,136,0.35)';
   } else {
-    document.getElementById('hint1').textContent = 'P1: ← → move · ↑ rotate · ↓ soft · SPACE hard drop · C hold';
+    document.getElementById('hint1').textContent = 'P1: ← → move · ↑/X rotate · Z rotate back · A 180 · ↓ soft · SPACE hard drop · C hold';
     h2.textContent = 'CPU plays automatically · Difficulty affects speed & AI skill';
     h2.style.color = 'rgba(255,255,255,0.2)';
   }
@@ -3975,12 +4624,15 @@ function showMenu() {
   // Clean up any lingering online connection when returning to menu
   if (gameMode === 'online') {
     if (peer) { peer.destroy(); peer = null; }
-    conn = null; onlineRole = null;
+    for (const c of onlineConnections.values()) { try { c.close(); } catch(e) {} }
+    conn = null; onlineRole = null; onlineId = null;
+    onlineConnections.clear(); onlineRoster = []; onlineOrder = []; onlineRemotePlayers.clear(); onlineViewedId = null;
     gameMode = 'vsai';
     document.getElementById('btnOnline').className = 'mode-btn';
     document.getElementById('btnVsCPU').className  = 'mode-btn active-vsai';
     document.getElementById('diffRow').style.display = 'flex';
     document.getElementById('arena').classList.remove('solo-mode');
+    document.body.classList.remove('online-room');
     document.getElementById('bestBox').style.display = 'none';
     updateHint();
   }
@@ -4179,16 +4831,18 @@ function showGameOver(p1won, p2won) {
   }
 
   if (gameMode === 'online') {
-    const won = players[0].alive && players[1] && !players[1].alive;
+    const alive = onlineAliveIds();
+    const won = alive.length === 1 && alive[0] === onlineId;
+    const winner = rosterEntry(alive[0]);
     _setBadge(won ? 'YOU WIN' : 'YOU LOSE', won ? '#00ff88' : '#ff3355');
     document.getElementById('ovTitle').textContent = won ? '🏆 YOU WIN!' : 'GAME OVER';
     document.getElementById('ovTitle').style.color = won ? '#00ff88' : '#ff3355';
-    document.getElementById('ovSub').textContent   = won ? 'Opponent topped out!' : 'Better luck next time!';
+    document.getElementById('ovSub').textContent   = winner ? `${winner.name} is the last player alive.` : 'Round complete.';
     document.getElementById('ovScore').textContent = players[0].score.toLocaleString();
     document.getElementById('ovScore').style.color = won ? '#00ff88' : '#fff';
     document.getElementById('ovScoreLabel').textContent =
       `LINES: ${players[0].linesCleared}  ·  LEVEL: ${players[0].level}`;
-    document.getElementById('ovPlay').textContent  = '▶ PLAY AGAIN';
+    document.getElementById('ovPlay').textContent  = 'MENU';
     document.getElementById('ovQuit').style.display = 'block';
     return;
   }

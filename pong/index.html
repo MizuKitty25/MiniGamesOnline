@@ -110,7 +110,10 @@ canvas{display:block;touch-action:none;}
 .ol-btn.primary:hover{background:rgba(56,189,248,.1);}
 .ol-btn.back{font-size:7px;color:#ffffff44;border-color:#ffffff22;padding:9px 0;}
 .ol-btn.back:hover{color:#fff;border-color:#ffffff55;}
-#room-code-display{font-size:30px;letter-spacing:10px;color:var(--gold);background:rgba(255,226,89,.07);border:1px solid #ffe25966;border-radius:5px;padding:14px 22px;text-align:center;width:100%;}
+.room-code-row{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;}
+#room-code-display{font-size:30px;letter-spacing:10px;color:var(--gold);background:rgba(255,226,89,.07);border:1px solid #ffe25966;border-radius:5px;padding:14px 22px;text-align:center;flex:1;}
+.copy-code-btn{width:46px;align-self:stretch;border:1px solid #ffe25966;border-radius:5px;background:rgba(255,226,89,.08);color:var(--gold);font-family:'Press Start 2P',monospace;font-size:14px;cursor:pointer;transition:all .2s;}
+.copy-code-btn:hover{background:var(--gold);color:#090917;}
 .ol-status{font-size:7px;color:#ffffff66;text-align:center;letter-spacing:1px;}
 #room-code-input{font-family:'Press Start 2P',monospace;font-size:20px;letter-spacing:8px;text-align:center;background:#0d0d1a;border:1px solid #ffffff33;border-radius:4px;color:var(--gold);padding:13px;width:100%;outline:none;text-transform:uppercase;}
 #room-code-input:focus{border-color:var(--cyan);}
@@ -191,7 +194,10 @@ footer{text-align:center;padding:4px 24px 20px;font-size:7px;color:#ffffff22;let
     <div id="ol-hosting" class="ol-screen" style="display:none">
       <div class="ol-title">HOST GAME</div>
       <div class="ol-sub">Share this code with your friend</div>
-      <div id="room-code-display">······</div>
+      <div class="room-code-row">
+        <div id="room-code-display">······</div>
+        <button class="copy-code-btn" onclick="copyRoomCode()" title="Copy room code" aria-label="Copy room code">⧉</button>
+      </div>
       <div class="ol-status" id="host-status">Connecting...</div>
       <button class="ol-btn back" onclick="cancelHost()">✕ CANCEL</button>
     </div>
@@ -743,6 +749,21 @@ function drawOver(){
 function genCode(){
   const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');
+}
+async function copyRoomCode(){
+  const el=document.getElementById('room-code-display');
+  const code=(el?.textContent||'').trim();
+  if(!code||code.includes('·'))return;
+  const btn=document.querySelector('.copy-code-btn');
+  try{
+    if(navigator.clipboard?.writeText) await navigator.clipboard.writeText(code);
+    else{const ta=document.createElement('textarea');ta.value=code;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+    if(btn){const old=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=old,900);}
+    document.getElementById('host-status').textContent='Copied!';
+  }catch(e){
+    if(btn){btn.textContent='!';setTimeout(()=>btn.textContent='⧉',900);}
+    document.getElementById('host-status').textContent='Copy failed';
+  }
 }
 function olShow(id){
   ['ol-choose','ol-hosting','ol-joining'].forEach(s=>{

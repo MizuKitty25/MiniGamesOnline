@@ -176,7 +176,16 @@ canvas#c{display:block;width:100vw;height:100vh}
 .mpbtn:active{transform:scale(.95)}
 #mpPanel{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:2px}
 #hostArea{display:flex;flex-direction:column;align-items:center;gap:6px}
+#roomCodeRow{display:flex;align-items:center;justify-content:center;gap:10px;min-height:36px}
 #roomCodeDisplay{font-size:22px;font-weight:900;letter-spacing:6px;color:#cc88ff;text-shadow:0 0 16px #cc88ff;min-height:30px}
+.copyRoomBtn{position:relative;width:32px;height:32px;flex:0 0 32px;padding:0;border:1px solid #cc88ffaa;border-radius:9px;background:rgba(204,136,255,.1);color:#cc88ff;font-size:0;line-height:1;cursor:pointer;box-shadow:0 0 16px #cc00ff33;transition:all .2s}
+.copyRoomBtn::before,.copyRoomBtn::after{content:'';position:absolute;width:12px;height:14px;border:2px solid currentColor;border-radius:3px;box-sizing:border-box}
+.copyRoomBtn::before{left:8px;top:7px;opacity:.5}
+.copyRoomBtn::after{left:12px;top:11px;background:#16001e}
+.copyRoomBtn:hover{background:#cc88ff;color:#130018;transform:scale(1.06)}
+.copyRoomBtn:hover::after{background:#cc88ff}
+.copyRoomBtn.copied,.copyRoomBtn.failed{font-size:17px;font-weight:900;display:inline-flex;align-items:center;justify-content:center}
+.copyRoomBtn.copied::before,.copyRoomBtn.copied::after,.copyRoomBtn.failed::before,.copyRoomBtn.failed::after{display:none}
 #roomInputRow{display:flex;gap:8px;align-items:center}
 #roomInput{
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
@@ -353,7 +362,10 @@ canvas#c{display:block;width:100vw;height:100vh}
     <div id="mpPanel">
       <div id="hostArea">
         <button class="mpbtn" id="hostBtn">🌐 HOST GAME</button>
-        <div id="roomCodeDisplay"></div>
+        <div id="roomCodeRow">
+          <div id="roomCodeDisplay"></div>
+          <button class="copyRoomBtn" id="copyRoomBtn" onclick="copyRoomCode()" title="Copy room code" aria-label="Copy room code" style="display:none"></button>
+        </div>
       </div>
       <div id="roomInputRow">
         <input id="roomInput" type="text" placeholder="CODE" maxlength="6" spellcheck="false">
@@ -811,21 +823,23 @@ function spdScale(w) { return Math.min(1+(w-1)*0.05,1.8); } // +5% spd/level, ca
 function dmgScale(w) { return Math.min(1+(w-1)*0.08,2.5); } // +8% dmg/level, capped ×2.5
 
 function spawnEnemy(type, x, z){
-  const slot = acquireEnemySlot(type, x, z);
-  if(!slot) return;
   const cfg = ETYPES[type];
+  const spawnPos = {x, z};
+  projectToNearestOpen(spawnPos, cfg.r, Math.max(4, cfg.r*3));
+  const slot = acquireEnemySlot(type, spawnPos.x, spawnPos.z);
+  if(!slot) return;
   const hs = diffScale(waveNum);
   enemies.push({
     type, poolIdx:slot.poolIdx, mesh:slot.mesh, cfg,
     hp: Math.round(cfg.hp*hs), maxHp: Math.round(cfg.hp*hs),
     spd: cfg.spd*spdScale(waveNum),
     dmgMult: dmgScale(waveNum),
-    pos: new THREE.Vector3(x, 0, z),
+    pos: new THREE.Vector3(spawnPos.x, 0, spawnPos.z),
     fireCd: 1 + Math.random()*1.5,
     stagger: 0, dead: false,
     avoidX: 0, avoidZ: 0,
     stuckT: 0,
-    prevX: x, prevZ: z, stuckCheck: 0,
+    prevX: spawnPos.x, prevZ: spawnPos.z, stuckCheck: 0,
     hitFlashT: 0, spawnAnim: 0.4,
     chargeT: 0,                        // sniper pre-fire charge
     dashT: 2+Math.random()*2, dashActive: 0, dashDX: 0, dashDZ: 0, // dasher
@@ -840,14 +854,16 @@ function spawnBoss(w){
   const hs=diffScale(w)*1.8;
   const bossHp=Math.round(cfg.hp*hs);
   const bName=BOSS_NAMES[(Math.floor(w/5)-1)%BOSS_NAMES.length];
-  const slot=acquireEnemySlot('boss',0,-ARENA_H+3);
+  const spawnPos={x:0,z:-ARENA_H+3};
+  projectToNearestOpen(spawnPos,cfg.r,Math.max(5,cfg.r*3));
+  const slot=acquireEnemySlot('boss',spawnPos.x,spawnPos.z);
   if(!slot) return;
   enemies.push({
     type:'boss',poolIdx:slot.poolIdx,mesh:slot.mesh,cfg,
     hp:bossHp,maxHp:bossHp,spd:cfg.spd+Math.floor(w/5)*0.15,
-    dmgMult:dmgScale(w)*1.5,pos:new THREE.Vector3(0,0,-ARENA_H+3),
+    dmgMult:dmgScale(w)*1.5,pos:new THREE.Vector3(spawnPos.x,0,spawnPos.z),
     fireCd:0.5,stagger:0,dead:false,avoidX:0,avoidZ:0,stuckT:0,
-    prevX:0,prevZ:-ARENA_H+3,stuckCheck:0,hitFlashT:0,spawnAnim:0.6,
+    prevX:spawnPos.x,prevZ:spawnPos.z,stuckCheck:0,hitFlashT:0,spawnAnim:0.6,
     chargeT:0,dashT:0,dashActive:0,dashDX:0,dashDZ:0,
     phase:1,slamCd:2.0,burstCd:3.0,bossName:bName,spawnedMinions:false,
   });
@@ -893,7 +909,7 @@ function spawnWave(w){
 const NAV_STEP    = 0.5;
 const GNAV_W      = Math.ceil(ARENA_W*2/NAV_STEP); // 36 columns
 const GNAV_H      = Math.ceil(ARENA_H*2/NAV_STEP); // 64 rows
-const NAV_AGENT_R = 0.55;  // clearance for nav — enemies physically resolve with resolveObst
+const NAV_AGENT_R = 0.90;  // baked clearance for regular enemies; local steering handles larger bosses
 const NAV_FREQ    = 0.25;  // flow-field rebuild interval (s)
 
 const _navBlk  = new Uint8Array(GNAV_W*GNAV_H);
@@ -911,6 +927,36 @@ function _wc(x,z){
     gx: Math.max(0,Math.min(GNAV_W-1,(x+ARENA_W)/NAV_STEP|0)),
     gz: Math.max(0,Math.min(GNAV_H-1,(z+ARENA_H)/NAV_STEP|0))
   };
+}
+
+function _navCanStep(gx,gz,dx,dz){
+  const ngx=gx+dx, ngz=gz+dz;
+  if(ngx<0||ngx>=GNAV_W||ngz<0||ngz>=GNAV_H) return false;
+  if(_navBlk[_ni(ngx,ngz)]) return false;
+  if(dx&&dz&&(_navBlk[_ni(gx+dx,gz)]||_navBlk[_ni(gx,gz+dz)])) return false;
+  return true;
+}
+
+function nearestWalkableNavIndex(x,z,maxR=8){
+  const {gx,gz}=_wc(x,z);
+  let best=-1,bestD=1e9;
+  for(let r=0;r<=maxR;r++){
+    for(let dz=-r;dz<=r;dz++){
+      for(let dx=-r;dx<=r;dx++){
+        if(Math.abs(dx)!==r&&Math.abs(dz)!==r) continue;
+        const nx=gx+dx,nz=gz+dz;
+        if(nx<0||nx>=GNAV_W||nz<0||nz>=GNAV_H) continue;
+        const idx=_ni(nx,nz);
+        if(_navBlk[idx]) continue;
+        const wx=-ARENA_W+(nx+0.5)*NAV_STEP;
+        const wz=-ARENA_H+(nz+0.5)*NAV_STEP;
+        const d=(wx-x)*(wx-x)+(wz-z)*(wz-z);
+        if(d<bestD){bestD=d;best=idx;}
+      }
+    }
+    if(best!==-1) return best;
+  }
+  return -1;
 }
 
 function buildNavBlocked(){
@@ -942,17 +988,17 @@ function buildFlowField(sources){
     return top;
   };
   for(const src of sources){
-    const {gx,gz}=_wc(src.x,src.z); const idx=_ni(gx,gz);
-    if(!_navBlk[idx]&&_navDst[idx]>0){_navDst[idx]=0;hPush(0,idx);}
+    const idx=nearestWalkableNavIndex(src.x,src.z);
+    if(idx!==-1&&_navDst[idx]>0){_navDst[idx]=0;hPush(0,idx);}
   }
   while(H.length){
     const [cost,cur]=hPop();
     if(cost>_navDst[cur]) continue;
     const cgx=cur%GNAV_W, cgz=cur/GNAV_W|0;
     for(let di=0;di<8;di++){
-      const ngx=cgx+_ND[di][0], ngz=cgz+_ND[di][1];
-      if(ngx<0||ngx>=GNAV_W||ngz<0||ngz>=GNAV_H) continue;
-      const ni=_ni(ngx,ngz); if(_navBlk[ni]) continue;
+      const sx=_ND[di][0], sz=_ND[di][1];
+      if(!_navCanStep(cgx,cgz,sx,sz)) continue;
+      const ni=_ni(cgx+sx,cgz+sz);
       const nc=cost+_NC[di];
       if(nc<_navDst[ni]){_navDst[ni]=nc;hPush(nc,ni);}
     }
@@ -963,10 +1009,10 @@ function buildFlowField(sources){
       const idx=_ni(gx,gz); if(_navBlk[idx]||_navDst[idx]>=1e9) continue;
       let best=_navDst[idx],bx=0,bz=0;
       for(let di=0;di<8;di++){
-        const ngx=gx+_ND[di][0],ngz=gz+_ND[di][1];
-        if(ngx<0||ngx>=GNAV_W||ngz<0||ngz>=GNAV_H) continue;
-        const ni=_ni(ngx,ngz); if(_navBlk[ni]) continue;
-        if(_navDst[ni]<best){best=_navDst[ni];bx=_ND[di][0];bz=_ND[di][1];}
+        const sx=_ND[di][0],sz=_ND[di][1];
+        if(!_navCanStep(gx,gz,sx,sz)) continue;
+        const ni=_ni(gx+sx,gz+sz);
+        if(_navDst[ni]<best){best=_navDst[ni];bx=sx;bz=sz;}
       }
       const l=Math.hypot(bx,bz)||1; _navFX[idx]=bx/l; _navFZ[idx]=bz/l;
     }
@@ -1002,6 +1048,7 @@ function getNavFlowRobust(x,z){
   }
   if(best===1e9) return {fx:0,fz:0,ok:false};
   const ddx=tx-x, ddz=tz-z, dl=Math.hypot(ddx,ddz);
+  if(dl<0.001) return getNavFlow(tx,tz);
   return {fx:ddx/dl,fz:ddz/dl,ok:true};
 }
 
@@ -1011,18 +1058,129 @@ function boxOverlap(cx, cz, cr, bx, bz, bhw, bhd){
   const dz = Math.max(bz-bhd, Math.min(bz+bhd, cz)) - cz;
   return dx*dx + dz*dz < cr*cr;
 }
+function isBlockedAt(x,z,r){
+  if(x<-ARENA_W+r||x>ARENA_W-r||z<-ARENA_H+r||z>ARENA_H-r) return true;
+  for(const o of obstacleBoxes) if(boxOverlap(x,z,r,o.x,o.z,o.hw,o.hd)) return true;
+  return false;
+}
+function projectToNearestOpen(pos,r,maxRadius=4){
+  clamp(pos,r);
+  resolveObst(pos,r);
+  if(!isBlockedAt(pos.x,pos.z,r)) return false;
+
+  const ox=pos.x, oz=pos.z;
+  const rings=Math.ceil(maxRadius/0.25);
+  for(let ring=1;ring<=rings;ring++){
+    const rad=ring*0.25;
+    const samples=Math.max(16,Math.ceil(rad*12));
+    for(let i=0;i<samples;i++){
+      const a=(i/samples)*Math.PI*2;
+      const x=ox+Math.cos(a)*rad;
+      const z=oz+Math.sin(a)*rad;
+      if(!isBlockedAt(x,z,r)){
+        pos.x=x; pos.z=z;
+        clamp(pos,r);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+function wallAvoidVector(pos,r){
+  let ax=0,az=0;
+  const margin=r+0.9;
+  const left=pos.x-(-ARENA_W+r), right=(ARENA_W-r)-pos.x;
+  const bottom=pos.z-(-ARENA_H+r), top=(ARENA_H-r)-pos.z;
+  if(left<margin) ax+=(margin-left)/margin;
+  if(right<margin) ax-=(margin-right)/margin;
+  if(bottom<margin) az+=(margin-bottom)/margin;
+  if(top<margin) az-=(margin-top)/margin;
+  for(const o of obstacleBoxes){
+    const cx=Math.max(o.x-o.hw,Math.min(o.x+o.hw,pos.x));
+    const cz=Math.max(o.z-o.hd,Math.min(o.z+o.hd,pos.z));
+    let dx=pos.x-cx,dz=pos.z-cz,dist=Math.hypot(dx,dz);
+    const safe=r+0.95;
+    if(dist<0.001&&boxOverlap(pos.x,pos.z,r,o.x,o.z,o.hw,o.hd)){
+      const ox=o.hw+r-Math.abs(pos.x-o.x);
+      const oz=o.hd+r-Math.abs(pos.z-o.z);
+      if(ox<oz){dx=Math.sign(pos.x-o.x||1);dz=0;dist=1;}
+      else{dx=0;dz=Math.sign(pos.z-o.z||1);dist=1;}
+    }
+    if(dist<safe){
+      const w=(safe-dist)/safe;
+      ax+=(dx/(dist||1))*w*w;
+      az+=(dz/(dist||1))*w*w;
+    }
+  }
+  return {x:ax,z:az};
+}
+function canMoveAlong(pos,x,z,r,step){
+  for(let i=1;i<=3;i++){
+    const t=i/3;
+    if(isBlockedAt(pos.x+x*step*t,pos.z+z*step*t,r)) return false;
+  }
+  return true;
+}
+function steerScore(x,z,vx,vz,preferX,preferZ){
+  let score=x*vx+z*vz;
+  const pl=Math.hypot(preferX,preferZ);
+  if(pl>0.001) score+=0.45*(x*preferX+z*preferZ)/pl;
+  return score;
+}
+function openSteer(pos,vx,vz,r,step,preferX=0,preferZ=0){
+  let l=Math.hypot(vx,vz);
+  if(l<0.001) return {x:0,z:0};
+  vx/=l; vz/=l;
+  if(isBlockedAt(pos.x,pos.z,r)){
+    const away=wallAvoidVector(pos,r);
+    l=Math.hypot(away.x,away.z);
+    return l>0.001?{x:away.x/l,z:away.z/l}:{x:-vx,z:-vz};
+  }
+  let best=null,bestScore=-1e9;
+  const addCandidate=(x,z)=>{
+    if(!canMoveAlong(pos,x,z,r,step)) return;
+    const s=steerScore(x,z,vx,vz,preferX,preferZ);
+    if(s>bestScore){bestScore=s;best={x,z};}
+  };
+  addCandidate(vx,vz);
+
+  const away=wallAvoidVector(pos,r);
+  const al=Math.hypot(away.x,away.z);
+  if(al>0.001){
+    const nx=away.x/al,nz=away.z/al;
+    const dot=vx*nx+vz*nz;
+    if(dot<0.2){
+      const sx=vx-nx*Math.min(dot,0), sz=vz-nz*Math.min(dot,0);
+      const sl=Math.hypot(sx,sz);
+      if(sl>0.001) addCandidate(sx/sl,sz/sl);
+      addCandidate(-nz,nx);
+      addCandidate(nz,-nx);
+    }
+  }
+
+  const angles=[0.25,-0.25,0.5,-0.5,0.8,-0.8,1.1,-1.1,1.57,-1.57,2.1,-2.1,2.7,-2.7,3.14];
+  for(const a of angles){
+    const ca=Math.cos(a),sa=Math.sin(a);
+    const x=vx*ca-vz*sa,z=vx*sa+vz*ca;
+    addCandidate(x,z);
+  }
+  if(best) return best;
+  return al>0.001?{x:away.x/al,z:away.z/al}:{x:-vx,z:-vz};
+}
 function clamp(pos, r=0.6){
   pos.x = Math.max(-ARENA_W+r, Math.min(ARENA_W-r, pos.x));
   pos.z = Math.max(-ARENA_H+r, Math.min(ARENA_H-r, pos.z));
 }
 function resolveObst(pos, r){
-  for(const o of obstacleBoxes){
-    if(boxOverlap(pos.x, pos.z, r, o.x, o.z, o.hw, o.hd)){
-      const dx = pos.x - o.x, dz = pos.z - o.z;
-      const overlapX = o.hw+r - Math.abs(dx);
-      const overlapZ = o.hd+r - Math.abs(dz);
-      if(overlapX < overlapZ) pos.x += Math.sign(dx||1)*overlapX;
-      else                     pos.z += Math.sign(dz||1)*overlapZ;
+  for(let pass=0;pass<2;pass++){
+    for(const o of obstacleBoxes){
+      if(boxOverlap(pos.x, pos.z, r, o.x, o.z, o.hw, o.hd)){
+        const dx = pos.x - o.x, dz = pos.z - o.z;
+        const overlapX = o.hw+r - Math.abs(dx);
+        const overlapZ = o.hd+r - Math.abs(dz);
+        if(overlapX < overlapZ) pos.x += Math.sign(dx||1)*overlapX;
+        else                     pos.z += Math.sign(dz||1)*overlapZ;
+      }
     }
   }
   pos.x = Math.max(-ARENA_W+r, Math.min(ARENA_W-r, pos.x));
@@ -1041,10 +1199,13 @@ for(let i = 0; i < BULLET_POOL_SIZE; i++){
   const mesh = new THREE.Mesh(isP?bGeoP:bGeoE, isP?bMatP:bMatE);
   mesh.visible = false; mesh.frustumCulled = false; scene.add(mesh);
   bulletPool.push({ mesh, active:false, isPlayer:isP,
-    pos:new THREE.Vector3(), dir:new THREE.Vector3(), spd:0, life:0, dmg:0, pierce:0, bounceLeft:0 });
+    pos:new THREE.Vector3(), dir:new THREE.Vector3(), spd:0, life:0, dmg:0, pierce:0, bounceLeft:0,
+    netId:null, visualOnly:false });
 }
 
-function fireBullet(pos, dir, isPlayer, dmg, pierce=0){
+let enemyBulletNetSeq = 1;
+
+function fireBullet(pos, dir, isPlayer, dmg, pierce=0, visualOnly=false){
   let slot = null;
   for(let i = 0; i < bulletPool.length; i++){
     const b = bulletPool[i];
@@ -1057,6 +1218,8 @@ function fireBullet(pos, dir, isPlayer, dmg, pierce=0){
   }
   if(!slot) return;
   slot.active=true; slot.isPlayer=isPlayer;
+  slot.visualOnly=visualOnly;
+  slot.netId=(!isPlayer&&mp.connected&&mp.isHost&&!mp.soloMode) ? enemyBulletNetSeq++ : null;
   slot.mesh.material = isPlayer?bMatP:bMatE;
   slot.mesh.geometry = isPlayer?bGeoP:bGeoE;
   slot.pos.set(pos.x,0,pos.z);
@@ -1073,7 +1236,7 @@ function fireBullet(pos, dir, isPlayer, dmg, pierce=0){
   slot.bounceLeft=isPlayer ? BOUNCE_MAX[playerSkills.bounce||0] : 0;
   slot.mesh.visible=true;
 }
-function releaseBullet(slot){ slot.active=false; slot.mesh.visible=false; slot.mesh.scale.setScalar(1); }
+function releaseBullet(slot){ slot.active=false; slot.mesh.visible=false; slot.mesh.scale.setScalar(1); slot.netId=null; slot.visualOnly=false; }
 
 // ── Particles (pooled) ────────────────────────────────────
 const PART_POOL = 80;
@@ -1463,6 +1626,22 @@ const mp = {
 
 function setMpStatus(txt){ const el=document.getElementById('mpStatus'); if(el) el.textContent=txt; }
 
+async function copyRoomCode(){
+  const code=(mp.roomCode||document.getElementById('roomCodeDisplay').textContent||'').trim();
+  if(!code)return;
+  const btn=document.getElementById('copyRoomBtn');
+  try{
+    if(navigator.clipboard?.writeText) await navigator.clipboard.writeText(code);
+    else{const ta=document.createElement('textarea');ta.value=code;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+    if(btn){btn.classList.add('copied');btn.textContent='✓';setTimeout(()=>{btn.classList.remove('copied');btn.textContent='';},900);}
+    setMpStatus(`Copied room code: ${code}`);
+  }catch(e){
+    if(btn){btn.classList.add('failed');btn.textContent='!';setTimeout(()=>{btn.classList.remove('failed');btn.textContent='';},900);}
+    setMpStatus('Copy failed');
+  }
+}
+window.copyRoomCode=copyRoomCode;
+
 function updatePips(){
   for(let i=0;i<4;i++){
     const el=document.getElementById('pip'+i); if(!el) continue;
@@ -1523,11 +1702,40 @@ function applyHostEnemyState(data){
          spd:cfg.spd,dmgMult:1,chargeT:0,
          dashT:2,dashActive:0,dashDX:0,dashDZ:0};
       enemies.push(e);
+      e.mesh.scale.setScalar(1);
     } else {
       e.pos.set(ed.x,0,ed.z); e.hp=ed.hp;
       e.mesh.position.set(ed.x,0.55,ed.z);
       e.mesh.material.emissiveIntensity=0.8*(ed.hp/(ed.maxHp||e.cfg.hp))+0.2;
+      if(e.mesh.scale.x<0.5) e.mesh.scale.setScalar(1);
     }
+  }
+}
+
+function applyHostEnemyBulletState(data){
+  if(!Array.isArray(data)) data=[];
+  const activeSet=new Set(data.map(b=>b.id));
+  for(const b of bulletPool){
+    if(b.active&&!b.isPlayer&&b.netId&&!activeSet.has(b.netId)) releaseBullet(b);
+  }
+  for(const bd of data){
+    let b=bulletPool.find(x=>x.active&&!x.isPlayer&&x.netId===bd.id);
+    if(!b){
+      b=bulletPool.find(x=>!x.active&&!x.isPlayer)||bulletPool.find(x=>!x.active);
+      if(!b) continue;
+      b.active=true; b.isPlayer=false; b.visualOnly=true; b.netId=bd.id;
+      b.mesh.material=bMatE; b.mesh.geometry=bGeoE; b.mesh.scale.setScalar(1); b.mesh.visible=true;
+      burst({x:bd.x,z:bd.z},0xff6600,isMobile?2:4);
+    }
+    b.pos.set(bd.x,0,bd.z);
+    b.dir.set(bd.dx,0,bd.dz).normalize();
+    b.mesh.position.set(bd.x,0.55,bd.z);
+    b.mesh.rotation.set(0,0,0);
+    b.spd=bd.spd||BULLET_SPD;
+    b.life=bd.life||1;
+    b.dmg=bd.dmg||0;
+    b.pierce=0;
+    b.bounceLeft=0;
   }
 }
 
@@ -1552,6 +1760,16 @@ function sendHostState(){
       pidx:e.poolIdx,x:Math.round(e.pos.x*100)/100,z:Math.round(e.pos.z*100)/100,
       type:e.type,hp:e.hp,maxHp:e.maxHp,
     })),
+    enemyBullets:bulletPool.filter(b=>b.active&&!b.isPlayer&&b.netId).map(b=>({
+      id:b.netId,
+      x:Math.round(b.pos.x*100)/100,
+      z:Math.round(b.pos.z*100)/100,
+      dx:Math.round(b.dir.x*1000)/1000,
+      dz:Math.round(b.dir.z*1000)/1000,
+      life:Math.round(b.life*100)/100,
+      dmg:b.dmg,
+      spd:b.spd,
+    })),
     wave:waveNum,score,waveClear,waveSpawned,
   });
 }
@@ -1568,8 +1786,10 @@ function sendPlayerState(){
 }
 
 function sendFireMP(x,z,dx,dz){
-  if(!mp.connected||mp.isHost) return;
-  sendToHost(JSON.stringify({type:'FIRE',id:mp.myId,x,z,dx,dz}));
+  if(!mp.connected) return;
+  const msg={type:'FIRE',id:mp.myId,x,z,dx,dz};
+  if(mp.isHost) broadcastMP(JSON.stringify(msg));
+  else sendToHost(JSON.stringify(msg));
 }
 
 function handleIncomingMP(msg, fromId){
@@ -1594,6 +1814,7 @@ function handleIncomingMP(msg, fromId){
       if(!mp.isHost){
         const prevWave=waveNum, prevClear=waveClear;
         applyHostEnemyState(msg.enemies);
+        applyHostEnemyBulletState(msg.enemyBullets);
         if(msg.wave!==prevWave&&msg.wave>prevWave){
           annText(`⚡ LEVEL ${msg.wave}`,'#ffd700');
           player.pos.set(0, 0, ARENA_H-2);
@@ -1607,9 +1828,11 @@ function handleIncomingMP(msg, fromId){
     case 'FIRE':
       if(mp.isHost){
         fireBullet({x:msg.x,z:msg.z},new THREE.Vector3(msg.dx,0,msg.dz),true,25);
+        burst({x:msg.x,z:msg.z},PLAYER_COLORS[msg.id%4].body,isMobile?2:4);
         broadcastMP(JSON.stringify(msg), fromId); // forward to all other clients
       } else if(msg.id !== mp.myId){
-        fireBullet({x:msg.x,z:msg.z},new THREE.Vector3(msg.dx,0,msg.dz),true,25);
+        fireBullet({x:msg.x,z:msg.z},new THREE.Vector3(msg.dx,0,msg.dz),true,25,0,true);
+        burst({x:msg.x,z:msg.z},PLAYER_COLORS[msg.id%4].body,isMobile?2:4);
       }
       break;
     case 'KILL_ENEMY': {
@@ -1678,6 +1901,7 @@ function hostGame(){
   mp.peer.on('open',()=>{
     mp.connected=true; mp.myId=0; mp.isHost=true; mp.soloMode=false; mp.nextId=1;
     document.getElementById('roomCodeDisplay').textContent=code;
+    document.getElementById('copyRoomBtn').style.display='inline-flex';
     document.getElementById('hostBtn').textContent='▶ START GAME';
     setMpStatus(`You are HOST — share code: ${code}`);
     updatePips();
@@ -2382,7 +2606,14 @@ function update(dt){
             const angOff=spreadAngs[Math.min(si,4)];
             const sign=(si%2===0)?1:-1;
             const ca=Math.cos(sign*angOff),sa=Math.sin(sign*angOff);
-            fireBullet({x:player.pos.x,z:player.pos.z},new THREE.Vector3(fx*ca-fz*sa,0,fx*sa+fz*ca),true,pdmg*0.7,pierceLvl);
+            const sdx=fx*ca-fz*sa, sdz=fx*sa+fz*ca;
+            fireBullet({x:player.pos.x,z:player.pos.z},new THREE.Vector3(sdx,0,sdz),true,pdmg*0.7,pierceLvl);
+            sendFireMP(
+              Math.round(player.pos.x*100)/100,
+              Math.round(player.pos.z*100)/100,
+              Math.round(sdx*1000)/1000,
+              Math.round(sdz*1000)/1000
+            );
           }
         }
         muzzleLight.intensity=9; sShoot();
@@ -2538,16 +2769,28 @@ function update(dt){
         }
         const dl=Math.hypot(desiredX,desiredZ);
         if(dl>0.001){desiredX/=dl;desiredZ/=dl;}
+        const avoid=wallAvoidVector(e.pos,e.cfg.r);
+        const avoidLen=Math.hypot(avoid.x,avoid.z);
+        const probeStep=Math.max(e.cfg.r*0.45,0.55);
+        if(avoidLen>0.001&&!canMoveAlong(e.pos,desiredX,desiredZ,e.cfg.r,probeStep)){
+          desiredX+=avoid.x*0.75;
+          desiredZ+=avoid.z*0.75;
+          const al=Math.hypot(desiredX,desiredZ)||1;
+          desiredX/=al; desiredZ/=al;
+        }
       }
 
       const ml=Math.hypot(desiredX,desiredZ)||1;
       const _isSlowed=(slowMap.get(e.poolIdx)||0)>0;
       let _spd=e.spd*(_isSlowed?0.35:1);
       if(e.type==='dasher'&&e.dashActive>0) _spd=e.spd*4.2;
-      e.pos.x+=(desiredX/ml)*_spd*dt;
-      e.pos.z+=(desiredZ/ml)*_spd*dt;
+      const steer=openSteer(e.pos,desiredX/ml,desiredZ/ml,e.cfg.r,Math.max(e.cfg.r*0.85,_spd*dt*2.2),e.avoidX,e.avoidZ);
+      e.avoidX=steer.x; e.avoidZ=steer.z;
+      e.pos.x+=steer.x*_spd*dt;
+      e.pos.z+=steer.z*_spd*dt;
       clamp(e.pos,e.cfg.r); resolveObst(e.pos,e.cfg.r);
-      separateEnemy(e,i); clamp(e.pos,e.cfg.r);
+      separateEnemy(e,i); clamp(e.pos,e.cfg.r); resolveObst(e.pos,e.cfg.r);
+      if(isBlockedAt(e.pos.x,e.pos.z,e.cfg.r)) projectToNearestOpen(e.pos,e.cfg.r,Math.max(2.5,e.cfg.r*2.5));
 
       // Stuck escape: if barely moved in 0.45s, nudge perpendicular to flow
       e.stuckCheck-=dt;
@@ -2555,9 +2798,14 @@ function update(dt){
         e.stuckCheck=0.45;
         if(Math.hypot(e.pos.x-e.prevX,e.pos.z-e.prevZ)<0.12&&e.stagger<=0){
           const side=Math.random()<0.5?1:-1;
-          e.pos.x+=(-desiredZ/ml)*side*0.9;
-          e.pos.z+=(desiredX/ml)*side*0.9;
+          const away=wallAvoidVector(e.pos,e.cfg.r);
+          const ax=Math.hypot(away.x,away.z)>0.001?away.x:-steer.z*side;
+          const az=Math.hypot(away.x,away.z)>0.001?away.z: steer.x*side;
+          const al=Math.hypot(ax,az)||1;
+          e.pos.x+=(ax/al)*0.9;
+          e.pos.z+=(az/al)*0.9;
           clamp(e.pos,e.cfg.r); resolveObst(e.pos,e.cfg.r);
+          if(isBlockedAt(e.pos.x,e.pos.z,e.cfg.r)) projectToNearestOpen(e.pos,e.cfg.r,Math.max(3,e.cfg.r*3));
         }
         e.prevX=e.pos.x; e.prevZ=e.pos.z;
       }
@@ -2703,6 +2951,12 @@ function update(dt){
       for(let j=enemies.length-1;j>=0;j--){
         const e=enemies[j]; if(e.dead) continue;
         if(Math.hypot(b.pos.x-e.pos.x,b.pos.z-e.pos.z)<e.cfg.r+0.22+HEAVY_R[playerSkills.heavyRounds||0]){
+          if(b.visualOnly){
+            burst(b.pos,e.cfg.col,isMobile?2:5);
+            if(b.pierce>0) b.pierce--;
+            else { releaseBullet(b); break; }
+            continue;
+          }
           e.hp-=b.dmg; e.stagger=0.08; e.hitFlashT=0.12;
           burst(b.pos,e.cfg.col,5);
           // Explosive AoE — skip primary (j), adjust j for any lower-index kills

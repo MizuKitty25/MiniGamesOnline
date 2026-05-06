@@ -97,6 +97,9 @@ footer{text-align:center;padding:2px 24px 10px;font-size:6px;color:#ffffff1a;let
 .rrow{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.05);border-radius:13px;padding:10px 22px;}
 #s-lobby{gap:16px;padding:20px;max-width:700px;width:100%;max-height:100vh;}
 .codebox{font-family:'Boogaloo',cursive;font-size:clamp(38px,8vw,72px);letter-spacing:14px;color:var(--gold);text-shadow:0 0 28px rgba(255,215,0,.5);background:rgba(255,215,0,.07);border:2px solid rgba(255,215,0,.3);border-radius:16px;padding:16px 28px;text-align:center;}
+.code-row{display:flex;align-items:center;justify-content:center;gap:10px;}
+.copy-btn{width:48px;height:48px;border:2px solid rgba(255,215,0,.45);border-radius:14px;background:rgba(255,215,0,.08);color:var(--gold);font-family:'Boogaloo',cursive;font-size:24px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.12);transition:all .18s;}
+.copy-btn:hover{background:var(--gold);color:#17102a;transform:scale(1.06);}
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;}
 .pslot{background:rgba(255,255,255,.04);border:2px dashed rgba(255,255,255,.14);border-radius:13px;padding:14px 8px;text-align:center;min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
 .pslot.filled{border-style:solid;border-color:var(--bord);background:rgba(255,255,255,.06);}
@@ -205,7 +208,10 @@ footer{text-align:center;padding:2px 24px 10px;font-size:6px;color:#ffffff1a;let
 <div class="screen" id="s-lobby">
   <div style="text-align:center;margin-bottom:6px;">
     <div style="font-size:13px;color:rgba(255,255,255,.45);">Share this code:</div>
-    <div class="codebox" id="codedisp">······</div>
+    <div class="code-row">
+      <div class="codebox" id="codedisp">······</div>
+      <button class="copy-btn" onclick="copyRoomCode()" title="Copy room code" aria-label="Copy room code">⧉</button>
+    </div>
     <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px;" id="lcnt">0/8 players</div>
   </div>
   <div class="pgrid" id="pslots" style="max-width:660px;padding:0 14px;"></div>
@@ -419,6 +425,21 @@ function goHS(){initAC();ss('s-hsetup');}
 function goJ(){initAC();ss('s-join');}
 function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function copyRoomCode(){
+  const el=document.getElementById('codedisp');
+  const code=(el?.textContent||'').trim();
+  if(!code||code.includes('·'))return;
+  const btn=document.querySelector('.copy-btn');
+  try{
+    if(navigator.clipboard?.writeText) await navigator.clipboard.writeText(code);
+    else{const ta=document.createElement('textarea');ta.value=code;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+    if(btn){const old=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=old,900);}
+    toast('📋 Code copied!');
+  }catch(e){
+    if(btn){btn.textContent='!';setTimeout(()=>btn.textContent='⧉',900);}
+    toast('Copy failed');
+  }
+}
 
 // ══════════════ HOST ══════════════
 function createRoom(){
@@ -2354,7 +2375,7 @@ function doConfetti(n=80){
 
 // ── Expose to global scope (required for inline onclick handlers in module scripts)
 window.goHS=goHS;window.goJ=goJ;window.openPick=openPick;window.chgR=chgR;
-window.createRoom=createRoom;window.ss=ss;window.hostStart=hostStart;window.hostQuit=hostQuit;
+window.createRoom=createRoom;window.copyRoomCode=copyRoomCode;window.ss=ss;window.hostStart=hostStart;window.hostQuit=hostQuit;
 window.joinRoom=joinRoom;window.guestQuit=guestQuit;window.playAgain=playAgain;
 
 // ── Init
